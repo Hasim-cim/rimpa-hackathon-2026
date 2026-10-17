@@ -1,0 +1,30 @@
+{
+  "policy_version": "AI records policy v1.0 (prototype)",
+  "app_defaults": {
+    "agency-assistant": "T1",
+    "policy-chat": "T0",
+    "drafting-helper": "T0",
+    "case-agent": "T3"
+  },
+  "app_names": {
+    "agency-assistant": "Agency assistant (chat with retrieval)",
+    "policy-chat": "Policy Q&A bot",
+    "drafting-helper": "Drafting helper (email and notes)",
+    "case-agent": "Case update agent (acts on the case system)"
+  },
+  "escalations": {
+    "exported_to_document": "T1",
+    "decision_flag": "T2",
+    "side_effect_tool_call": "T3"
+  },
+  "retention": {
+    "T0": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+    "T1": "Record package retained with the business record it became part of; follows that record's disposal class.",
+    "T2": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+    "T3": "Record package including system prompt, agent instructions, tool calls and activity log; retained as long as the decision record."
+  },
+  "retention_days": {
+    "T0": 90
+  },
+  "disposal_authority": "Normal administrative practice (prototype setting)"
+}

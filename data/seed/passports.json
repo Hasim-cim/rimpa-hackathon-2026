@@ -1,0 +1,2446 @@
+[
+  {
+    "record": {
+      "id": "REC-2026/002432",
+      "title": "Case note summary (Policy Q&A bot)",
+      "created": "2026-03-06T01:49:10",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "3158e1541e9f714110d2c11882dec5912da6bc58f147cd64ec10926731fa86d1"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Policy Q&A bot.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0499 in five lines.",
+      "system_prompt": null,
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "70daa931a99454835cfe92958d6928e21735cb66f5bf0fa3ff91274c30e771e1",
+      "prev_hash": null,
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0001"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002444",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-03-10T09:02:24",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "2d8304e62679c20514d2a4f5c060fed228e19db6975f072702fdf538524ae3e6"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0600.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/004805",
+        "REC-2026/004809"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved_with_edits",
+      "reviewed_at": "2026-03-11T05:02:24",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "f93a43422ee7f3a787b21095a5d1a199ede2d55271a8ea3ccede0296bb059568",
+      "prev_hash": "70daa931a99454835cfe92958d6928e21735cb66f5bf0fa3ff91274c30e771e1",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0002"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002491",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-03-12T14:03:49",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "8b0b8d07dea529b65889b5147c0e7728853f57f5e85fca6c796b479d43d90174"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0722.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004809",
+        "REC-2026/004740",
+        "REC-2026/004802"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-03-13T14:03:49",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "e4482ed06b526523af8f528131092b2866e379ac1fac9cee0c1fd768849f5cd5",
+      "prev_hash": "f93a43422ee7f3a787b21095a5d1a199ede2d55271a8ea3ccede0296bb059568",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0003"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002512",
+      "title": "Correspondence (Drafting helper)",
+      "created": "2026-03-19T16:53:02",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "5331489d6759d1d81b5ac1a127687709d4c5967001aa87d787426f6d785273a6"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Drafting helper",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Correspondence",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Drafting helper.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Draft a letter to the applicant on case 2026/0171 asking for bank statements.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "f981bba06b37ec820174530ad9939b66403ff0c084186e3a1a8bb54b0c9cd966",
+      "prev_hash": "e4482ed06b526523af8f528131092b2866e379ac1fac9cee0c1fd768849f5cd5",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0004"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002585",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-03-28T08:35:02",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "51c5653772a0db2c3aec5aa5237fa6dd93ab0140edd4b9a5ad7aa5cb54c2c8d4"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0485.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/004805"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "33ae40acd21d09f0ba861161bd28cadae2d3189bdad1001f4501bef569ded5ef",
+      "prev_hash": "f981bba06b37ec820174530ad9939b66403ff0c084186e3a1a8bb54b0c9cd966",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0005"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002632",
+      "title": "Eligibility review (Policy Q&A bot)",
+      "created": "2026-03-31T18:06:57",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "83d786769054422bedba0a083684e39b8ee509f0b4d434d6e83daaf9fe1d5c3a"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Policy Q&A bot.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0142.",
+      "system_prompt": null,
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "008af6308ada3ef68654369d576f2097b559498d9c23c029502b53b7aa46d1b9",
+      "prev_hash": "33ae40acd21d09f0ba861161bd28cadae2d3189bdad1001f4501bef569ded5ef",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0006"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002639",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-04-05T04:35:51",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "ca9807f8f91809467d796f37a55e41b94fcd12690e158b8422048a2252544a9c"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0496.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/003540",
+        "REC-2026/004809"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "7c14767e89e75b265c8324bc90a1aed17deeadc149a4b701a31145fedbb9e508",
+      "prev_hash": "008af6308ada3ef68654369d576f2097b559498d9c23c029502b53b7aa46d1b9",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0007"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002690",
+      "title": "Debt waiver assessment (Policy Q&A bot)",
+      "created": "2026-04-12T00:57:46",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "e19face4690769939db03a1b74aa2152dffa8537e0a225e3fc211c8f86ea15e0"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Policy Q&A bot.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0639 for the delegate.",
+      "system_prompt": null,
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "cc80b83f82dc3be7b35be0168daf086b209e298187753857be5edd283103c3de",
+      "prev_hash": "7c14767e89e75b265c8324bc90a1aed17deeadc149a4b701a31145fedbb9e508",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0008"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002756",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-04-15T03:44:16",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "6f92c8d1992fdc953dd3bd9a5396a01c043c1411ecd47d42cac2597da8ab4cf6"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0925.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/004805",
+        "REC-2026/003540"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "775426376d586025b73a3f85148035acc9f29f49f8135d81a531c742ff479d6f",
+      "prev_hash": "cc80b83f82dc3be7b35be0168daf086b209e298187753857be5edd283103c3de",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0009"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002805",
+      "title": "Case note summary (Drafting helper)",
+      "created": "2026-04-25T19:25:36",
+      "ai_generated": true,
+      "final_document": "DOC-2026/0406-note",
+      "content_hash": "17baf721fefa9bd5f6b2f88b2a5fa024cfbbe3fc858e15c44bbb9f7865d83358"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Drafting helper",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T1",
+      "tier_reason": "Default T0 for Drafting helper; output filed into a document → T1.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0406 in five lines.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004802",
+        "REC-2026/003540"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "0d9ad65f08cb2c227ea842c1d63dd579100953412a3aa4144687a30088c69c6f",
+      "prev_hash": "775426376d586025b73a3f85148035acc9f29f49f8135d81a531c742ff479d6f",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0010"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002891",
+      "title": "Policy briefing (Drafting helper)",
+      "created": "2026-04-30T19:43:19",
+      "ai_generated": true,
+      "final_document": "DOC-2026/0745-note",
+      "content_hash": "b3e9aba11635b8af3f077d639fb5bb01f227b19b48bfe650d79754f4fdef5e93"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Drafting helper",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Policy briefing",
+      "tier": "T1",
+      "tier_reason": "Default T0 for Drafting helper; output filed into a document → T1.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Brief me on the current hardship policy in two paragraphs.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004809",
+        "REC-2026/004805"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "88b3a83d61cdd2f35431bb411e6e10b16260380f2291da5ac3301d99338437a5",
+      "prev_hash": "0d9ad65f08cb2c227ea842c1d63dd579100953412a3aa4144687a30088c69c6f",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0011"
+  },
+  {
+    "record": {
+      "id": "REC-2026/002972",
+      "title": "Policy briefing (Agency assistant)",
+      "created": "2026-05-06T16:03:30",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "b3e9aba11635b8af3f077d639fb5bb01f227b19b48bfe650d79754f4fdef5e93"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Policy briefing",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Brief me on the current hardship policy in two paragraphs.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004805",
+        "REC-2026/004802",
+        "REC-2026/004790"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "cf87d2d1a1cf5a6f1f34e4fccdfd3be05dcaa489e46334aca27d463b4332aa56",
+      "prev_hash": "88b3a83d61cdd2f35431bb411e6e10b16260380f2291da5ac3301d99338437a5",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0012"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003045",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-05-11T17:14:30",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "f4fd8baa0d347241f8e371a216525c9303b4f0230230f77e1cce61695359ba93"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0143.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/004805",
+        "REC-2026/004802"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-05-12T12:14:30",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "d297d1715bbe7f0d7f2cc05767fec67a9beac8c8a454f471b4b2650320d63e79",
+      "prev_hash": "cf87d2d1a1cf5a6f1f34e4fccdfd3be05dcaa489e46334aca27d463b4332aa56",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0013"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003070",
+      "title": "Eligibility review (Policy Q&A bot)",
+      "created": "2026-05-15T19:43:03",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "91c82e42748019a68d1d5b03105bb8087ffcd8c03bb50889c6a2b7bc99ca95f2"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Policy Q&A bot.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0823.",
+      "system_prompt": null,
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "64d43ee921273fe11a519b20ef2889f6c848fd7d85e86a6da77442e316fee47e",
+      "prev_hash": "d297d1715bbe7f0d7f2cc05767fec67a9beac8c8a454f471b4b2650320d63e79",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0014"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003102",
+      "title": "Case note summary (Agency assistant)",
+      "created": "2026-05-16T13:40:56",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "ed69a9e76e0cbcab0a30de454b4d5a7c793fbff979cbca77d622d1606568bf1f"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0193 in five lines.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/004802"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "273c358f5fc7208b549710cda423a45ec7ffe854a21bbc451b0003d50afaa3b2",
+      "prev_hash": "64d43ee921273fe11a519b20ef2889f6c848fd7d85e86a6da77442e316fee47e",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0015"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003194",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-06-04T06:42:19",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "dc0bc830d51b98281575f4ca265175eb944de24bcf0442b1f330b520f3f18008"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0691.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "433f1cba7ab5ecfdf8dc2d8f10461c5217d667148da44107c5d5c7899e296e68",
+      "prev_hash": "273c358f5fc7208b549710cda423a45ec7ffe854a21bbc451b0003d50afaa3b2",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0016"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003256",
+      "title": "Case note summary (Case update agent)",
+      "created": "2026-06-17T09:16:01",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "e112e696a88bb6faaa79ddfa6af93f2f46ddc6c88e30772ac8bd68af0090d792"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Case update agent",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T3",
+      "tier_reason": "Default T3 for Case update agent.",
+      "disposal": "Record package including system prompt, agent instructions, tool calls and activity log; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0168 in five lines.",
+      "system_prompt": "You are the Case update agent. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004740",
+        "REC-2026/003540"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": [
+        {
+          "name": "case_system.update_status",
+          "side_effect": true,
+          "summary": "Set case 2026/0168 status to 'awaiting documents'"
+        },
+        {
+          "name": "case_system.read_notes",
+          "side_effect": false,
+          "summary": "Read notes for case 2026/0168"
+        }
+      ]
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-06-17T20:16:01",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "72397d44d98f431db82e2bef4330f35abf94879b26ffdf8755fc2d058a469f27",
+      "prev_hash": "433f1cba7ab5ecfdf8dc2d8f10461c5217d667148da44107c5d5c7899e296e68",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-case-agent",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0017"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003265",
+      "title": "Policy briefing (Drafting helper)",
+      "created": "2026-06-17T17:14:07",
+      "ai_generated": true,
+      "final_document": "DOC-2026/0932-note",
+      "content_hash": "b3e9aba11635b8af3f077d639fb5bb01f227b19b48bfe650d79754f4fdef5e93"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Drafting helper",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Policy briefing",
+      "tier": "T1",
+      "tier_reason": "Default T0 for Drafting helper; output filed into a document → T1.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Brief me on the current hardship policy in two paragraphs.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004740",
+        "REC-2026/004809"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "eb64dda99b504043a66d538572927ef0fa9e89c052456c168b06953efc70bc58",
+      "prev_hash": "72397d44d98f431db82e2bef4330f35abf94879b26ffdf8755fc2d058a469f27",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0018"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003297",
+      "title": "Eligibility review (Drafting helper)",
+      "created": "2026-06-18T21:21:26",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "142e04981e531f0b379712c83be85b4920615066068d1e376e2a2dbdc50fafb0"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Drafting helper",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Drafting helper.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0946.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "8bbc966ec6c96378e5782883098f2d9c7bfa2d3b60166ad9128cd6314969151b",
+      "prev_hash": "eb64dda99b504043a66d538572927ef0fa9e89c052456c168b06953efc70bc58",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0019"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003310",
+      "title": "Policy briefing (Agency assistant)",
+      "created": "2026-06-27T08:25:56",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "b3e9aba11635b8af3f077d639fb5bb01f227b19b48bfe650d79754f4fdef5e93"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Policy briefing",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Brief me on the current hardship policy in two paragraphs.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004740"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "6d3b569efbdf8cf34be2c3ec92eb447a6604a03f41be32ad6e8f68b36f3bf058",
+      "prev_hash": "8bbc966ec6c96378e5782883098f2d9c7bfa2d3b60166ad9128cd6314969151b",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0020"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003327",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-07-13T09:19:28",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "17f513b35d18d3e7609db87af619c3ee1a18bee3814c357783c1e1c604385b24"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0922.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004802"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-07-13T22:19:28",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "c31f2f67dee6a15350c68475364d85c0012e8533d02c93db24fc8c4c81a13b65",
+      "prev_hash": "6d3b569efbdf8cf34be2c3ec92eb447a6604a03f41be32ad6e8f68b36f3bf058",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0021"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003392",
+      "title": "Debt waiver assessment (Policy Q&A bot)",
+      "created": "2026-07-14T18:35:00",
+      "ai_generated": true,
+      "final_document": "DOC-2026/0749-note",
+      "content_hash": "9d6e814d056f260d867d103a60751ca3ae9d82664511856e5f5d5afedebe7866"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T1",
+      "tier_reason": "Default T0 for Policy Q&A bot; output filed into a document → T1.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0749 for the delegate.",
+      "system_prompt": null,
+      "source_record_ids": [
+        "REC-2026/004809",
+        "REC-2026/004790",
+        "REC-2026/004805"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "6ebcd2cfbca97c7225f6fa1ae109aa88842da189490ccae49c30807448f5e9ed",
+      "prev_hash": "c31f2f67dee6a15350c68475364d85c0012e8533d02c93db24fc8c4c81a13b65",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0022"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003444",
+      "title": "Debt waiver assessment (Agency assistant)",
+      "created": "2026-07-22T03:17:17",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "1fb73eee99fdc10311a0a4d3d0726b0685f65828efed6d6d2cad434d70ee0b34"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0456 for the delegate.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/003540",
+        "REC-2026/004809",
+        "REC-2026/004805"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-07-22T08:17:17",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "e20ce27994be169a813b77c14d0434a9807d89259facbda6719e55bf226c1e5b",
+      "prev_hash": "6ebcd2cfbca97c7225f6fa1ae109aa88842da189490ccae49c30807448f5e9ed",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0023"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003481",
+      "title": "Debt waiver assessment (Agency assistant)",
+      "created": "2026-07-23T11:11:26",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "c77c069f8b72bfc8710e5e80578d9df3d0325fc594e0523be3845d4864871860"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0543 for the delegate.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004809",
+        "REC-2026/004740",
+        "REC-2026/003540"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "70cd0c8f3af798db7b0bddb49bd508ea287a4f4cd304ae40fc27afee79b58b06",
+      "prev_hash": "e20ce27994be169a813b77c14d0434a9807d89259facbda6719e55bf226c1e5b",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0024"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003573",
+      "title": "Case note summary (Drafting helper)",
+      "created": "2026-07-23T22:31:05",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "c2fa70baf7e678a2da0f99abde4034970c9c2dff9cbe83198d62a2822c69866a"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Drafting helper",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Drafting helper.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0593 in five lines.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "6f6b4009036af21515e2f542f9a7db63c218799e544c7e2ae666b5648ce31b2f",
+      "prev_hash": "70cd0c8f3af798db7b0bddb49bd508ea287a4f4cd304ae40fc27afee79b58b06",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0025"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003618",
+      "title": "Correspondence (Drafting helper)",
+      "created": "2026-07-25T19:42:05",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "31791aea6f59ba15dba55f77a6c7b6f9383e8ac21f0eacd4a6ed4baa3d685918"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Drafting helper",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Correspondence",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Drafting helper.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Draft a letter to the applicant on case 2026/0719 asking for bank statements.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "e9f3e7a0bb644640b2accb936d67bd737002934c042c3ff590aeaed839bba4bd",
+      "prev_hash": "6f6b4009036af21515e2f542f9a7db63c218799e544c7e2ae666b5648ce31b2f",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0026"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003692",
+      "title": "Case note summary (Agency assistant)",
+      "created": "2026-08-08T14:12:34",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "fa5fa714a388a05a184a65b3b48be45b943a474f5e96f66f6ee02c036006bd96"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0667 in five lines.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004740",
+        "REC-2026/004802"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "a1c7a3dd97cd9e06b9abdc3a6ac94e6907341ddb01552e66fcf27db0fd12b420",
+      "prev_hash": "e9f3e7a0bb644640b2accb936d67bd737002934c042c3ff590aeaed839bba4bd",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0027"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003771",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-08-27T09:41:14",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "26f8a9115643cd8e514e5836c63c951b23ec1f3fe00ad7be6a7b5a632649baa2"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0470.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004740",
+        "REC-2026/004790"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "e16a75509fc095c75c127d890fa9f7bc0c32fe8992ab1fb8e5bc3afd2fe4c517",
+      "prev_hash": "a1c7a3dd97cd9e06b9abdc3a6ac94e6907341ddb01552e66fcf27db0fd12b420",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0028"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003833",
+      "title": "Case note summary (Agency assistant)",
+      "created": "2026-09-06T01:46:40",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "e18864da6d6cf68393a8ba39e8c4918d77ebe4ff665aa73f4de9811c4822e2a9"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0816 in five lines.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004805",
+        "REC-2026/003540"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "ca89f2845347fee6158eed5180c351b768fba6626bdffb018ae244525ea2c7bb",
+      "prev_hash": "e16a75509fc095c75c127d890fa9f7bc0c32fe8992ab1fb8e5bc3afd2fe4c517",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0029"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003852",
+      "title": "Debt waiver assessment (Agency assistant)",
+      "created": "2026-09-08T04:34:33",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "d3b6da2924b1c9cb01c8b1ab480a126ee9c57df477837aaf918e44a0e355336b"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-7-2026-03-01",
+      "model_returned": "northstar-7-2026-03-01",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0287 for the delegate.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004805",
+        "REC-2026/004740",
+        "REC-2026/004809"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "f594e3c95beac33c614263eb1b871a7a26dc39f3bfdb481d4efc9d9e413834dc",
+      "prev_hash": "ca89f2845347fee6158eed5180c351b768fba6626bdffb018ae244525ea2c7bb",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0030"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003886",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-09-18T17:53:49",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "6a7814e66bb9d0e5f4a87e3fcb34a13fc65d331a61cc5e921e8c5dd6d426e51d"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0354.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004805"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved_with_edits",
+      "reviewed_at": "2026-09-19T11:53:49",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "9c9750d078868445bc276c6ba447c8260c1b9b985c6ddae6feee00fc00203d08",
+      "prev_hash": "f594e3c95beac33c614263eb1b871a7a26dc39f3bfdb481d4efc9d9e413834dc",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0031"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003918",
+      "title": "Case note summary (Case update agent)",
+      "created": "2026-09-18T19:50:13",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "665fd94dc228e580930dec84e11a367f8bf7da5c5c240f2b1c823edd0e6c7b6e"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Case update agent",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T3",
+      "tier_reason": "Default T3 for Case update agent.",
+      "disposal": "Record package including system prompt, agent instructions, tool calls and activity log; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0726 in five lines.",
+      "system_prompt": "You are the Case update agent. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004802"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": [
+        {
+          "name": "case_system.update_status",
+          "side_effect": true,
+          "summary": "Set case 2026/0726 status to 'awaiting documents'"
+        },
+        {
+          "name": "case_system.read_notes",
+          "side_effect": false,
+          "summary": "Read notes for case 2026/0726"
+        }
+      ]
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved_with_edits",
+      "reviewed_at": "2026-09-19T17:50:13",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "feff18d75a5e2d4dc58c2bdc8789dc0b8d6454eebb2d2a38ed3b4c30a27a99f6",
+      "prev_hash": "9c9750d078868445bc276c6ba447c8260c1b9b985c6ddae6feee00fc00203d08",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-case-agent",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0032"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003981",
+      "title": "Correspondence (Drafting helper)",
+      "created": "2026-09-26T03:38:28",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "adc982ed4744555037b16b70c2e50d503af69190b882fd74f5e3c62a67a89eaa"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Drafting helper",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Correspondence",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Drafting helper.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Draft a letter to the applicant on case 2026/0691 asking for bank statements.",
+      "system_prompt": "You are the Drafting helper. Be concise; cite source records.",
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "69eed877ac49c0f3511ca83dda78e339e4fb9a4e9bdd7f35c89ece51b482782a",
+      "prev_hash": "feff18d75a5e2d4dc58c2bdc8789dc0b8d6454eebb2d2a38ed3b4c30a27a99f6",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-drafting-helper",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0033"
+  },
+  {
+    "record": {
+      "id": "REC-2026/003990",
+      "title": "Debt waiver assessment (Policy Q&A bot)",
+      "created": "2026-09-27T07:19:09",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "4e2c347bb254adc627f125254b8fd5914e6a0bad7049d45d9cf339a8d9048127"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Policy Q&A bot.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0392 for the delegate.",
+      "system_prompt": null,
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "fffcb3f189fce3949c8167c0d9d35e88632f9f0568464f4d6bf968c4c0f031c9",
+      "prev_hash": "69eed877ac49c0f3511ca83dda78e339e4fb9a4e9bdd7f35c89ece51b482782a",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0034"
+  },
+  {
+    "record": {
+      "id": "REC-2026/004084",
+      "title": "Debt waiver assessment (Agency assistant)",
+      "created": "2026-09-28T04:08:31",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "aec241120ff7bc18c9ee17bcd785c95d93865af4861e0964467937dceb6be2cd"
+    },
+    "agent": {
+      "person": "A. Caseworker",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0801 for the delegate.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004805",
+        "REC-2026/004740"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "ce2c65cff14a640c6825cf0d8daefe36ee67bba4b2cd8434c5cbeccd76ebdca1",
+      "prev_hash": "fffcb3f189fce3949c8167c0d9d35e88632f9f0568464f4d6bf968c4c0f031c9",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0035"
+  },
+  {
+    "record": {
+      "id": "REC-2026/004141",
+      "title": "Correspondence (Agency assistant)",
+      "created": "2026-09-29T06:37:21",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "45c095c3337385ea44a3bd6752751df5f681168e45f7e6abcac083f5bed299be"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Correspondence",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Draft a letter to the applicant on case 2026/0405 asking for bank statements.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004809",
+        "REC-2026/003540"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "be8f5c4155e0d9b737fe276c6373365269df9d203cf9c5f369062c25ac6ba3ca",
+      "prev_hash": "ce2c65cff14a640c6825cf0d8daefe36ee67bba4b2cd8434c5cbeccd76ebdca1",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0036"
+  },
+  {
+    "record": {
+      "id": "REC-2026/004185",
+      "title": "Eligibility review (Agency assistant)",
+      "created": "2026-09-30T07:56:56",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "8269c5a769c7c61b37eead06b68f96baad18c351aebd3232c499ad8dcdd19c15"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Eligibility review",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Check the eligibility criteria against case 2026/0720.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-10-01T02:56:56",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "eed277e065a3fc3bc401ef57ef0c473c21aca25f3845d4d95d7102fee0dc96a8",
+      "prev_hash": "be8f5c4155e0d9b737fe276c6373365269df9d203cf9c5f369062c25ac6ba3ca",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0037"
+  },
+  {
+    "record": {
+      "id": "REC-2026/004266",
+      "title": "Case note summary (Policy Q&A bot)",
+      "created": "2026-10-03T16:30:24",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "04f8b0b9628b45c4c4d7a16b16585676f35e1b8973c2ca8d55c45afe1dd0e3e6"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Policy Q&A bot",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T0",
+      "tier_reason": "Default T0 for Policy Q&A bot.",
+      "disposal": "Log entry only. Retained 90 days, then destroyed with information manager approval. Held if the model is under recall.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0807 in five lines.",
+      "system_prompt": null,
+      "source_record_ids": [],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "fa12c4304d28171cc33dd6ad6a4dddf1cdb029e025321cb9f5d79d628a208f4a",
+      "prev_hash": "eed277e065a3fc3bc401ef57ef0c473c21aca25f3845d4d95d7102fee0dc96a8",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-policy-chat",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0038"
+  },
+  {
+    "record": {
+      "id": "REC-2026/004305",
+      "title": "Debt waiver assessment (Agency assistant)",
+      "created": "2026-10-06T04:38:05",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "978f225f757461ce6368b73dc0a730cac3994da8082c3568d45bc759e0c12cc8"
+    },
+    "agent": {
+      "person": "C. Officer",
+      "ai_system": "Agency assistant",
+      "model_requested": "atlas-mini-2025-11-20",
+      "model_returned": "atlas-mini-2025-11-20",
+      "provider": "Atlas Labs (fictional vendor)"
+    },
+    "business": {
+      "function": "Debt waiver assessment",
+      "tier": "T2",
+      "tier_reason": "Default T1 for Agency assistant; used in a decision → T2.",
+      "disposal": "Record package including sources, checks and reviewer sign-off; retained as long as the decision record.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the hardship evidence for case 2026/0379 for the delegate.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004805",
+        "REC-2026/004790"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": {
+      "reviewer": "B. Team Leader",
+      "decision": "approved",
+      "reviewed_at": "2026-10-06T23:38:05",
+      "note": "Checked against source records."
+    },
+    "integrity": {
+      "hash": "9130e3e5bc901e20db79c44f058c4c3a71e9c84c09dd112510e52483e9d46a62",
+      "prev_hash": "fa12c4304d28171cc33dd6ad6a4dddf1cdb029e025321cb9f5d79d628a208f4a",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0039"
+  },
+  {
+    "record": {
+      "id": "REC-2026/004321",
+      "title": "Case note summary (Agency assistant)",
+      "created": "2026-10-06T08:52:36",
+      "ai_generated": true,
+      "final_document": null,
+      "content_hash": "cde733341ba0a863439e3cb9f8d6b60e21085c2c607f9452da0e9b537bd73b3f"
+    },
+    "agent": {
+      "person": "D. Analyst",
+      "ai_system": "Agency assistant",
+      "model_requested": "northstar-8-2026-09-15",
+      "model_returned": "northstar-8-2026-09-15",
+      "provider": "Northstar AI (fictional vendor)"
+    },
+    "business": {
+      "function": "Case note summary",
+      "tier": "T1",
+      "tier_reason": "Default T1 for Agency assistant.",
+      "disposal": "Record package retained with the business record it became part of; follows that record's disposal class.",
+      "document_type": null,
+      "gate": null
+    },
+    "process": {
+      "prompt": "Summarise the case notes for case 2026/0477 in five lines.",
+      "system_prompt": "You are the Agency assistant. Be concise; cite source records.",
+      "source_record_ids": [
+        "REC-2026/004790",
+        "REC-2026/004802",
+        "REC-2026/004740"
+      ],
+      "citation_summary": {
+        "found": 0,
+        "mismatch": 0,
+        "not_found": 0,
+        "not_checked": 0
+      },
+      "evidence_summary": {
+        "supported": 0,
+        "weak": 0,
+        "unsupported": 0,
+        "contradicted": 0
+      },
+      "tool_calls": []
+    },
+    "review": null,
+    "integrity": {
+      "hash": "9c371a823fab3dbdf00723ffa787342021fd20a05a552c60b7fe39163cb86467",
+      "prev_hash": "9130e3e5bc901e20db79c44f058c4c3a71e9c84c09dd112510e52483e9d46a62",
+      "algorithm": "sha256",
+      "version": 1,
+      "corrects": null
+    },
+    "paradata": {
+      "use_register_id": "USE-agency-assistant",
+      "impact_assessment_ref": null,
+      "policy_version": "AI records policy v1.0 (prototype)"
+    },
+    "event_id": "EVT-2026-0040"
+  }
+]

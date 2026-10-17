@@ -1,0 +1,240 @@
+[
+  {
+    "id": "REC-2026/004811",
+    "title": "Payslip summary, June to August 2026",
+    "system": "Payroll records system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-02",
+    "created_by": "Payroll officer",
+    "content": "Case 2026/0412. Employer: Example Logistics Pty Ltd. Payslips for the period 1 June 2026 to 31 August 2026. Average weekly gross earnings $820. Paid weekly. 13 payslips on file.",
+    "fields": {
+      "case_id": "2026/0412",
+      "amount_weekly": 820,
+      "period_start": "2026-06-01",
+      "period_end": "2026-08-31",
+      "employer": "Example Logistics Pty Ltd"
+    }
+  },
+  {
+    "id": "REC-2026/003540",
+    "title": "Tenancy record",
+    "system": "Housing records",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-04-18",
+    "created_by": "Housing officer",
+    "content": "Case 2026/0412. Residential tenancy at 12 Example Street. Lease commenced 1 April 2026. Occupants listed on lease: 2 (applicant and one adult). Weekly rent $380.",
+    "fields": {
+      "case_id": "2026/0412",
+      "occupants": 2,
+      "rent_weekly": 380,
+      "household": "two adults"
+    }
+  },
+  {
+    "id": "REC-2026/004805",
+    "title": "Bank statement summary, July to August 2026",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-05",
+    "created_by": "A. Caseworker",
+    "reviewed_by": "B. Team Leader",
+    "content": "Case 2026/0412. Statements supplied by the applicant for July and August 2026. Regular outgoing: rent $380 weekly. Utilities approximately $65 weekly. No regular incoming other than wages from Example Logistics.",
+    "fields": {
+      "case_id": "2026/0412",
+      "rent_weekly": 380,
+      "utilities_weekly": 65
+    }
+  },
+  {
+    "id": "REC-2026/004790",
+    "title": "Debt notice",
+    "system": "Debt management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-08-20",
+    "created_by": "Debt officer",
+    "content": "Case 2026/0412. Overpayment debt raised on 20 August 2026. Debt amount $4,860. Period of overpayment 1 January 2026 to 31 May 2026. Repayment due 30 days from notice unless a hardship application is lodged.",
+    "fields": {
+      "case_id": "2026/0412",
+      "debt_amount": 4860,
+      "raised": "2026-08-20"
+    }
+  },
+  {
+    "id": "REC-2026/004802",
+    "title": "Hardship application form",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-01",
+    "created_by": "Applicant (lodged online)",
+    "content": "Case 2026/0412. Application for waiver of debt on the grounds of financial hardship. Applicant statement: I am struggling to pay rent and bills and cannot repay the debt within 30 days. Supporting documents: payslips, bank statements.",
+    "fields": {
+      "case_id": "2026/0412",
+      "lodged": "2026-09-01",
+      "grounds": "financial hardship"
+    }
+  },
+  {
+    "id": "REC-2026/004809",
+    "title": "File note, phone call with applicant",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-08",
+    "created_by": "A. Caseworker",
+    "content": "Case 2026/0412. Phone call 8 September 2026. Applicant confirmed employment at Example Logistics continues. Applicant said they had been unwell in August and missed two shifts. Advised that a decision would follow a review of the documents.",
+    "fields": {
+      "case_id": "2026/0412",
+      "call_date": "2026-09-08"
+    }
+  },
+  {
+    "id": "REC-2026/004740",
+    "title": "Prior correspondence, overpayment notification",
+    "system": "Correspondence register",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-07-30",
+    "created_by": "Debt officer",
+    "content": "Case 2026/0412. Letter advising the applicant of a possible overpayment for January to May 2026 and inviting a response within 14 days. No response received.",
+    "fields": {
+      "case_id": "2026/0412",
+      "sent": "2026-07-30"
+    }
+  },
+  {
+    "id": "POL-HARDSHIP-v3",
+    "title": "Hardship policy guide, version 3",
+    "system": "Policy library",
+    "authoritative": true,
+    "status": "superseded",
+    "superseded_by": "POL-HARDSHIP-v4",
+    "created": "2024-02-01",
+    "created_by": "Policy branch",
+    "reviewed_by": "Policy director",
+    "content": "Version 3. A delegate may waive a debt where recovery would cause severe financial hardship. The delegate considers income, essential outgoings and the circumstances of the debt. Decisions should be made within 28 days of a complete application.",
+    "fields": {
+      "version": 3,
+      "hardship_test": "severe financial hardship",
+      "decision_timeframe_days": 28
+    }
+  },
+  {
+    "id": "POL-HARDSHIP-v4",
+    "title": "Hardship policy guide, version 4",
+    "system": "Policy library",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-07-01",
+    "created_by": "Policy branch",
+    "reviewed_by": "Policy director",
+    "content": "Version 4, effective 1 July 2026. A delegate may waive a debt, in whole or in part, where recovery would cause serious financial hardship and the debt did not arise from the applicant's knowingly false statement. The delegate considers income, essential outgoings, household composition and the circumstances of the debt. Decisions should be made within 21 days of a complete application.",
+    "fields": {
+      "version": 4,
+      "hardship_test": "serious financial hardship",
+      "decision_timeframe_days": 21
+    }
+  },
+  {
+    "id": "INS-DELEG-2025",
+    "title": "Instrument of delegation, debt waiver decisions",
+    "system": "Governance register",
+    "authoritative": true,
+    "status": "current",
+    "created": "2025-11-15",
+    "created_by": "Chief Executive",
+    "content": "Delegation of the power to waive debts on hardship grounds to officers at Team Leader level and above. Delegates must record the basis of each decision.",
+    "fields": {
+      "delegate_level": "Team Leader"
+    }
+  },
+  {
+    "id": "WEB-FORUM-2026-07",
+    "title": "Community forum post about hardship waivers",
+    "system": "Web (saved page)",
+    "authoritative": false,
+    "status": "current",
+    "created": "2026-07-14",
+    "created_by": "Unknown",
+    "content": "Forum post: In my experience most hardship waivers are decided within 28 days and you almost always get it if you have payslips.",
+    "fields": {}
+  },
+  {
+    "id": "REC-2026/005101",
+    "title": "Identity verification record",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-03",
+    "created_by": "C. Officer",
+    "content": "Case 2026/0587. Identity verified against the identity verification record on 3 September 2026 using a passport and a driver licence. Verification level: standard.",
+    "fields": {
+      "case_id": "2026/0587",
+      "identity_verified": true
+    }
+  },
+  {
+    "id": "REC-2026/005104",
+    "title": "Residency record",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-03",
+    "created_by": "C. Officer",
+    "content": "Case 2026/0587. The applicant has been a permanent resident since 2019. Residency evidence sighted and recorded.",
+    "fields": {
+      "case_id": "2026/0587",
+      "residency_since": 2019
+    }
+  },
+  {
+    "id": "REC-2026/005110",
+    "title": "Income declaration, September 2026",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-10",
+    "created_by": "Applicant (lodged online)",
+    "reviewed_by": "C. Officer",
+    "content": "Case 2026/0587. Declared fortnightly income $1,240 from part-time employment. No other income declared.",
+    "fields": {
+      "case_id": "2026/0587",
+      "amount_fortnightly": 1240
+    }
+  },
+  {
+    "id": "REC-2026/005112",
+    "title": "Medical certificate summary",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-09-12",
+    "created_by": "Treating practitioner (lodged)",
+    "content": "Case 2026/0587. Medical certificate covers 1 September 2026 to 28 February 2027. Reduced capacity for work: 15 hours per week.",
+    "fields": {
+      "case_id": "2026/0587",
+      "certificate_from": "2026-09-01",
+      "certificate_to": "2027-02-28",
+      "capacity_hours": 15
+    }
+  },
+  {
+    "id": "REC-2025/008800",
+    "title": "Income declaration, October 2025",
+    "system": "Case management system",
+    "authoritative": true,
+    "status": "superseded",
+    "superseded_by": "REC-2026/005110",
+    "created": "2025-10-04",
+    "created_by": "Applicant (lodged online)",
+    "content": "Case 2026/0587. Declared fortnightly income $980 from part-time employment.",
+    "fields": {
+      "case_id": "2026/0587",
+      "amount_fortnightly": 980
+    }
+  }
+]

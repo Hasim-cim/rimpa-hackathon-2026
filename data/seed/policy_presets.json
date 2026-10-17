@@ -1,0 +1,71 @@
+{
+  "_note": "Starting points for the information manager, not transcriptions of any regulator's rules. Everything here is a prototype default (💭).",
+  "presets": [
+    {
+      "id": "commonwealth-agency",
+      "name": "Commonwealth agency",
+      "description": "Australian Government agency under the Archives Act. Risk-tiered capture: keep more evidence the more a decision relies on AI.",
+      "guidance": ["NAA: AI-generated content is a record; capture is risk-tiered", "DTA: AI transparency statements", "PROV-style human oversight of checks and disposal (prototype default)"],
+      "authoritative_systems": ["Case management system", "Payroll records system", "Debt management system", "Housing records", "Policy library", "Governance register", "Correspondence register"],
+      "document_types": [
+        {"id": "decision-letter", "name": "Decision letter or assessment", "description": "Informs or records a decision about a person, case or money.", "default_tier": "T2",
+         "checks": ["citations", "evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 1, "citations_not_found_blocks": true, "citations_mismatch_attention": true, "require_reviewer": true, "min_supported_share": 0.6}},
+        {"id": "case-note", "name": "Case note", "description": "Working record on a case file.", "default_tier": "T1",
+         "checks": ["evidence"],
+         "quality": {"max_unsupported": 1, "max_contradicted": 0, "max_weak": null, "citations_not_found_blocks": true, "citations_mismatch_attention": false, "require_reviewer": false, "min_supported_share": null}},
+        {"id": "briefing", "name": "Briefing or policy paper", "description": "Advice to decision-makers; cites research and policy.", "default_tier": "T1",
+         "checks": ["citations", "evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 2, "citations_not_found_blocks": true, "citations_mismatch_attention": true, "require_reviewer": true, "min_supported_share": null}},
+        {"id": "correspondence", "name": "Correspondence", "description": "Letters and emails to the public.", "default_tier": "T1",
+         "checks": ["evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": null, "citations_not_found_blocks": true, "citations_mismatch_attention": false, "require_reviewer": false, "min_supported_share": null}}
+      ]
+    },
+    {
+      "id": "state-agency",
+      "name": "State or territory agency",
+      "description": "State public sector body. Same tiering, with the NSW-style rule that AI metadata must stay linked to the record.",
+      "guidance": ["State records authority: AI output used in business is a record", "NSW-style AI metadata rule: say AI made it, which software, which prompts and inputs", "Human oversight of checks and disposal"],
+      "authoritative_systems": ["Case management system", "Payroll records system", "Debt management system", "Housing records", "Policy library", "Governance register", "Correspondence register"],
+      "document_types": [
+        {"id": "decision-letter", "name": "Decision letter or assessment", "default_tier": "T2", "checks": ["citations", "evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 1, "require_reviewer": true, "min_supported_share": 0.6}},
+        {"id": "case-note", "name": "Case note", "default_tier": "T1", "checks": ["evidence"],
+         "quality": {"max_unsupported": 1, "max_contradicted": 0, "max_weak": null, "require_reviewer": false}},
+        {"id": "briefing", "name": "Briefing", "default_tier": "T1", "checks": ["citations", "evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 2, "require_reviewer": true}}
+      ]
+    },
+    {
+      "id": "health-service",
+      "name": "Health service",
+      "description": "Hospital or clinic using AI scribes and summaries. Clinical notes are decision-informing by default.",
+      "guidance": ["Clinical records standards (prototype default)", "AI scribe output is part of the clinical record once relied on", "Clinician sign-off before filing"],
+      "authoritative_systems": ["Case management system", "Policy library", "Governance register"],
+      "document_types": [
+        {"id": "clinical-note", "name": "Clinical note or AI scribe summary", "description": "Summary of a consultation written or drafted by AI.", "default_tier": "T2", "checks": ["evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 0, "require_reviewer": true, "min_supported_share": 0.8}},
+        {"id": "discharge-letter", "name": "Discharge letter", "default_tier": "T2", "checks": ["evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 1, "require_reviewer": true}},
+        {"id": "briefing", "name": "Clinical governance briefing", "default_tier": "T1", "checks": ["citations", "evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 2, "require_reviewer": true}}
+      ]
+    },
+    {
+      "id": "local-council",
+      "name": "Local council",
+      "description": "Small records team, planning decisions, FOI exposure. Lighter bar on working notes, strict on decisions.",
+      "guidance": ["State records authority rules apply to councils", "Planning and FOI records must be retrievable with their AI metadata", "Human oversight of disposal"],
+      "authoritative_systems": ["Case management system", "Policy library", "Governance register", "Correspondence register"],
+      "document_types": [
+        {"id": "planning-report", "name": "Planning or committee report", "default_tier": "T2", "checks": ["citations", "evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": 1, "require_reviewer": true}},
+        {"id": "case-note", "name": "Working note", "default_tier": "T1", "checks": ["evidence"],
+         "quality": {"max_unsupported": 2, "max_contradicted": 0, "max_weak": null, "require_reviewer": false}},
+        {"id": "correspondence", "name": "Resident correspondence", "default_tier": "T1", "checks": ["evidence"],
+         "quality": {"max_unsupported": 0, "max_contradicted": 0, "max_weak": null, "require_reviewer": false}}
+      ]
+    }
+  ]
+}
