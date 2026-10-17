@@ -1,0 +1,202 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="OHC9HxLMZDW0dixJyIm6">
+    <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-3" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-13" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-15" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-19" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-54" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-76" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-74">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-80" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-79">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-1" parent="1" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;" value="&lt;h1&gt;&lt;b&gt;RIMPA Hackathon Ideas&lt;/b&gt;&lt;/h1&gt;" vertex="1">
+          <mxGeometry height="101" width="297" x="-38" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-35" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-36" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-37" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="HOW + WHY&amp;nbsp;&lt;div&gt;does bias/mis/disinformation occur through AI?&lt;/div&gt;" vertex="1">
+          <mxGeometry height="87" width="280" x="-556" y="-43" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-27" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="Can we implement blockchain???" vertex="1">
+          <mxGeometry height="60" width="154" x="-7" y="-282" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-8" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="577" y="-240.6666259765625" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Proving someone is real vs fake is a &quot;cat and mouse&quot; game according to some.&lt;div&gt;The instead focus on &lt;b&gt;&lt;u&gt;proving provenance&lt;/u&gt;&lt;/b&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="263" x="445" y="-183" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Some solutions already exist:&amp;nbsp;&lt;div&gt;Content Credentials&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="237" x="458" y="-306" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-11" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Content Credentials has its flaws and weaknesses: for example, it can get removed and adoption depends on the user and software / not enforced" vertex="1">
+          <mxGeometry height="90" width="389" x="454" y="-455" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-10" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.421;entryY=1.006;entryDx=0;entryDy=0;entryPerimeter=0;" target="Kr28CH0wk7RwmuvBFSXC-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-17" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="NAA says that &lt;b&gt;AI outputs&lt;/b&gt; should also be treated as &lt;b&gt;records&lt;/b&gt;" vertex="1">
+          <mxGeometry height="60" width="249" x="335" y="264" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Agentic AI is still an unknown area for them, they would need our help to make sense of it&amp;nbsp;" vertex="1">
+          <mxGeometry height="91" width="254" x="47" y="302" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="They don&#39;t track model version. What happens if a model is retired?&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Also, how do we know if a model was trained on the most recent data?&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;= there are a lot of unknowns for them, since this is still a relatively new/emerging area&lt;/div&gt;" vertex="1">
+          <mxGeometry height="102" width="482" x="327" y="403" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-21" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-18" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="What are the negative impacts of bias/mis/disinformation?" vertex="1">
+          <mxGeometry height="89" width="397" x="-554" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-25" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="Kr28CH0wk7RwmuvBFSXC-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Negatively impacts every day people&amp;nbsp;" vertex="1">
+          <mxGeometry height="49" width="321" x="-539" y="427" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Reduces overall trust in ALL archives/records. Question if real stuff is fake too" vertex="1">
+          <mxGeometry height="60" width="317" x="-539" y="499" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-23" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.001;entryY=0.628;entryDx=0;entryDy=0;entryPerimeter=0;" target="Kr28CH0wk7RwmuvBFSXC-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="For ex. Robodebt&lt;div&gt;For ex. AI medical scribes writing falsehoods about a patient&lt;/div&gt;&lt;div&gt;For ex. Deloitte AI citation report scandal&lt;/div&gt;&lt;div&gt;For ex. fake court cases used by lawyers&lt;/div&gt;&lt;div&gt;For ex. deepfake video scams&lt;/div&gt;&lt;div&gt;For ex. gov bias --&amp;nbsp; a dutch risk algorithm wrongly flagged families with dual nationaly as fradualent.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="113" width="407" x="-140" y="442" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-29" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;b&gt;What is blockchain for non-technical ppl?&lt;/b&gt;&lt;div&gt;&lt;b&gt;- &lt;/b&gt;many ppl hold identical copies, so if one changes it&#39;s obvious&lt;/div&gt;&lt;div&gt;- every page is sealed to the previous one, so it has a fingerprint&lt;/div&gt;&lt;div&gt;- you can&#39;t add or delete what&#39;s already there, just append&lt;/div&gt;" vertex="1">
+          <mxGeometry height="97" width="474" x="-215" y="-455" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;b&gt;Why not this idea:&lt;/b&gt;&lt;/div&gt;&lt;div&gt;1. Content credentials already implements this kinda&lt;/div&gt;&lt;div&gt;2. records sometimes require correction or permanent disposal&lt;/div&gt;&lt;div&gt;3. blockchain doesn&#39;t verify that something is &#39;true&#39;&lt;/div&gt;&lt;div&gt;4. it has been tried before -- UK National Archives ARCHANGEL project and InterPARES research group&lt;/div&gt;&lt;div&gt;5. will it still exist in 50 yrs? = long-term preservation risk&lt;/div&gt;" vertex="1">
+          <mxGeometry height="108" width="532" x="-241" y="-622" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" value="Chrome Extension&lt;div&gt;(Hasim&#39;s idea)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="71" width="247" x="972" y="-110" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-39" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-38">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="BIAS" vertex="1">
+          <mxGeometry height="60" width="120" x="-764" y="-188" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-46" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-48" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-47">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-50" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-49">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Misinformation (accidental)" vertex="1">
+          <mxGeometry height="60" width="120" x="-764" y="-81" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-34" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" value="Disinformation (bad intent)" vertex="1">
+          <mxGeometry height="60" width="120" x="-761" y="22" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-41" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="Kr28CH0wk7RwmuvBFSXC-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-38" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Models trained on skewed data / old catalogue langauge" vertex="1">
+          <mxGeometry height="60" width="120" x="-967" y="-263" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-43" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-42">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Historical archives did not usually represent the voices of minorities" vertex="1">
+          <mxGeometry height="61" width="180" x="-1263" y="-278" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-42" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Correcting &#39;bas history&#39; is also a questionable choice though..." vertex="1">
+          <mxGeometry height="60" width="227" x="-1443" y="-390" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-44" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Hallucinated facts and citations" vertex="1">
+          <mxGeometry height="60" width="189" x="-1165" y="-141" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-47" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="summaries that leave out or invert meaning" vertex="1">
+          <mxGeometry height="60" width="184" x="-1162" y="-66" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-49" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="transcription errors" vertex="1">
+          <mxGeometry height="39" width="186" x="-1162" y="6" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-51" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Deepfakes, synthetic documents, fake historical images" vertex="1">
+          <mxGeometry height="60" width="208" x="-1175" y="98.5" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-52" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.586;entryDx=0;entryDy=0;entryPerimeter=0;" target="Kr28CH0wk7RwmuvBFSXC-51">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-73" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-72">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-298" y="-365.5" />
+              <mxPoint x="-340.7" y="-365.5" />
+              <mxPoint x="-340.7" y="-602" />
+              <mxPoint x="-610" y="-602" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-53" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="WHO?" vertex="1">
+          <mxGeometry height="70" width="248" x="-422" y="-180" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-70" parent="1" style="text;whiteSpace=wrap;html=1;textShadow=0;labelBorderColor=default;" value="&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th scope=&quot;col&quot; style=&quot;&quot;&gt;Group&lt;/th&gt;&lt;th scope=&quot;col&quot; style=&quot;&quot;&gt;Who&lt;/th&gt;&lt;th scope=&quot;col&quot; style=&quot;&quot;&gt;Examples&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Creators&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;Staff who make records&lt;/td&gt;&lt;td&gt;Caseworkers, lawyers, clinicians&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Practitioners&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;Records, governance, archives, FOI and privacy staff&lt;/td&gt;&lt;td&gt;Agencies, councils, banks, hospitals&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Custodians&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;Archives and storage providers&lt;/td&gt;&lt;td&gt;NAA, PROV, GLAM, Iron Mountain&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Regulators&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;Set and audit the rules&lt;/td&gt;&lt;td&gt;NAA, OAIC, OVIC, APRA, courts&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Suppliers&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;Records systems, AI platforms, consultants&lt;/td&gt;&lt;td&gt;OpenText, Objective, RecordPoint, Purview&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;strong&gt;End users&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;Rely on records later&lt;/td&gt;&lt;td&gt;Courts, researchers, care leavers, First Nations communities&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" vertex="1">
+          <mxGeometry height="196" width="550" x="-960.996748046875" y="-525.9966870117187" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-71" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-70">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-72" parent="1" style="text;whiteSpace=wrap;html=1;labelBorderColor=default;" value="&lt;div role=&quot;feed&quot; aria-label=&quot;Chat messages&quot; aria-describedby=&quot;_r_16d_&quot; style=&quot;margin-bottom: 0px;&quot;&gt;&lt;div style=&quot;position: relative; width: 100%;&quot;&gt;&lt;div style=&quot;display: flow-root; position: relative;&quot;&gt;&lt;div role=&quot;article&quot; tabindex=&quot;0&quot; aria-setsize=&quot;7&quot; aria-posinset=&quot;7&quot; aria-label=&quot;Message 7 of 7&quot;&gt;&lt;div&gt;&lt;div style=&quot;&quot;&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;&lt;div style=&quot;--_prose-font-body: var(--font-claude-response, var(--cds-font-voice)); --_prose-font-heading-display: var(--_prose-font-heading);&quot;&gt;&lt;div&gt;&lt;p dir=&quot;ltr&quot;&gt;&lt;strong&gt;Sectors beyond governmen:&lt;/strong&gt;&lt;/p&gt;&lt;ul dir=&quot;ltr&quot;&gt;&lt;li&gt;&lt;strong&gt;Finance:&lt;/strong&gt; APRA rules, 7-year retention&lt;/li&gt;&lt;br&gt;&lt;li&gt;&lt;strong&gt;Health and aged care:&lt;/strong&gt; clinical records, AI scribes&lt;/li&gt;&lt;br&gt;&lt;li&gt;&lt;strong&gt;Legal:&lt;/strong&gt; court filings; most AI hallucination cases&lt;/li&gt;&lt;br&gt;&lt;li&gt;&lt;strong&gt;Higher education:&lt;/strong&gt; research data, academic integrity&lt;/li&gt;&lt;br&gt;&lt;li&gt;&lt;strong&gt;Resources and utilities:&lt;/strong&gt; records kept for decades, safety records&lt;/li&gt;&lt;br&gt;&lt;li&gt;&lt;strong&gt;Local government:&lt;/strong&gt; planning decisions, FOI (freedom of information), small teams&lt;/li&gt;&lt;br&gt;&lt;li&gt;&lt;strong&gt;Child-related institutions:&lt;/strong&gt; 99-year retention, recommended by the Child Sexual Abuse Royal Commission&lt;/li&gt;&lt;br&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div aria-hidden=&quot;true&quot; style=&quot;height: 0px;&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div style=&quot;position: relative;&quot;&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="274" width="550" x="-886" y="-905" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-78" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-74" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-74" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;EXISTING SOLUTIONS&lt;/b&gt;" vertex="1">
+          <mxGeometry height="60" width="217" x="208" y="-71" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-81" edge="1" parent="1" source="Kr28CH0wk7RwmuvBFSXC-79" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="Kr28CH0wk7RwmuvBFSXC-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Kr28CH0wk7RwmuvBFSXC-79" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="OUR NEW IDEAS" vertex="1">
+          <mxGeometry height="60" width="219" x="428" y="85" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

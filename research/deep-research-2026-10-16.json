@@ -1,0 +1,144 @@
+{
+ "summary": "Across Australian jurisdictions the regulators agree. NAA (Commonwealth), NSW State Archives and Records, PROV (Victoria) and Queensland State Archives all treat AI-generated content, and in Queensland also prompts and conversations, as public records. They also agree that AI tools are not recordkeeping systems, so records have to be captured with metadata into an approved records system. NAA uses a risk-tiered rule: keep prompts, inputs and source data only when the output is retained or the AI informed a decision, with more evidence needed the more weight the decision puts on the AI. PROV goes further and requires documentation that addresses bias, hallucination and IP risk, plus human oversight of accuracy checks and disposal. Three gaps stand out. NAA openly says it has no specific guidance yet for agentic AI records (system prompts, agent instructions, activity logs). Queensland admits that tools such as Microsoft 365 Copilot may not make source data identifiable. And there is no off-the-shelf way to turn the PROV, DTA and paradata requirements into a working AI use register. Ranked idea directions for an 8-hour build: (1) a 'records-aware AI gateway' for agent and LLM calls that applies NAA's risk-tiered capture rule and writes the technical and organisational paradata from InterPARES Trust AI into an exportable record package, aimed squarely at the agentic gap; (2) an AI use register and transparency-statement generator built from PROV clause 1 fields, DTA Attachment A classifications and the Bank of Canada paradata categories; (3) a source-traceability and citation-verification layer that links each AI output to the source records it drew on and to the final official document, against misinformation; (4) a human-oversight workflow for accuracy sign-off and disposal. EU AI Act Article 12 logging gives a global scalability story, though it covers only high-risk systems and is deferred.",
+ "findings": [
+  {
+   "claim": "Australian regulators treat AI-generated content as official records with the same obligations as any other record. Commonwealth (Archives Act 1983), NSW (State Records Act 1998), Victoria (all public offices, including work by contractors) and Queensland (prompts, responses and conversations as well) all take this position. NAA's guidance is linked from the DTA AI policy resource hub.",
+   "confidence": "high",
+   "sources": [
+    "https://www.naa.gov.au/node/3660",
+    "https://www.nsw.gov.au/nsw-government/recordkeeping/create-and-capture/ai-and-recordkeeping",
+    "https://prov.vic.gov.au/sites/default/files/files/documents/ai_tech_and_recordkeeping_policy_v1_2024.pdf",
+    "https://www.forgov.qld.gov.au/information-technology/recordkeeping-and-information-management/recordkeeping/resources-and-tools-for-records-management/artificial-intelligence-and-public-records",
+    "https://digital.gov.au/policy/ai/resources"
+   ],
+   "evidence": "NAA: 'AI generated content created or received by Australian Government agencies constitutes Commonwealth records... and must be managed as such.' NSW: 'AI-generated content is a State record... Public offices must ensure their recordkeeping policies cover AI-generated records.' PROV: AI content is public records 'and must be captured, managed, and disposed of in accordance with the recordkeeping standards issued by the Keeper.' QLD: prompts, responses and conversations are public records. The DTA AI resources page lists the NAA guidance under External resources, which is recommended rather than mandatory.",
+   "vote": "3-0 on all merged claims (0, 4, 6, 13, 18)"
+  },
+  {
+   "claim": "NAA's capture rule is risk-tiered and could be coded directly into a prototype. Not every prompt or chat log has to be kept. Prompts, inputs, source data and metadata are kept only when they give context to a retained output or show how a decision was reached, and more evidence is needed as reliance on AI grows. Prompt and response logs are generally low value, but they need a set retention period rather than indefinite default retention.",
+   "confidence": "high",
+   "sources": [
+    "https://www.naa.gov.au/node/3660",
+    "https://www.forgov.qld.gov.au/information-technology/recordkeeping-and-information-management/recordkeeping/resources-and-tools-for-records-management/artificial-intelligence-and-public-records"
+   ],
+   "evidence": "NAA: 'The greater the significance of the record or the reliance placed on AI decision-making, the stronger the need for supporting evidence'; 'some common AI assistants retain logs permanently unless configured otherwise'. When AI content is accepted as a final record without human review, its metadata must say it is AI generated. QLD agrees that most generative AI content is transitory or short-term: QChat keeps records 3 months and disposes after 6, while Copilot and ChatGPT may have no automatic retention or disposal settings.",
+   "vote": "3-0 (claims 1, 2, 13, 14)"
+  },
+  {
+   "claim": "AI tools are not recordkeeping systems. Records that must be kept have to be exported with enough metadata into an approved records management system. This creates a structural capture gap between where AI work happens and where records are managed, which is a natural target for an integration or middleware prototype.",
+   "confidence": "high",
+   "sources": [
+    "https://www.naa.gov.au/node/3660",
+    "https://www.forgov.qld.gov.au/information-technology/recordkeeping-and-information-management/recordkeeping/resources-and-tools-for-records-management/artificial-intelligence-and-public-records"
+   ],
+   "evidence": "NAA: records 'should be captured with sufficient metadata in a system where they can be appropriately managed, protected, found and disposed of \u2013 not left solely in an AI tool'. NAA allows management in place only where the platform has adequate records management functionality. QLD: 'Generative AI systems are not recordkeeping systems'.",
+   "vote": "3-0 (claims 2, 12)"
+  },
+  {
+   "claim": "The minimum metadata for an AI-generated record is defined in guidance: a flag that AI generated it, the software or model used, the prompts, inputs or algorithms used, and identifiable source data. The AI content must also stay linked to the final official document. QLD admits that tools like M365 Copilot may not expose source data, a mandated control that common tools cannot easily meet. This directly supports a source-traceability or citation-verification idea against misinformation.",
+   "confidence": "high",
+   "sources": [
+    "https://www.nsw.gov.au/nsw-government/recordkeeping/create-and-capture/ai-and-recordkeeping",
+    "https://www.forgov.qld.gov.au/information-technology/recordkeeping-and-information-management/recordkeeping/resources-and-tools-for-records-management/artificial-intelligence-and-public-records",
+    "https://www.naa.gov.au/node/3660"
+   ],
+   "evidence": "NSW lists 'confirmation that the record was generated by AI, the software used... the prompts, inputs or algorithms used to create the record', and says metadata must be 'perpetually linked' to the record. QLD (a must item): 'ensure when using a generative AI system response to create content, that the source of data can be identified', and 'relate the AI generated content to the final official document'. QLD also notes that source identification 'may not be readily available... in some systems such as Microsoft 365 Copilot'.",
+   "vote": "3-0 (claims 5, 15)"
+  },
+  {
+   "claim": "Victoria's PROV policy works as a ready-made specification for an AI use register that explicitly covers bias and misinformation. For each AI technology it requires: purpose, how and why it is used, the records it produces, data it can and cannot access, and risks. Where possible it also requires documentation that 'addresses' bias in algorithms and datasets, IP, and hallucinations. 'Address' means the research done, the action decided and its justification, the risk accepted, the mitigations, and where full documentation cannot be obtained.",
+   "confidence": "high",
+   "sources": [
+    "https://prov.vic.gov.au/sites/default/files/files/documents/ai_tech_and_recordkeeping_policy_v1_2024.pdf"
+   ],
+   "evidence": "PROV policy v1.0 (29 Feb 2024 to 28 Feb 2029), clauses 1(a)(i)-(iv) and 1(c) with footnote 8. It applies 'to the fullest extent practical', scaled to risk. The policy never uses the words 'AI use register'; the register mapping is an inference. One primary source, but it is authoritative and current.",
+   "vote": "3-0 (claims 7, 8)"
+  },
+  {
+   "claim": "Commonwealth agencies must publish AI transparency statements in a fixed DTA format. At minimum a statement covers: why the agency uses AI, classification by usage pattern and domain (Attachment A), uses where the public interacts with or is significantly affected by AI without human review, monitoring and protection measures, compliance, and the date of last update. Statements are reviewed at least annually. A register built with recordkeeping discipline could generate these statements automatically.",
+   "confidence": "high",
+   "sources": [
+    "https://www.digital.gov.au/ai/ai-in-government-policy/standard-ai-transparency-statements"
+   ],
+   "evidence": "Policy for the responsible use of AI in government v2.0; the requirement has applied since 28 Feb 2025. It covers non-corporate Commonwealth entities, with defence and intelligence carve-outs. Agencies do not have to list individual use cases. Note that the claim that this leaves a 'register gap' was refuted 0-3, so pitch any generator as a productivity aid, not as filling a mandated gap.",
+   "vote": "3-0 (claims 10, 11)"
+  },
+  {
+   "claim": "PROV requires that accuracy checks on AI-generated records be overseen by a skilled human with authority and a documented line of responsibility. Disposal of AI records also needs human oversight and must follow the retention and disposal authority. This is a basis for a human-in-the-loop sign-off workflow that records who verified what.",
+   "confidence": "medium",
+   "sources": [
+    "https://prov.vic.gov.au/sites/default/files/files/documents/ai_tech_and_recordkeeping_policy_v1_2024.pdf"
+   ],
+   "evidence": "The quote is verbatim from the PROV policy. Automated disposal is allowed under the PROV Approval Processes Policy, but human oversight is still required. Rated medium only because it rests on a single jurisdiction's source.",
+   "vote": "3-0 (claim 9)"
+  },
+  {
+   "claim": "Agentic AI recordkeeping is an openly acknowledged gap, and the strongest whitespace for a new idea. NAA says its advice 'does not currently provide specific guidance on managing agentic AI records'. It names system prompts, agent instructions, activity logs and audit trails as records to identify and capture, says there is a greater need for evidence of autonomous actions, and promises further advice.",
+   "confidence": "high",
+   "sources": [
+    "https://www.naa.gov.au/node/3660"
+   ],
+   "evidence": "NAA page section 'Managing records relating to agentic AI technologies \u2013 New', last updated September 2026. A search found only the DTA agentic AI addendum, which covers AI policy, not recordkeeping.",
+   "vote": "3-0 (claim 3)"
+  },
+  {
+   "claim": "InterPARES Trust AI gives a theoretical and schema basis for capture. It argues for paradata (data about the methods, processes and people behind records), captured throughout the whole period of AI use, not just at the start or end. It separates accountable AI from explainable AI: responsibility comes from documenting who chose the tool and the data, not from understanding the algorithm. A Bank of Canada case study split paradata into technical (training data and parameters, usage logs, vendor documentation, version) and organisational (AI policy, regulations and ethics, project planning, staff training, impact assessment, implementation procedure).",
+   "confidence": "medium",
+   "sources": [
+    "https://u-pad.unimc.it/handle/11393/354590",
+    "https://jlis.it/index.php/jlis/article/view/636"
+   ],
+   "evidence": "Feliciati and Duranti, JLIS.it 16(2), 2025, DOI 10.36253/jlis.it-636, peer reviewed. It is a single scholarly source and a normative position rather than an empirical result. The two paradata categories are lists, not a formal metadata schema.",
+   "vote": "3-0 (claims 20, 21, 22)"
+  },
+  {
+   "claim": "Globally, EU AI Act Article 12 requires high-risk AI systems to technically allow automatic event logging over their lifetime, for traceability that is appropriate to the system's intended purpose. The logs must support identifying risks or substantial modifications, post-market monitoring and deployer monitoring. This gives a recordkeeping-by-design capability in the AI system a legal basis outside Australia, and supports a scalability argument.",
+   "confidence": "medium",
+   "sources": [
+    "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-12"
+   ],
+   "evidence": "The Article 12(1) and 12(2) text is verbatim. Scope is high-risk systems only; most office copilots are out of scope. The duty falls on providers, with retention covered elsewhere (Art 19, and Art 26(6) for at least six months). A verifier reported that the Digital Omnibus (Reg. 2026/1744) deferred high-risk obligations to Dec 2027 and Aug 2028, citing a law-firm source not checked directly. Rated medium because of timing and scope.",
+   "vote": "3-0 (claims 16, 17)"
+  },
+  {
+   "claim": "The DTA Technical standard for government's use of AI (adopted 31 July 2025) has whole-of-lifecycle statements on enabling AI auditing, managing system bias, applying version control and applying watermarking. These line up with records controls (audit trail, version and model tracking, authenticity), but the standard does not cite ISO 15489 or the Archives Act.",
+   "confidence": "medium",
+   "sources": [
+    "https://digital.gov.au/policy/ai/resources"
+   ],
+   "evidence": "Statements 4 to 8 were confirmed through search results; the primary pages timed out. The mapping to records and IM controls is an analytical inference. A verifier noted an ISO TC46/SC11 work item saying records standards do not yet give guidance on AI records controls (not checked directly).",
+   "vote": "3-0, with a medium-confidence verifier (claim 19)"
+  },
+  {
+   "claim": "Ranked idea direction 1 (synthesis): a 'records-aware AI gateway' or protocol. It wraps LLM or agent calls, classifies each interaction against NAA's risk tiers (transitory, retained output, decision-informing, agentic action), stamps the required metadata (AI flag, model and version, prompt and inputs, source identifiers, human reviewer), and emits a record package for export to the RMS, with set retention on the rest. It differentiates by targeting NAA's admitted agentic gap and the 'AI tools are not recordkeeping systems' problem, and it can be specified as a protocol and demoed in 8 hours by a data engineer.",
+   "confidence": "medium",
+   "sources": [
+    "https://www.naa.gov.au/node/3660",
+    "https://www.nsw.gov.au/nsw-government/recordkeeping/create-and-capture/ai-and-recordkeeping",
+    "https://u-pad.unimc.it/handle/11393/354590",
+    "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-12"
+   ],
+   "evidence": "Synthesised from findings 2, 3, 4, 8, 9 and 10. Risks: commercial prior art in LLM observability and in M365/Purview retention for Copilot was NOT verified in this research and must be checked before claiming novelty. Over-capture would conflict with NAA's 'don't keep everything' line. Integration with real RMS products is out of scope for 8 hours.",
+   "vote": "synthesis"
+  },
+  {
+   "claim": "Ranked idea direction 2 (synthesis): an AI use register with bias and misinformation fields that also generates the DTA transparency statement. Fields come from PROV clause 1 (purpose, data access and exclusions, risks, and how bias, hallucination and IP are addressed under footnote 8), DTA Attachment A classification, and the Bank of Canada technical and organisational paradata. Directions 3 and 4 complete the set: (3) source-traceability and citation checking that links AI outputs to source records and the final document, the QLD requirement Copilot cannot meet; (4) a human accuracy sign-off and disposal workflow per PROV. These can be bolted onto direction 1 to show information managers acting as AI governors.",
+   "confidence": "medium",
+   "sources": [
+    "https://prov.vic.gov.au/sites/default/files/files/documents/ai_tech_and_recordkeeping_policy_v1_2024.pdf",
+    "https://www.digital.gov.au/ai/ai-in-government-policy/standard-ai-transparency-statements",
+    "https://www.forgov.qld.gov.au/information-technology/recordkeeping-and-information-management/recordkeeping/resources-and-tools-for-records-management/artificial-intelligence-and-public-records",
+    "https://u-pad.unimc.it/handle/11393/354590"
+   ],
+   "evidence": "Synthesised from findings 4 to 7 and 9. Risks: registers can look like compliance paperwork to judges, so the creativity score depends on automation and live linkage to the capture layer. Citation verification of LLM output is a hard, unsolved problem; demo it on a bounded corpus.",
+   "vote": "synthesis"
+  }
+ ],
+ "caveats": "The verified claims are heavily weighted to Australian government guidance and one InterPARES paper. Several areas named in the brief produced no surviving verified claims: C2PA and content credentials, specific ISO 15489 and ISO 23081 metadata elements, ISO/IEC 42001, NIST AI RMF, reparative description and bias auditing of archival training data, Archives NZ, UK TNA, NARA and ARA positions, empirical evidence on records-capture adoption barriers, and existing commercial products (for example Purview retention for Copilot, LLM observability tools, RM vendor AI features). Any claim of novelty against prior art is therefore unverified. Two claims were refuted 0-3: that NSW guidance shows AI tools 'do not capture records automatically' as a stated gap, and that DTA statements leave a use-case register gap. Avoid both framings. On time sensitivity: the NAA page is marked updated September 2026 and promises more agentic guidance, so the gap could narrow. NSW guidance dates from Feb 2024 and QLD from Dec 2024, and QChat retention settings may have changed. EU AI Act high-risk dates rest on a verifier's secondary report of the 2026 Digital Omnibus. The DTA technical standard text was confirmed only through search excerpts. The ranked idea directions are synthesis and inference, not verified facts.",
+ "openQuestions": [
+  "Which existing products already capture AI interactions as records? Candidates are Microsoft Purview and Copilot retention, RM vendors such as RecordPoint and Objective, and LLM observability platforms. Where exactly would a records-aware gateway differ from them?",
+  "How do ISO 23081 recordkeeping metadata elements and ISO 15489 controls map onto the InterPARES technical and organisational paradata categories and NSW's required AI metadata? Is there an emerging ISO TC46/SC11 work item that a prototype schema should align with?",
+  "What empirical evidence exists on whether automatic, in-the-flow-of-work capture of AI records works better than manual declaration, and what adoption barriers have agencies reported?",
+  "What will NAA's forthcoming agentic AI records guidance require? Do C2PA and content credentials have any accepted role in demonstrating the authenticity and integrity of AI-generated records in archives?"
+ ]
+}
