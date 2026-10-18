@@ -13,4 +13,4 @@ answered.
 | 6 | Map ISO 23081 entities onto the NSW AI metadata rule and the InterPARES paradata categories | Conni Christensen and Michelle Tolliday will test metadata rigour | Expert | ⏳ |
 | 7 | When is NAA's agentic AI guidance due? | If it lands before Tuesday, cite it. If not, "you said it's coming, here's a working answer" | Expert | ⏳ |
 | 8 | Re-open the NAA Check-up 2025 figures (87% use AI, 15% use it in IM, 8% for metadata) | A strong statistic for the Fit argument, but still ⚠️ | Storyteller | ⏳ |
-| 9 | Which LLM API do we use for the demo, and what does its response give us (model id, citations or sources)? | Model version capture depends on it | Hasim | ⏳ |
+| 9 | Which LLM API do we use for the demo, and what does its response give us (model id, citations or sources)? | Model version capture depends on it | Hasim | ✅ Claude API, Haiku (`claude-haiku-5-5`). `response.model` returns the exact model id; the passport stores it as "model returned". Tested 17 Oct in the prototype |

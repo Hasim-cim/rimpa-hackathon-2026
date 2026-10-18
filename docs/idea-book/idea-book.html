@@ -1,0 +1,721 @@
+<title>RIMPA Idea Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a registry file. Sticky folder tabs on top, one chapter per idea, each with a working mockup of its screen. */
+:root{
+  --paper:#eef1f4; --sheet:#ffffff; --ink:#15202b; --muted:#5b6774; --rule:#d3dae2;
+  --accent:#28497a; --accent-soft:#e3eaf5;
+  --manila:#e6d6b0; --manila-ink:#4a3b17;
+  --ok:#16794a; --ok-soft:#dff3e8;
+  --warn:#9a5208; --warn-soft:#fbeedd;
+  --bad:#b42318; --bad-soft:#fde4e1;
+  --void:#3d4450; --void-soft:#e4e7eb;
+  --display:"Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f141a; --sheet:#171e27; --ink:#e5eaf0; --muted:#9aa6b3; --rule:#2b3541;
+  --accent:#93b2e4; --accent-soft:#1f2b3d;
+  --manila:#3b3322; --manila-ink:#eadbb6;
+  --ok:#5fd29a; --ok-soft:#14301f; --warn:#f0b062; --warn-soft:#352612;
+  --bad:#ff8a7e; --bad-soft:#3a1815; --void:#c3cad3; --void-soft:#262d36; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f141a; --sheet:#171e27; --ink:#e5eaf0; --muted:#9aa6b3; --rule:#2b3541;
+  --accent:#93b2e4; --accent-soft:#1f2b3d;
+  --manila:#3b3322; --manila-ink:#eadbb6;
+  --ok:#5fd29a; --ok-soft:#14301f; --warn:#f0b062; --warn-soft:#352612;
+  --bad:#ff8a7e; --bad-soft:#3a1815; --void:#c3cad3; --void-soft:#262d36; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.1;margin:0}
+p{margin:0}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule)}
+.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:10px 0;scrollbar-width:none}
+.tabs a{flex:none;text-decoration:none;font-family:var(--display);font-weight:600;font-size:14px;font-stretch:85%;color:var(--manila-ink);background:var(--manila);padding:7px 14px 6px;border-radius:8px 8px 0 0;white-space:nowrap}
+.tabs a span{font-family:var(--mono);font-weight:400;font-size:11px;opacity:.75;margin-right:6px}
+.tabs a:hover{filter:brightness(.96)}
+
+/* Cover */
+.cover{padding-block:48px 28px;display:grid;gap:18px}
+.cover h1{font-size:clamp(34px,6vw,60px);font-weight:800;font-stretch:80%;letter-spacing:-.01em;max-width:16ch}
+.cover .lede{font-size:18px;max-width:62ch;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px;color:var(--muted)}
+.legend b{color:var(--ink);font-weight:600}
+
+/* Glance table */
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:10px}
+.glance{padding:22px;display:grid;gap:14px;margin-bottom:12px}
+.glance h2{font-size:24px;font-stretch:85%}
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.idea{font-weight:600;min-width:150px}
+.meter{display:inline-flex;gap:3px;vertical-align:middle}
+.meter i{width:9px;height:9px;border-radius:2px;background:var(--rule)}
+.meter i.on{background:var(--accent)}
+.nowrap{white-space:nowrap}
+
+/* Chapter */
+.chapter{padding-block:44px 8px;display:grid;gap:22px;scroll-margin-top:60px}
+.chead{display:grid;gap:8px}
+.chead h2{font-size:clamp(28px,4.4vw,42px);font-weight:800;font-stretch:82%}
+.chead .lede{font-size:17px;max-width:64ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.facts div{background:var(--sheet);padding:12px 14px;display:grid;gap:3px;min-width:0}
+.facts dt{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;font-size:14.5px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.two > *{min-width:0}
+.two h3{font-size:19px;font-stretch:88%;margin-bottom:10px}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:8px}
+ul.plain{margin:0;padding-left:20px;display:grid;gap:6px}
+.plan td:first-child{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:var(--muted)}
+.verdict{border-left:4px solid var(--accent);background:var(--accent-soft);padding:14px 16px;border-radius:0 8px 8px 0;max-width:80ch}
+.verdict b{font-family:var(--display);font-stretch:88%;font-size:16px}
+
+/* Mockup frame */
+.mock{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--sheet);box-shadow:0 1px 0 var(--rule),0 12px 30px -18px rgba(20,32,48,.35)}
+.mbar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--paper);border-bottom:1px solid var(--rule);font-size:12.5px;flex-wrap:wrap}
+.mbar .dots{display:flex;gap:5px}.mbar .dots i{width:9px;height:9px;border-radius:50%;background:var(--rule)}
+.mbar .t{font-weight:600}
+.mbar .tag{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);border:1px dashed var(--rule);padding:2px 7px;border-radius:4px}
+.mbody{padding:18px;display:grid;gap:14px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.c-ok{color:var(--ok);background:var(--ok-soft)}.c-warn{color:var(--warn);background:var(--warn-soft)}
+.c-bad{color:var(--bad);background:var(--bad-soft)}.c-void{color:var(--void);background:var(--void-soft)}
+.c-info{color:var(--accent);background:var(--accent-soft)}
+.btn{font:inherit;font-size:13.5px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:var(--sheet);padding:7px 14px;border-radius:7px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.small{font-size:13px;color:var(--muted)}
+
+/* Ch1 refs */
+.refs{display:grid;gap:0;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.ref{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:11px 12px;border-bottom:1px solid var(--rule);align-items:start;font-size:14px}
+.ref:last-child{border-bottom:0}
+.ref .n{font-family:var(--mono);color:var(--muted);font-size:12.5px}
+.ref .why{grid-column:2/4;font-size:12.5px;color:var(--muted)}
+@media (max-width:520px){.ref{grid-template-columns:22px 1fr}.ref .chip{grid-column:2}.ref .why{grid-column:2}}
+
+/* Ch2 evidence */
+.ev{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.ev{grid-template-columns:1fr}}
+.doc{font-size:15px;line-height:1.85;border:1px solid var(--rule);border-radius:8px;padding:14px 16px}
+.doc h4{margin:0 0 6px;font-family:var(--display);font-stretch:88%;font-size:16px}
+.s{cursor:pointer;border-radius:3px;padding:1px 2px;border-bottom:2px solid transparent;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:inherit;text-align:left;display:inline}
+.s.g{background:var(--ok-soft);border-bottom-color:var(--ok)}
+.s.a{background:var(--warn-soft);border-bottom-color:var(--warn)}
+.s.r{background:var(--bad-soft);border-bottom-color:var(--bad)}
+.s.k{background:var(--void-soft);border-bottom-color:var(--void)}
+.s[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.who{font-family:var(--mono);font-size:10.5px;vertical-align:super;color:var(--muted);margin-left:2px}
+.trace{border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:grid;gap:10px;align-content:start}
+.trace .q{font-size:14px;font-style:italic}
+.chain{display:grid;gap:6px;font-size:13.5px}
+.chain div{display:grid;grid-template-columns:92px 1fr;gap:8px}
+.chain dt{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.chain dd{margin:0}
+.key{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Ch3 passport */
+.passport{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.pgroup{border:1px solid var(--rule);border-radius:8px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.pgroup h5{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;font-size:13px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;overflow-wrap:anywhere}
+.phead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.phead .id{font-family:var(--mono);font-size:15px;font-weight:500}
+.stamp{font-family:var(--display);font-stretch:75%;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--bad);border:2.5px solid var(--bad);padding:4px 10px;border-radius:5px;transform:rotate(-4deg);display:inline-block;font-size:15px}
+.stamp.okst{color:var(--ok);border-color:var(--ok)}
+.hash{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere;color:var(--muted)}
+
+/* Ch4 recall */
+.alertline{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 14px;border:1px solid var(--rule);border-radius:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.tile{border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+.tile b{display:block;font-family:var(--display);font-size:30px;font-weight:800;font-stretch:80%;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile span{font-size:12.5px;color:var(--muted)}
+.tile.hot b{color:var(--bad)}
+.rtable td,.rtable th{padding:8px 10px;font-size:13.5px}
+.rtable td{font-variant-numeric:tabular-nums}
+
+/* Ch5 issue */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;border:0;background:var(--sheet);color:var(--ink);padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--sheet)}
+.issue{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:700px){.issue{grid-template-columns:1fr}}
+.cert{border:1px solid var(--rule);border-radius:6px;padding:18px;display:grid;gap:8px;background:repeating-linear-gradient(135deg,transparent 0 10px,var(--paper) 10px 11px);position:relative;min-height:190px}
+.cert h4{margin:0;font-family:var(--display);font-stretch:85%;font-size:18px}
+.seal{width:54px;height:54px;border-radius:50%;border:2px dashed var(--muted);display:grid;place-items:center;font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;position:absolute;right:16px;bottom:14px}
+.result{border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:grid;gap:10px;align-content:start}
+
+/* Final */
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.pipe div{border:1px solid var(--rule);border-radius:8px;padding:12px;background:var(--sheet);display:grid;gap:4px}
+.pipe .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.pipe b{font-family:var(--display);font-stretch:88%;font-size:16px}
+.pipe span{font-size:13px;color:var(--muted)}
+.timeline{display:grid;gap:6px}
+.tl{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;font-size:13.5px}
+.tl .t{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.bar{height:26px;border-radius:5px;background:var(--accent-soft);border:1px solid var(--rule);display:flex;align-items:center;padding:0 10px;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar.freeze{background:var(--bad-soft);color:var(--bad);font-weight:600}
+.cut{display:grid;gap:8px}
+.cut div{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:14px;align-items:baseline}
+footer{padding-block:40px 60px;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<nav class="tabs" aria-label="Chapters">
+  <div class="wrap">
+    <a href="#glance"><span>00</span>At a glance</a>
+    <a href="#c1"><span>01</span>Citation check</a>
+    <a href="#c2"><span>02</span>Evidence weight</a>
+    <a href="#c3"><span>03</span>Record passport</a>
+    <a href="#c4"><span>04</span>Model recall</a>
+    <a href="#c5"><span>05</span>Record-of-issue check</a>
+    <a href="#c6"><span>06</span>Policy studio</a>
+    <a href="#build"><span>07</span>What we build</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <header class="cover">
+    <div class="eyebrow">RIMPA Global Hackathon 2026 · For the team call, Sun 18 Oct</div>
+    <h1>Six ideas we could show working by 2:30 pm Monday</h1>
+    <p class="lede">Each chapter shows what the screen would look like, which records act it performs, how long it takes to build, and where it could go wrong. The last chapter shows how four of them join into one product.</p>
+    <div class="legend">
+      <span><b>💭</b> our design or estimate</span>
+      <span><b>⚠️</b> not yet checked against a source</span>
+      <span><b>Mockups</b> use an invented hardship case and invented records</span>
+    </div>
+  </header>
+
+  <section id="glance" class="sheet glance" style="scroll-margin-top:60px">
+    <h2>At a glance</h2>
+    <p class="small">Ratings out of 5 are my estimates 💭. The team scores them properly on Sunday.</p>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>Idea</th><th>Records act</th><th>8h build</th><th>Demo</th><th>IM core</th><th>Demo moment</th><th>Main risk</th></tr></thead>
+        <tbody>
+          <tr><td class="idea">1 · Citation check</td><td>Verify, then record the check</td><td class="nowrap"><span class="meter" data-v="5"></span></td><td class="nowrap"><span class="meter" data-v="5"></span></td><td class="nowrap"><span class="meter" data-v="3"></span></td><td>A fake reference turns red</td><td>Citation checkers already exist</td></tr>
+          <tr><td class="idea">2 · Evidence weight</td><td>Judge authenticity and reliability against authoritative records</td><td class="nowrap"><span class="meter" data-v="3"></span></td><td class="nowrap"><span class="meter" data-v="5"></span></td><td class="nowrap"><span class="meter" data-v="5"></span></td><td>A human sentence goes red, an AI one goes green</td><td>Splitting text into claims needs an LLM</td></tr>
+          <tr><td class="idea">3 · Record passport</td><td>Capture, describe, appraise</td><td class="nowrap"><span class="meter" data-v="4"></span></td><td class="nowrap"><span class="meter" data-v="4"></span></td><td class="nowrap"><span class="meter" data-v="5"></span></td><td>The passport opens with model, sources, reviewer, hash</td><td>Novelty against Purview not verified ⚠️</td></tr>
+          <tr><td class="idea">4 · Model recall</td><td>Re-appraise records made by a faulty model</td><td class="nowrap"><span class="meter" data-v="5"></span></td><td class="nowrap"><span class="meter" data-v="4"></span></td><td class="nowrap"><span class="meter" data-v="5"></span></td><td>"14 records, 3 decision-informing"</td><td>Runs on seeded data, and we must say so</td></tr>
+          <tr><td class="idea">5 · Record-of-issue check</td><td>Test authenticity against the record of issue</td><td class="nowrap"><span class="meter" data-v="5"></span></td><td class="nowrap"><span class="meter" data-v="4"></span></td><td class="nowrap"><span class="meter" data-v="4"></span></td><td>"Rejected: never issued"</td><td>Weak AI link; may already exist ⚠️</td></tr>
+          <tr><td class="idea">6 · Policy studio</td><td>The IM defines what good looks like: sector, document types, quality bar, evidence sources</td><td class="nowrap"><span class="meter" data-v="4"></span></td><td class="nowrap"><span class="meter" data-v="4"></span></td><td class="nowrap"><span class="meter" data-v="5"></span></td><td>Change the bar, and the same document flips from Blocked to Ready</td><td>Presets are our starting points, not regulators' rules</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Chapter 1 -->
+  <section id="c1" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 1 · Check</div>
+      <h2>Citation check before filing</h2>
+      <p class="lede">Before an AI-assisted document is filed, every reference is looked up. The result is attached to the record, so anyone later can see what was checked and what wasn't.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Records act</dt><dd>Verification, kept as part of the record</dd></div>
+      <div><dt>Who uses it</dt><dd>Author before filing; information manager sets the rule that T2 documents must pass it</dd></div>
+      <div><dt>Story it answers</dt><dd>Deloitte's report with fabricated references</dd></div>
+      <div><dt>Built with</dt><dd>Crossref and OpenAlex lookups, one screen</dd></div>
+    </dl>
+
+    <div class="mock" role="figure" aria-label="Mockup of the citation check screen">
+      <div class="mbar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Record Check · Citations</span><span class="tag">mockup · example data</span></div>
+      <div class="mbody">
+        <div class="row" style="justify-content:space-between">
+          <div><b>Hardship assessment summary</b> <span class="small">· draft 3 · AI-assisted</span></div>
+          <div class="row"><span class="chip c-ok">1 found</span><span class="chip c-warn">1 mismatch</span><span class="chip c-bad">1 not found</span><span class="chip c-void">1 not checked</span></div>
+        </div>
+        <div class="refs">
+          <div class="ref"><span class="n">[1]</span><span>Social Security Act 1991 (Cth)</span><span class="chip c-void">not checked</span><span class="why">Legislation is outside Crossref and OpenAlex. Flagged for a person to confirm.</span></div>
+          <div class="ref"><span class="n">[2]</span><span>Nguyen, T. &amp; Patel, R. (2021). Discretion and debt recovery in welfare administration. <i>Public Administration Quarterly</i>, 45(2).</span><span class="chip c-ok">found</span><span class="why">Crossref match on title, authors and year. DOI attached.</span></div>
+          <div class="ref"><span class="n">[3]</span><span>Lee, M. (2018). Financial hardship assessment in practice. <i>Journal of Social Policy</i>, 47(1).</span><span class="chip c-warn">mismatch</span><span class="why">Title found, but published 2016 in a different journal. Check which one was meant.</span></div>
+          <div class="ref"><span class="n">[4]</span><span>Henderson, J. (2019). Hardship waivers and decision timeframes. <i>Australian Journal of Administrative Law</i>, 26(3).</span><span class="chip c-bad">not found</span><span class="why">No match in Crossref or OpenAlex. Possibly fabricated. A person must confirm or remove it.</span></div>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <span class="small">The tool never says "true" or "false". It reports what it found.</span>
+          <span class="row"><button class="btn ghost" type="button">Export check record</button><button class="btn" type="button">Fix and re-check</button></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>How it works</h3>
+        <ol class="steps">
+          <li>Pull the reference list out of the draft.</li>
+          <li>Look each one up in Crossref, then OpenAlex.</li>
+          <li>Mark each as found, mismatch, not found, or not checked (things like legislation).</li>
+          <li>Save the results as a check record linked to the document.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Build estimate 💭</h3>
+        <table class="plan"><tbody>
+          <tr><td>1 h</td><td>Reference extraction (regex first, LLM if needed)</td></tr>
+          <tr><td>1 h</td><td>Crossref and OpenAlex lookups with fuzzy title match</td></tr>
+          <tr><td>1 h</td><td>Results screen and check-record export</td></tr>
+          <tr><td><b>3 h</b></td><td><b>Total.</b> No API key needed for Crossref.</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Risks</h3>
+        <ul class="plain">
+          <li>Citation checkers already exist, so on its own it is not novel. The records angle is filing the check with the document.</li>
+          <li>Legislation and grey literature are not in Crossref. We show them as "not checked" rather than pretend.</li>
+          <li>IM core is only medium. It checks before the record exists rather than managing the record.</li>
+        </ul>
+      </div>
+      <div class="verdict"><b>Verdict.</b> The safest build and the sharpest demo. Strongest as step one of a bigger product, and as our fallback if everything else slips.</div>
+    </div>
+  </section>
+
+  <!-- Chapter 2 -->
+  <section id="c2" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 2 · Weigh</div>
+      <h2>Evidence weight</h2>
+      <p class="lede">Every statement in a document is traced back to the records it rests on. Whether AI or a person wrote it doesn't change the test. What matters is whether an authoritative record supports it.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Records act</dt><dd>Judging authenticity and reliability (ISO 15489) against authoritative records</dd></div>
+      <div><dt>Who uses it</dt><dd>Information manager decides which systems count as authoritative</dd></div>
+      <div><dt>Built on</dt><dd>A small ontology of claim, source, agent, activity, mandate 💭</dd></div>
+      <div><dt>Judge it speaks to</dt><dd>Conni Christensen's metadata modelling from business activity</dd></div>
+    </dl>
+
+    <div class="mock" role="figure" aria-label="Interactive mockup of the evidence weight screen">
+      <div class="mbar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Record Check · Evidence</span><span class="tag">mockup · click a sentence</span></div>
+      <div class="mbody">
+        <div class="key"><span class="chip c-ok">supported</span><span class="chip c-warn">weak</span><span class="chip c-bad">unsupported</span><span class="chip c-void">contradicted</span></div>
+        <div class="ev">
+          <div class="doc">
+            <h4>Hardship assessment summary · case 2026/0412</h4>
+            <button class="s g" data-i="0" type="button">The applicant reports weekly earnings of $820, based on payslips from June to August.<span class="who">AI</span></button>
+            <button class="s a" data-i="1" type="button">A delegate may waive the debt where recovery would cause severe financial hardship.<span class="who">AI</span></button>
+            <button class="s r" data-i="2" type="button" aria-pressed="true">The applicant has no other source of income.<span class="who">HUMAN</span></button>
+            <button class="s k" data-i="3" type="button">The applicant lives alone.<span class="who">HUMAN</span></button>
+            <button class="s r" data-i="4" type="button">Most hardship waivers are decided within 28 days (Henderson, 2019).<span class="who">AI</span></button>
+          </div>
+          <div class="trace" id="trace" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>How it works</h3>
+        <ol class="steps">
+          <li>An LLM splits the text into separate claims. That is its only job.</li>
+          <li>Fixed rules link each claim to records: same case number, same field, same date range.</li>
+          <li>Each source is weighed: is it in the official system, current, created by someone with authority, reviewed?</li>
+          <li>Claims get a colour. A person confirms any link before it is relied on.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Build estimate 💭</h3>
+        <table class="plan"><tbody>
+          <tr><td>1 h</td><td>Seed about 20 authoritative records for one case</td></tr>
+          <tr><td>1 h</td><td>Claim splitting with one LLM call</td></tr>
+          <tr><td>1.5 h</td><td>Linking rules and source weighting in SQLite</td></tr>
+          <tr><td>1 h</td><td>Highlighted document and trace panel</td></tr>
+          <tr><td><b>4.5 h</b></td><td><b>Total.</b> The riskiest of the five.</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Risks</h3>
+        <ul class="plain">
+          <li>Claim splitting can go wrong. Keep the LLM out of the judgement and show its output for a person to check.</li>
+          <li>Never say "true". Say "supported by authoritative records". A record of a wrong decision is still a valid record.</li>
+          <li>The standards we'd build on (W3C PROV-O, ISO 23081, ICA's Records in Contexts) are not yet checked ⚠️.</li>
+          <li>Say "ontology" only when Christensen or Tolliday ask. Pitch the outcome.</li>
+        </ul>
+      </div>
+      <div class="verdict"><b>Verdict.</b> The most original idea and the best answer to "AI use isn't the test, evidence is". Keep it small: one case, about five entity types, rules not reasoning engines.</div>
+    </div>
+  </section>
+
+  <!-- Chapter 3 -->
+  <section id="c3" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 3 · Capture</div>
+      <h2>Record passport</h2>
+      <p class="lede">When AI output becomes part of the business, it is captured as a record package with the metadata regulators already ask for. NAA's risk rule decides how much is kept, so not every prompt is.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Records act</dt><dd>Capture, metadata, appraisal by tier</dd></div>
+      <div><dt>Who uses it</dt><dd>Information manager sets a default tier for each AI app</dd></div>
+      <div><dt>Rules it implements</dt><dd>NAA risk tiers and agentic list, NSW AI metadata, QLD source rule, PROV oversight</dd></div>
+      <div><dt>Built with</dt><dd>JSON package, tier rules, SHA-256 hash chain</dd></div>
+    </dl>
+
+    <div class="mock" role="figure" aria-label="Mockup of a record passport">
+      <div class="mbar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Record Check · Passport</span><span class="tag">mockup · example data</span></div>
+      <div class="mbody">
+        <div class="phead">
+          <div><div class="eyebrow">Record passport</div><div class="id">REC-2026/004812</div></div>
+          <div class="row"><span class="chip c-info">T2 · decision-informing</span><span class="stamp okst">Reviewed</span></div>
+        </div>
+        <div class="passport">
+          <div class="pgroup"><h5>Record</h5><dl class="kv"><dt>Title</dt><dd>Hardship assessment summary</dd><dt>Created</dt><dd>17 Oct 2026, 14:06</dd><dt>AI generated</dt><dd>Yes, in part</dd><dt>Final document</dt><dd>Decision letter 2026/0412</dd></dl></div>
+          <div class="pgroup"><h5>Agent</h5><dl class="kv"><dt>Person</dt><dd>A. Caseworker</dd><dt>AI system</dt><dd>Agency assistant</dd><dt>Model asked</dt><dd>vendor-model-4</dd><dt>Model returned</dt><dd>vendor-model-4.2-2026-03-01</dd></dl></div>
+          <div class="pgroup"><h5>Business</h5><dl class="kv"><dt>Function</dt><dd>Debt waiver assessment</dd><dt>Tier rule</dt><dd>Used in a decision → T2</dd><dt>Disposal</dt><dd>Follows the decision record</dd></dl></div>
+          <div class="pgroup"><h5>Process</h5><dl class="kv"><dt>Prompt</dt><dd>"Summarise the hardship policy and cite authorities"</dd><dt>Sources</dt><dd>3 records, 1 policy</dd><dt>Citations</dt><dd>1 found · 1 mismatch · 1 removed · 1 not checked</dd></dl></div>
+          <div class="pgroup"><h5>Review</h5><dl class="kv"><dt>Reviewer</dt><dd>B. Team Leader</dd><dt>Decision</dt><dd>Approved with edits</dd><dt>When</dt><dd>17 Oct 2026, 15:20</dd></dl></div>
+          <div class="pgroup"><h5>Integrity</h5><div class="hash">sha256 9f2c…a71e<br>prev  41b0…3dd8</div><span class="small">Each package carries the hash of the one before, so tampering shows. Corrections are new linked versions.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>The four tiers 💭</h3>
+        <table><tbody>
+          <tr><td class="nowrap"><span class="chip c-void">T0</span></td><td>Transitory. A log entry, short retention, human-approved disposal</td></tr>
+          <tr><td class="nowrap"><span class="chip c-info">T1</span></td><td>Output went into a document. Prompt, model, inputs, link to the document</td></tr>
+          <tr><td class="nowrap"><span class="chip c-warn">T2</span></td><td>Informed a decision. Adds sources, citation checks, named reviewer</td></tr>
+          <tr><td class="nowrap"><span class="chip c-bad">T3</span></td><td>An agent acted. Adds system prompt, instructions, tool calls, activity log</td></tr>
+        </tbody></table>
+      </div>
+      <div>
+        <h3>Build estimate 💭</h3>
+        <table class="plan"><tbody>
+          <tr><td>0.5 h</td><td>Tier rules as configuration</td></tr>
+          <tr><td>0.5 h</td><td>Package builder and hash chain</td></tr>
+          <tr><td>0.5 h</td><td>Passport view</td></tr>
+          <tr><td><b>1.5 h</b></td><td><b>Total</b>, without the gateway proxy. The proxy is about 1.5 h more and is invisible on stage.</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Risks</h3>
+        <ul class="plain">
+          <li>Purview and LLM logging tools already capture prompts. Whether any records model version or tiers is unchecked ⚠️ (open questions 2 and 3).</li>
+          <li>Staff can bypass it with personal tools. That is a policy control, as for any records system.</li>
+        </ul>
+      </div>
+      <div class="verdict"><b>Verdict.</b> Cheap to build and squarely a records act. It is the spine that the other ideas hang off. The gateway proxy belongs on the "how it scales" slide.</div>
+    </div>
+  </section>
+
+  <!-- Chapter 4 -->
+  <section id="c4" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 4 · Re-appraise</div>
+      <h2>Model recall</h2>
+      <p class="lede">When a model is retired or found faulty, the information manager finds every record it helped make, ranked by risk, and sends the riskiest for review first. A product recall for AI-made records.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Records act</dt><dd>Re-appraisal and review, every action logged</dd></div>
+      <div><dt>Who uses it</dt><dd>Information manager runs it</dd></div>
+      <div><dt>Brief question</dt><dd>Question 2: long-term risk to records</dd></div>
+      <div><dt>Needs</dt><dd>The "model returned" field from chapter 3</dd></div>
+    </dl>
+
+    <div class="mock" role="figure" aria-label="Interactive mockup of the model recall screen">
+      <div class="mbar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Record Check · Recall</span><span class="tag">mockup · seeded data</span></div>
+      <div class="mbody">
+        <div class="alertline">
+          <span class="chip c-bad">faulty</span>
+          <span><b>vendor-model-4.2-2026-03-01</b> marked faulty from <b>1 Mar 2026</b></span>
+          <span class="small">Reason: vendor bulletin, fabricated citations</span>
+        </div>
+        <div class="tiles">
+          <div class="tile"><b>14</b><span>records affected</span></div>
+          <div class="tile hot"><b>3</b><span>decision-informing (T2)</span></div>
+          <div class="tile"><b>11</b><span>retained output (T1)</span></div>
+          <div class="tile"><b>0</b><span>agent actions (T3)</span></div>
+        </div>
+        <div class="tscroll">
+          <table class="rtable">
+            <thead><tr><th>Record</th><th>Tier</th><th>Function</th><th>Created</th><th>Status</th></tr></thead>
+            <tbody id="recallRows">
+              <tr><td class="mono">REC-2026/004812</td><td><span class="chip c-warn">T2</span></td><td>Debt waiver assessment</td><td>17 Oct</td><td data-s>not queued</td></tr>
+              <tr><td class="mono">REC-2026/003977</td><td><span class="chip c-warn">T2</span></td><td>Debt waiver assessment</td><td>2 Sep</td><td data-s>not queued</td></tr>
+              <tr><td class="mono">REC-2026/003102</td><td><span class="chip c-warn">T2</span></td><td>Eligibility review</td><td>14 Jul</td><td data-s>not queued</td></tr>
+              <tr><td class="mono">REC-2026/002884</td><td><span class="chip c-info">T1</span></td><td>Policy briefing</td><td>30 Jun</td><td data-s>not queued</td></tr>
+              <tr><td class="mono">REC-2026/002417</td><td><span class="chip c-info">T1</span></td><td>Correspondence</td><td>9 May</td><td data-s>not queued</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <span class="small">Showing 5 of 14 · T0 log entries are excluded</span>
+          <button class="btn" type="button" id="recallBtn">Queue 3 T2 records for re-review</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>How it works</h3>
+        <ol class="steps">
+          <li>Mark a model and version as withdrawn or faulty from a date.</li>
+          <li>The register returns every T1 to T3 record that model produced, highest tier first.</li>
+          <li>A re-review queue opens. Every decision on it is logged.</li>
+          <li>A targeted check of a few records instead of all of them, or none.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Build estimate 💭</h3>
+        <table class="plan"><tbody>
+          <tr><td>0.5 h</td><td>Seed about 40 past passports across 3 models</td></tr>
+          <tr><td>0.5 h</td><td>Recall query and tier counts</td></tr>
+          <tr><td>0.5 h</td><td>Recall screen and queue</td></tr>
+          <tr><td><b>1.5 h</b></td><td><b>Total</b></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Risks</h3>
+        <ul class="plain">
+          <li>Only works if the model version was captured at the time, which is why it depends on the passport.</li>
+          <li>We haven't checked whether any product already does this (open question 5) ⚠️.</li>
+          <li>The data is seeded. Say so on stage.</li>
+        </ul>
+      </div>
+      <div class="verdict"><b>Verdict.</b> Our most novel claim, and the quickest to build. The best closing moment for a demo.</div>
+    </div>
+  </section>
+
+  <!-- Chapter 5 -->
+  <section id="c5" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 5 · Authenticate</div>
+      <h2>Record-of-issue check</h2>
+      <p class="lede">A government intake system doesn't try to spot a forged stamp. It asks the issuing register whether this document was ever issued, and rejects it if not. That works however good the forgery is.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Records act</dt><dd>Authenticity, tested against the record of issue</dd></div>
+      <div><dt>Who uses it</dt><dd>Intake staff; information manager keeps the issue register</dd></div>
+      <div><dt>Brief angle</dt><dd>Disinformation: AI-forged documents</dd></div>
+      <div><dt>Built with</dt><dd>A seeded issue register and a lookup</dd></div>
+    </dl>
+
+    <div class="mock" role="figure" aria-label="Interactive mockup of the record-of-issue check">
+      <div class="mbar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Intake · Verify document</span><span class="tag">mockup · example data</span></div>
+      <div class="mbody">
+        <div class="seg" role="group" aria-label="Sample document">
+          <button type="button" data-doc="0" aria-pressed="true">Sample A</button>
+          <button type="button" data-doc="1" aria-pressed="false">Sample B</button>
+        </div>
+        <div class="issue">
+          <div class="cert" id="cert"></div>
+          <div class="result" id="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>How it works</h3>
+        <ol class="steps">
+          <li>Read the reference number, issuer and date off the document.</li>
+          <li>Look it up in the issuer's register of issued documents.</li>
+          <li>Compare the details, and the file hash where one was taken at issue.</li>
+          <li>Accept, reject, or send to a person. Log the check as a record.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Build estimate 💭</h3>
+        <table class="plan"><tbody>
+          <tr><td>0.5 h</td><td>Seed an issue register</td></tr>
+          <tr><td>1 h</td><td>Read fields from an upload (OCR or LLM)</td></tr>
+          <tr><td>0.5 h</td><td>Lookup, compare and result screen</td></tr>
+          <tr><td><b>2 h</b></td><td><b>Total</b></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Risks</h3>
+        <ul class="plain">
+          <li>Verification codes on certificates may already do this ⚠️. Check before Sunday.</li>
+          <li>The AI link is indirect. It defends against AI forgeries but doesn't manage AI-made records.</li>
+          <li>Only works for issuers who keep a register and share it.</li>
+        </ul>
+      </div>
+      <div class="verdict"><b>Verdict.</b> The simplest build with a sharp disinformation story. A standalone backup if the team prefers it, not part of the main product.</div>
+    </div>
+  </section>
+
+  <!-- Chapter 6 -->
+  <section id="c6" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 6 · Configure</div>
+      <h2>Policy studio</h2>
+      <p class="lede">Someone has to say what counts as evidence, which documents matter and what "good enough to file" means. If that is hard-coded, the information manager is a spectator. Here they write the rules once, and every check runs against them.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Records act</dt><dd>Appraisal policy and metadata modelling from business activity</dd></div>
+      <div><dt>Who uses it</dt><dd>The information manager, once; staff never see it</dd></div>
+      <div><dt>Brief question</dt><dd>Question 5: a strategic role for information managers</dd></div>
+      <div><dt>Built with</dt><dd>A policy file the engine reads; the LLM may suggest a profile, never decide</dd></div>
+    </dl>
+
+    <div class="mock" role="figure" aria-label="Mockup of the policy studio setup page">
+      <div class="mbar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Record Check · Setup</span><span class="tag">mockup · example policy</span></div>
+      <div class="mbody">
+        <div class="row" style="justify-content:space-between"><div><b>Example Agency</b> <span class="small">· Commonwealth agency preset · policy v3 · saved by Information manager</span></div><span class="chip c-info">4 document types</span></div>
+        <div class="passport">
+          <div class="pgroup"><h5>Document type · Decision letter</h5><dl class="kv"><dt>Default tier</dt><dd>T2 decision-informing</dd><dt>Checks</dt><dd>citations, evidence</dd><dt>Unsupported</dt><dd>0 allowed</dd><dt>Contradicted</dt><dd>0 allowed</dd><dt>Weak</dt><dd>1 allowed</dd><dt>Citations</dt><dd>not found blocks</dd><dt>Reviewer</dt><dd>required</dd></dl></div>
+          <div class="pgroup"><h5>Document type · Case note</h5><dl class="kv"><dt>Default tier</dt><dd>T1 retained output</dd><dt>Checks</dt><dd>evidence</dd><dt>Unsupported</dt><dd>1 allowed</dd><dt>Contradicted</dt><dd>0 allowed</dd><dt>Weak</dt><dd>unlimited</dd><dt>Reviewer</dt><dd>not required</dd></dl></div>
+          <div class="pgroup"><h5>Authoritative systems</h5><div class="key"><span class="chip c-ok">Case management</span><span class="chip c-ok">Payroll records</span><span class="chip c-ok">Policy library</span><span class="chip c-ok">Governance register</span><span class="chip c-void">Web (saved page)</span></div><span class="small">Anything not selected can never count as evidence, however convincing it looks.</span></div>
+          <div class="pgroup"><h5>Apps and tiers</h5><dl class="kv"><dt>Agency assistant</dt><dd>T1</dd><dt>Policy Q&amp;A bot</dt><dd>T0</dd><dt>Drafting helper</dt><dd>T0</dd><dt>Case update agent</dt><dd>T3</dd><dt>T0 retention</dt><dd>90 days, then approved destruction</dd></dl></div>
+        </div>
+        <div class="row" style="justify-content:space-between"><span class="small">"Describe your organisation in a sentence" gives a suggested preset. The IM confirms every field.</span><span class="row"><button class="btn ghost" type="button">Suggest a profile</button><button class="btn" type="button">Save policy</button></span></div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>What it changes downstream</h3>
+        <ol class="steps">
+          <li>Every check now ends in a <b>filing gate</b>: Ready to file, Needs attention, or Blocked, with the reasons against this type's bar.</li>
+          <li>A Blocked document cannot be issued a passport until it is fixed or the IM changes the bar.</li>
+          <li>The passport records the document type, the gate result and the policy version, so a later reviewer knows which rules applied.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Build estimate 💭</h3>
+        <table class="plan"><tbody>
+          <tr><td>0.5 h</td><td>Policy file and four sector presets</td></tr>
+          <tr><td>0.5 h</td><td>Gate rules over the weights and citation statuses</td></tr>
+          <tr><td>1 h</td><td>Setup forms and wiring into Check and Passport</td></tr>
+          <tr><td><b>2 h</b></td><td><b>Total</b></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Risks</h3>
+        <ul class="plain">
+          <li>Presets are our generic starting points. Never present them as a regulator's rules.</li>
+          <li>The bar is thresholds over our own weights, so it is only as good as the linking rules under it.</li>
+          <li>A careless IM can set the bar to zero. The policy version on every passport makes that visible later.</li>
+        </ul>
+      </div>
+      <div class="verdict"><b>Verdict.</b> The piece that makes the information manager the author of the system rather than its auditor. Cheap, and it gives the demo a second "aha": change one number on the Setup page and the same document goes from Blocked to Ready.</div>
+    </div>
+  </section>
+
+  <!-- Build -->
+  <section id="build" class="chapter">
+    <div class="chead">
+      <div class="eyebrow">Chapter 7 · Decide</div>
+      <h2>What we'd build: Record Check</h2>
+      <p class="lede">Chapters 1 to 4 are four steps of one workflow, not four products. Chapter 6 is the control panel over them. Chapter 5 stays separate as a backup.</p>
+    </div>
+    <div class="pipe">
+      <div><span class="n">Step 0 · ch 6</span><b>Set the policy</b><span>IM defines what good looks like</span></div>
+      <div><span class="n">Step 1 · ch 1</span><b>Check citations</b><span>found, mismatch, not found</span></div>
+      <div><span class="n">Step 2 · ch 2</span><b>Weigh the evidence</b><span>each claim traced to records</span></div>
+      <div><span class="n">Step 3 · ch 3</span><b>Issue the passport</b><span>tier, model, sources, reviewer, hash</span></div>
+      <div><span class="n">Step 4 · ch 4</span><b>Recall</b><span>faulty model, records queued</span></div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>Demo in three clicks</h3>
+        <ol class="steps">
+          <li>The caseworker submits the summary. A fake citation and an unsupported human sentence both go red.</li>
+          <li>They fix it, a reviewer signs off, and it's filed as T2 with its passport.</li>
+          <li>"Six months later." Recall finds 14 records, 3 decision-informing.</li>
+        </ol>
+        <p class="small" style="margin-top:10px">The line: records management decides what to trust by evidence, not by whether AI touched it.</p>
+      </div>
+      <div>
+        <h3>Monday, 09:00 to 14:30 💭</h3>
+        <div class="timeline">
+          <div class="tl"><span class="t">09:00–10:00</span><span class="bar">Seed records, draft, recall data</span></div>
+          <div class="tl"><span class="t">10:00–11:00</span><span class="bar">1 · Citation check</span></div>
+          <div class="tl"><span class="t">11:00–12:30</span><span class="bar">2 · Claim split and tracing rules</span></div>
+          <div class="tl"><span class="t">13:00–13:45</span><span class="bar">3 · Passport and hash chain</span></div>
+          <div class="tl"><span class="t">13:45–14:30</span><span class="bar">4 · Recall; record backup video</span></div>
+          <div class="tl"><span class="t">14:30</span><span class="bar freeze">Feature freeze</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>If we fall behind, cut in this order</h3>
+        <div class="cut">
+          <div><span class="chip c-warn">cut 1</span><span>Recall becomes a slide with the seeded numbers.</span></div>
+          <div><span class="chip c-warn">cut 2</span><span>Evidence weight shrinks to citations only.</span></div>
+          <div><span class="chip c-ok">floor</span><span>Citation check plus passport. Still a complete demo, and it is the current fallback.</span></div>
+        </div>
+      </div>
+      <div>
+        <h3>Before Sunday</h3>
+        <ul class="plain">
+          <li>Is code written before the event allowed? (open question 1)</li>
+          <li>Check Purview, LLM logging tools and records vendors for model-version capture and recall (open questions 2 to 5).</li>
+          <li>Check whether certificate verification registers already exist (chapter 5).</li>
+          <li>Check PROV-O, ISO 23081 and Records in Contexts before naming them (chapter 2).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>Built from the team repo: <span class="mono">ideas/concept-records-gateway.md</span>, <span class="mono">ideas/scorecard.md</span> and <span class="mono">research/deep-research-2026-10-16.md</span>. Ratings and build times are estimates for discussion. All case details, names, records and references in the mockups are invented.</footer>
+</main>
+
+<script>
+document.querySelectorAll('.meter').forEach(m=>{const v=+m.dataset.v;m.setAttribute('aria-label',v+' out of 5');m.innerHTML=Array.from({length:5},(_,i)=>'<i class="'+(i<v?'on':'')+'"></i>').join('')});
+
+const traces=[
+ {q:"The applicant reports weekly earnings of $820, based on payslips from June to August.",who:"AI",c:"c-ok",l:"supported",src:"REC-2026/004811 · Payslip summary, Jun–Aug",sys:"Payroll records system (authoritative)",st:"Current · created by payroll officer",note:"Amount and date range match the record."},
+ {q:"A delegate may waive the debt where recovery would cause severe financial hardship.",who:"AI",c:"c-warn",l:"weak",src:"POL-HARDSHIP v3 · Hardship policy guide",sys:"Policy library (authoritative)",st:"Superseded by v4 on 1 Jul 2026",note:"Traces to an old version. Check the wording against v4."},
+ {q:"The applicant has no other source of income.",who:"Human",c:"c-bad",l:"unsupported",src:"No linked record",sys:"—",st:"—",note:"Written by the caseworker, but nothing on file supports it. Being human-written doesn't make it reliable."},
+ {q:"The applicant lives alone.",who:"Human",c:"c-void",l:"contradicted",src:"REC-2026/003540 · Tenancy record",sys:"Housing records (authoritative)",st:"Current · lists two occupants",note:"An authoritative record says otherwise. A person must resolve it before the decision."},
+ {q:"Most hardship waivers are decided within 28 days (Henderson, 2019).",who:"AI",c:"c-bad",l:"unsupported",src:"Henderson (2019): not found",sys:"Crossref, OpenAlex",st:"No match",note:"The citation it rests on wasn't found in chapter 1's check."}
+];
+const traceEl=document.getElementById('trace');
+function showTrace(i){const t=traces[i];
+ traceEl.innerHTML='<div class="row"><span class="chip '+t.c+'">'+t.l+'</span><span class="small">written by '+t.who+'</span></div><p class="q">“'+t.q+'”</p><dl class="chain"><div><dt>Source</dt><dd>'+t.src+'</dd></div><div><dt>System</dt><dd>'+t.sys+'</dd></div><div><dt>State</dt><dd>'+t.st+'</dd></div></dl><p class="small">'+t.note+'</p>';
+ document.querySelectorAll('.s').forEach(b=>b.setAttribute('aria-pressed',b.dataset.i==i?'true':'false'));}
+document.querySelectorAll('.s').forEach(b=>b.addEventListener('click',()=>showTrace(+b.dataset.i)));
+showTrace(2);
+
+const rb=document.getElementById('recallBtn');
+rb.addEventListener('click',()=>{const rows=document.querySelectorAll('#recallRows tr');rows.forEach((r,i)=>{const s=r.querySelector('[data-s]');if(i<3){s.innerHTML='<span class="chip c-warn">queued for re-review</span>'}});rb.textContent='3 records queued · logged';rb.disabled=true;rb.classList.add('ghost')});
+
+const docs=[
+ {t:"Certificate of Registration",lines:["Issued to: Example Holdings Pty Ltd","Reference: CR-2025-118204","Issued: 12 Mar 2025","Issuer: Business Registry (example)"],ok:true,res:"Match found in the issue register. Holder, date and file hash match what was recorded at issue."},
+ {t:"Letter of Approval",lines:["Issued to: J. Citizen","Reference: AP-2026-77310","Issued: 3 Sep 2026","Issuer: Grants Office (example)"],ok:false,res:"No record that reference AP-2026-77310 was ever issued. The stamp and letterhead look right, but that is not the test."}
+];
+function showDoc(i){const d=docs[i];
+ document.getElementById('cert').innerHTML='<div class="eyebrow">Uploaded document</div><h4>'+d.t+'</h4>'+d.lines.map(l=>'<div class="small" style="color:var(--ink)">'+l+'</div>').join('')+'<div class="seal">OFFICIAL<br>SEAL</div>';
+ document.getElementById('result').innerHTML='<div class="eyebrow">Register lookup</div><div><span class="stamp '+(d.ok?'okst':'')+'">'+(d.ok?'Verified':'Rejected')+'</span></div><p style="font-size:14px">'+d.res+'</p><p class="small">'+(d.ok?'Check logged as a record against the application.':'Sent to a person with the reason. Check logged as a record.')+'</p>';
+ document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.doc==i?'true':'false'));}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>showDoc(+b.dataset.doc)));
+showDoc(1);
+</script>
