@@ -1,0 +1,95 @@
+[
+  {
+    "id": "DOC-2026/0412-summary",
+    "title": "Hardship assessment summary, case 2026/0412",
+    "case_id": "2026/0412",
+    "default_author": "ai",
+    "body": "The applicant reports weekly earnings of $820, based on payslips from June to August 2026. A delegate may waive the debt where recovery would cause severe financial hardship [1]. The applicant has no other source of income. The applicant lives alone. Weekly rent of $380 leaves limited capacity to repay the $4,860 debt. Research on discretion in overpayment recovery supports a case-by-case approach [2] [3]. Most hardship waivers are decided within 28 days [4].",
+    "references": "References\n[1] Social Security Act 1991 (Cth) s 1237AAD.\n[2] Spicker, P. (2023). Discretion in overpayment recovery. Journal of Social Welfare and Family Law.\n[3] Edmiston, D. (2022). Indentured: benefit deductions, debt recovery and welfare disciplining. Journal of Social Policy, 51(3).\n[4] Henderson, J. (2019). Hardship waivers and decision timeframes. Australian Journal of Administrative Law, 26(3).",
+    "claims": [
+      {
+        "id": "c1",
+        "position": 1,
+        "author": "ai",
+        "text": "The applicant reports weekly earnings of $820, based on payslips from June to August 2026.",
+        "citation_refs": []
+      },
+      {
+        "id": "c2",
+        "position": 2,
+        "author": "ai",
+        "text": "A delegate may waive the debt where recovery would cause severe financial hardship [1].",
+        "citation_refs": [
+          1
+        ]
+      },
+      {
+        "id": "c3",
+        "position": 3,
+        "author": "human",
+        "text": "The applicant has no other source of income.",
+        "citation_refs": []
+      },
+      {
+        "id": "c4",
+        "position": 4,
+        "author": "human",
+        "text": "The applicant lives alone.",
+        "citation_refs": []
+      },
+      {
+        "id": "c5",
+        "position": 5,
+        "author": "ai",
+        "text": "Weekly rent of $380 leaves limited capacity to repay the $4,860 debt.",
+        "citation_refs": []
+      },
+      {
+        "id": "c6",
+        "position": 6,
+        "author": "ai",
+        "text": "Research on discretion in overpayment recovery supports a case-by-case approach [2] [3].",
+        "citation_refs": [
+          2,
+          3
+        ]
+      },
+      {
+        "id": "c7",
+        "position": 7,
+        "author": "ai",
+        "text": "Most hardship waivers are decided within 28 days [4].",
+        "citation_refs": [
+          4
+        ]
+      }
+    ]
+  },
+  {
+    "id": "DOC-2026/0587-eligibility",
+    "title": "Eligibility review note, case 2026/0587",
+    "case_id": "2026/0587",
+    "default_author": "human",
+    "body": "Identity was verified against the identity verification record on 3 September 2026. The applicant has been a permanent resident since 2019. Declared fortnightly income is $1,240. A medical certificate covers 1 September 2026 to 28 February 2027.",
+    "references": "",
+    "claims": []
+  },
+  {
+    "id": "DOC-2026/briefing-waivers",
+    "title": "Briefing: hardship waiver trends",
+    "case_id": null,
+    "default_author": "ai",
+    "body": "Under the current policy, a delegate may waive a debt where recovery would cause serious financial hardship [1]. Decisions should be made within 21 days of a complete application. A 2021 national study found that 62 per cent of waiver applications are approved on first assessment [2]. Comparable schemes report approval rates above 70 per cent [3]. Delegates must record the basis of each decision [4].",
+    "references": "References\n[1] Social Security Act 1991 (Cth) s 1237AAD.\n[2] Okafor, L. & Brennan, S. (2021). First-assessment outcomes in debt waiver schemes: a national study. Australian Journal of Public Administration, 80(2).\n[3] Edmiston, D. (2024). Indentured: Benefit deductions, debt recovery and welfare disciplining. Social Policy & Administration.\n[4] Marsh, K. (2020). Recording administrative decisions. Administrative Review Quarterly, 12(1).",
+    "claims": []
+  },
+  {
+    "id": "DOC-2026/0412-agent-note",
+    "title": "Case note drafted by the case update agent, case 2026/0412",
+    "case_id": "2026/0412",
+    "default_author": "ai",
+    "body": "The applicant applied for waiver of debt on the grounds of financial hardship. The applicant confirmed employment at Example Logistics continues. A letter advising the applicant of a possible overpayment was sent and no response was received. The debt of $4,860 was raised on 20 August 2026. The applicant has since resigned from Example Logistics.",
+    "references": "",
+    "claims": []
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "_note": "Offline cache of lookups so the demo runs without network. Keys are normalised titles (lowercase, alphanumerics and single spaces). [2] and [3] are real papers found on Crossref on 17 Oct 2026; [4] is invented and must stay not_found.",
+  "discretion in overpayment recovery": {
+    "status": "found",
+    "source": "fixture",
+    "doi": "10.1080/09649069.2023.2206218",
+    "matched_title": "Discretion in overpayment recovery",
+    "matched_year": 2023,
+    "matched_venue": "Journal of Social Welfare and Family Law",
+    "score": 1.0,
+    "note": "Crossref match on title, author and year (cached)."
+  },
+  "indentured benefit deductions debt recovery and welfare disciplining": {
+    "status": "mismatch",
+    "source": "fixture",
+    "doi": "10.1111/spol.13021",
+    "matched_title": "Indentured: Benefit deductions, debt recovery and welfare disciplining",
+    "matched_year": 2024,
+    "matched_venue": "Social Policy & Administration",
+    "score": 0.97,
+    "note": "Title found, but published 2024 in Social Policy & Administration, not 2022 in Journal of Social Policy (cached)."
+  },
+  "hardship waivers and decision timeframes": {
+    "status": "not_found",
+    "source": "fixture",
+    "doi": null,
+    "matched_title": null,
+    "matched_year": null,
+    "matched_venue": null,
+    "score": 0.31,
+    "note": "No match in Crossref or OpenAlex (cached). Possibly fabricated. A person must confirm or remove it."
+  },
+  "first assessment outcomes in debt waiver schemes a national study": {
+    "status": "not_found",
+    "source": "fixture",
+    "doi": null,
+    "matched_title": null,
+    "matched_year": null,
+    "matched_venue": null,
+    "score": 0.28,
+    "note": "No match in Crossref or OpenAlex (cached). Possibly fabricated. A person must confirm or remove it."
+  },
+  "recording administrative decisions": {
+    "status": "not_found",
+    "source": "fixture",
+    "doi": null,
+    "matched_title": null,
+    "matched_year": null,
+    "matched_venue": null,
+    "score": 0.4,
+    "note": "No match in Crossref or OpenAlex (cached). Possibly fabricated. A person must confirm or remove it."
+  }
+}
