@@ -68,7 +68,7 @@ def _split(doc: Document, use_llm: bool | None, conn=None) -> tuple[list[Claim],
         rec = recorded_split(conn, doc.body)
         if rec:   # replay: the split really came from that model, when it was recorded
             texts, method = rec["claims"], f"llm:{rec['model_returned']} (recorded {rec['at'][:16].replace('T', ' ')} UTC)"
-        else:
+        else:   # no recording: ask the model (the caller decided the AI is on)
             try:
                 got = _verbatim(llm.split_claims(doc.body), doc.body)
             except Exception:  # network, quota, malformed output: the check still runs, on plain sentences
