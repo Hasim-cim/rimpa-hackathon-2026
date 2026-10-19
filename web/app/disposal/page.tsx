@@ -103,7 +103,7 @@ export default function Disposal() {
                     <td className="mono"><a href={`/records?id=${encodeURIComponent(i.record_id)}`}>{i.record_id}</a></td><td>{i.app_id}</td><td className="mono">{i.model_returned}</td>
                     <td className="mono">{day(i.created)}</td><td className="due-date mono">{i.due}</td>
                     <td title={i.hold_reason}><Pill text={i.on_hold ? "on hold" : "due"} colours={DISPOSAL_COLOURS[i.on_hold ? "on hold" : "due"]} /></td>
-                    <td>{i.hold_reason}</td>
+                    <td className="muted">{(i as S["DisposalItem"] & { reason?: string }).reason || i.hold_reason || "–"}</td>
                   </tr>
                 ))}
               </tbody>

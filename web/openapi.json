@@ -1804,6 +1804,11 @@
             "type": "string",
             "title": "Hold Reason",
             "default": ""
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": ""
           }
         },
         "type": "object",

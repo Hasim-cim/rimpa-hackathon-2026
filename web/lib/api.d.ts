@@ -835,6 +835,11 @@ export interface components {
              * @default
              */
             hold_reason: string;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
         };
         /** DisposalRequest */
         DisposalRequest: {

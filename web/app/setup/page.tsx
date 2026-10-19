@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, ApiError, OK, ESCALATION_LABELS, TIERS, type S } from "@/lib/ui";
+import { api, ApiError, ESCALATION_LABELS, TIERS, type S } from "@/lib/ui";
 import PageHead from "../page-head";
 
 type Policy = S["Policy"];
@@ -116,90 +116,124 @@ export default function Setup() {
   const row = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0 16px" } as const;
   const check = (label: string, on: boolean, set: (v: boolean) => void) => (
     <label style={{ fontWeight: 400, margin: "8px 0", display: "flex", gap: 8, alignItems: "center" }}>
-      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} /> {label}
+      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} style={{ width: 16, height: 16, accentColor: "var(--teal)" }} /> {label}
     </label>
   );
-  const input = { width: "100%", padding: 8, font: "inherit", border: "1px solid #9ca3af", borderRadius: 6 } as const;
-  const btn = { padding: "8px 16px", font: "inherit", fontWeight: 600, border: "1px solid #9ca3af", borderRadius: 6, background: "#fff", cursor: "pointer" } as const;
+  const Sec = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
+    <>
+      <div className="sec"><span className="num" aria-hidden="true">{n}</span><h2>{title}</h2></div>
+      <p className="sec-note">{children}</p>
+    </>
+  );
 
   return (
     <>
       <PageHead title="Setup">The rules the information manager sets: document types, quality bars, and which systems count as evidence.</PageHead>
-      <p className="muted">The checks and the filing gate read this policy. An AI model may suggest a starting profile, but never sets a threshold, tier or gate.</p>
+      <p className="muted" style={{ margin: "-8px 0 0" }}>The checks and the filing gate read this policy. An AI model may suggest a starting profile, but never sets a threshold, tier or gate.</p>
 
-      <h2>1. Start from your sector</h2>
-      <label htmlFor="org">Organisation name</label>
-      <input id="org" style={input} value={org} onChange={(e) => setOrg(e.target.value)} />
-      <label htmlFor="preset">Sector preset</label>
-      <select id="preset" value={presetId} onChange={(e) => setPresetId(e.target.value)}>
-        {presets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-      </select>
-      {check("Replace my current policy", replaceOk, setReplaceOk)}
-      <button style={btn} disabled={!replaceOk || busy}
-        onClick={() => fromPreset(presetId, org.trim() || "Your organisation", (p) => `Policy v${p.version} saved from the ${p.sector_name} preset.`)}>
-        Start from this preset
-      </button>
-
-      <h2>2. Your document types</h2>
-      <p className="muted">Pick how strict each type is, and its default tier. Exact limits for what blocks filing are under Advanced.</p>
-      {draft.document_types.map((t) => {
-        const cur = levelOf(t.id);
-        const lv = levelDef(cur);
-        const summary = lv?.summary ?? levels?.document_types.find((x) => x.id === t.id)?.summary;
-        return (
-          <div key={t.id} style={{ border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "8px 0" }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <b style={{ flex: "1 1 200px" }}>{t.name}</b>
-              <select aria-label={`Strictness for ${t.name}`} style={{ width: 180 }} value={cur} onChange={(e) => setLevel(t.id, e.target.value)} disabled={!levels}>
-                {levels?.levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                {cur === "custom" && <option value="custom" disabled>Custom</option>}
-              </select>
-              <select aria-label={`Default tier for ${t.name}`} style={{ width: 120 }} value={t.default_tier} onChange={(e) => editType(t.id, (x) => { x.default_tier = e.target.value as Tier; })}>
-                {TIERS.map((x) => <option key={x} value={x}>{x}</option>)}
-              </select>
-              <button style={btn} disabled={draft.document_types.length <= 1}
-                onClick={() => edit((d) => { d.document_types = d.document_types.filter((x) => x.id !== t.id); })}>Remove</button>
-            </div>
-            {summary && <p style={{ margin: "6px 0 0" }}>{summary}</p>}
-            {lv && <p className="muted" style={{ margin: "2px 0 0" }}>{lv.use_for}</p>}
-          </div>
-        );
-      })}
-      <form onSubmit={(e) => { e.preventDefault(); addType(); }} style={{ border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "12px 0" }}>
-        <b>Add a document type</b>
-        <div style={row}>
-          <div><label htmlFor="nname">Name (e.g. Ministerial brief)</label><input id="nname" style={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
-          <div><label htmlFor="ntier">Default tier</label>
-            <select id="ntier" value={newTier} onChange={(e) => setNewTier(e.target.value as Tier)}>{TIERS.map((x) => <option key={x}>{x}</option>)}</select></div>
+      <Sec n={1} title="Start from your sector">Pick a sector preset as a starting point. These are our starting points, not a regulator&apos;s rules.</Sec>
+      <section className="panel panel-pad" aria-label="Start from your sector">
+        <div className="field-row">
+          <div><label htmlFor="org" style={{ marginTop: 0 }}>Organisation name</label>
+            <input id="org" value={org} onChange={(e) => setOrg(e.target.value)} /></div>
+          <div><label htmlFor="preset" style={{ marginTop: 0 }}>Sector preset</label>
+            <select id="preset" value={presetId} onChange={(e) => setPresetId(e.target.value)}>
+              {presets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select></div>
         </div>
-        <p><button type="submit" style={btn}>Add document type</button></p>
-        {addWarn && <p className="muted" role="alert">{addWarn}</p>}
-      </form>
-      <h2>3. Which systems count as evidence</h2>
-      <p style={{ margin: 0, fontWeight: 600 }}>Systems whose records count as evidence</p>
-      {systems.map((s) => <div key={s}>{check(s, draft.authoritative_systems.includes(s), (on) => edit((d) => {
-        d.authoritative_systems = on ? [...d.authoritative_systems, s] : d.authoritative_systems.filter((x) => x !== s);
-      }))}</div>)}
-      <p className="muted">Anything not selected is treated as non-authoritative: records from it can never make a claim &apos;supported&apos;. A saved web page can never be evidence unless you say so.</p>
+        {check("Replace my current policy", replaceOk, setReplaceOk)}
+        <button className="btn-line" disabled={!replaceOk || busy}
+          onClick={() => fromPreset(presetId, org.trim() || "Your organisation", (p) => `Policy v${p.version} saved from the ${p.sector_name} preset.`)}>
+          Start from this preset
+        </button>
+      </section>
 
-      <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #e5e7eb" }} />
-      <label htmlFor="by">Name of the person saving</label>
-      <input id="by" style={input} value={by} onChange={(e) => setBy(e.target.value)} />
-      <button className="run" onClick={save} disabled={busy}>Save policy</button>
-      {error && <p className="error" role="alert">{error}</p>}
-      {msg && <p role="status" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6 }}>{msg}</p>}
+      <Sec n={2} title="Your document types">Pick how strict each type is, and its default tier. Exact limits for what blocks filing are under Advanced.</Sec>
+      <div className="dtypes">
+        {draft.document_types.map((t) => {
+          const cur = levelOf(t.id);
+          const lv = levelDef(cur);
+          const summary = lv?.summary ?? levels?.document_types.find((x) => x.id === t.id)?.summary;
+          return (
+            <div key={t.id} className="dtype">
+              <div className="top">
+                <b>{t.name}</b>
+                <button className="btn-line small" disabled={draft.document_types.length <= 1} aria-label={`Remove ${t.name}`}
+                  onClick={() => edit((d) => { d.document_types = d.document_types.filter((x) => x.id !== t.id); })}>Remove</button>
+              </div>
+              <div className="ctl">
+                <div>
+                  <label htmlFor={`lv-${t.id}`}>Strictness</label>
+                  <select id={`lv-${t.id}`} aria-label={`Strictness for ${t.name}`} value={cur} onChange={(e) => setLevel(t.id, e.target.value)} disabled={!levels}>
+                    {levels?.levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                    {cur === "custom" && <option value="custom" disabled>Custom</option>}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor={`tr-${t.id}`}>Default tier</label>
+                  <select id={`tr-${t.id}`} aria-label={`Default tier for ${t.name}`} value={t.default_tier} onChange={(e) => editType(t.id, (x) => { x.default_tier = e.target.value as Tier; })}>
+                    {TIERS.map((x) => <option key={x} value={x}>{x}</option>)}
+                  </select>
+                </div>
+              </div>
+              {summary && <p>{summary}</p>}
+              {lv && <p className="use">{lv.use_for}</p>}
+            </div>
+          );
+        })}
+        <form className="dtype add" onSubmit={(e) => { e.preventDefault(); addType(); }}>
+          <div className="top"><b>Add a document type</b></div>
+          <div className="ctl">
+            <div><label htmlFor="nname">Name (e.g. Ministerial brief)</label><input id="nname" value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
+            <div><label htmlFor="ntier">Default tier</label>
+              <select id="ntier" value={newTier} onChange={(e) => setNewTier(e.target.value as Tier)}>{TIERS.map((x) => <option key={x}>{x}</option>)}</select></div>
+          </div>
+          <div><button type="submit" className="btn-line">Add document type</button></div>
+          {addWarn && <p className="muted" role="alert">{addWarn}</p>}
+        </form>
+      </div>
+
+      <Sec n={3} title="Which systems count as evidence">Anything not selected is treated as non-authoritative: records from it can never make a claim &apos;supported&apos;. A saved web page can never be evidence unless you say so.</Sec>
+      <section className="panel panel-pad" aria-label="Evidence systems">
+        <div className="sysgrid" role="group" aria-label="Systems whose records count as evidence">
+          {systems.map((s) => {
+            const on = draft.authoritative_systems.includes(s);
+            return (
+              <label key={s} className={`syschip${on ? " on" : ""}`}>
+                <input type="checkbox" checked={on} onChange={(e) => edit((d) => {
+                  d.authoritative_systems = e.target.checked ? [...d.authoritative_systems, s] : d.authoritative_systems.filter((x) => x !== s);
+                })} />
+                {s}<span className="tag">{on ? "✓ evidence" : "– not evidence"}</span>
+              </label>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="approve" aria-label="Save policy" style={{ marginTop: 24 }}>
+        <h2>Save policy</h2>
+        <p>The version goes up and the change is written to the audit trail with your name.</p>
+        <div className="row2">
+          <div><label htmlFor="by">Name of the person saving</label>
+            <input id="by" value={by} onChange={(e) => setBy(e.target.value)} /></div>
+          <button className="btn-mag" onClick={save} disabled={busy}>Save policy</button>
+        </div>
+        {error && <p className="error" role="alert">{error}</p>}
+        {msg && <p role="status" className="ok-box"><span className="ic" aria-hidden="true">✓</span>{msg}</p>}
+      </section>
       {SHOW_ALL && (
-        <details className="card-d" style={{ marginTop: 24 }}>
+        <details className="panel fold">
           <summary>Advanced</summary>
+          <div className="fold-body">
       <label htmlFor="desc">Describe your organisation in a sentence</label>
-      <textarea id="desc" style={input} rows={2} value={desc} onChange={(e) => setDesc(e.target.value)}
+      <textarea id="desc" rows={2} value={desc} onChange={(e) => setDesc(e.target.value)}
         placeholder="e.g. A regional hospital using an AI scribe for clinic notes" />
-      <p><button style={btn} onClick={suggest} disabled={busy}>Suggest a profile</button></p>
+      <p><button className="btn-line" onClick={suggest} disabled={busy}>Suggest a profile</button></p>
       {notice && <p className="muted" role="status">{notice}</p>}
       {suggestion && (
         <div style={{ background: "#eff6ff", padding: "8px 12px", borderRadius: 6 }}>
           <p>Suggested: <b>{suggestion.preset.name}</b> for {suggestion.organisation}. {suggestion.preset.description} This is a starting point; you confirm every field below.</p>
-          <button style={btn} onClick={() => { setOrg(suggestion.organisation); setPresetId(suggestion.preset.id); }}>Use this suggestion</button>
+          <button className="btn-line" onClick={() => { setOrg(suggestion.organisation); setPresetId(suggestion.preset.id); }}>Use this suggestion</button>
         </div>
       )}
       <h2>Exact limits per document type</h2>
@@ -211,9 +245,9 @@ export default function Setup() {
           <details key={t.id} style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", margin: "8px 0" }}>
             <summary style={{ cursor: "pointer", fontWeight: 600 }}>{t.name} ({t.id}, default {t.default_tier})</summary>
             <label htmlFor={`${k}-name`}>Name</label>
-            <input id={`${k}-name`} style={input} value={t.name} onChange={(e) => editType(t.id, (x) => { x.name = e.target.value; })} />
+            <input id={`${k}-name`} value={t.name} onChange={(e) => editType(t.id, (x) => { x.name = e.target.value; })} />
             <label htmlFor={`${k}-desc`}>Description</label>
-            <input id={`${k}-desc`} style={input} value={t.description} onChange={(e) => editType(t.id, (x) => { x.description = e.target.value; })} />
+            <input id={`${k}-desc`} value={t.description} onChange={(e) => editType(t.id, (x) => { x.description = e.target.value; })} />
             <label htmlFor={`${k}-tier`}>Default tier</label>
             <select id={`${k}-tier`} value={t.default_tier} onChange={(e) => editType(t.id, (x) => { x.default_tier = e.target.value as Tier; })}>
               {TIERS.map((x) => <option key={x}>{x}</option>)}
@@ -226,18 +260,18 @@ export default function Setup() {
             <div style={row}>
               <div>
                 <label htmlFor={`${k}-mu`}>Unsupported claims allowed (more = blocked)</label>
-                <input id={`${k}-mu`} type="number" min={0} max={100} style={input} value={q.max_unsupported}
+                <input id={`${k}-mu`} type="number" min={0} max={100} value={q.max_unsupported}
                   onChange={(e) => editBar(t.id, (b) => { b.max_unsupported = clamp(e.target.value, 0, 100); })} />
                 {check("Unlimited weak claims", q.max_weak == null, (on) => editBar(t.id, (b) => { b.max_weak = on ? null : 0; }))}
                 {q.max_weak != null && <>
                   <label htmlFor={`${k}-mw`}>Weak claims allowed (more = needs attention)</label>
-                  <input id={`${k}-mw`} type="number" min={0} max={100} style={input} value={q.max_weak}
+                  <input id={`${k}-mw`} type="number" min={0} max={100} value={q.max_weak}
                     onChange={(e) => editBar(t.id, (b) => { b.max_weak = clamp(e.target.value, 0, 100); })} />
                 </>}
               </div>
               <div>
                 <label htmlFor={`${k}-mc`}>Contradicted claims allowed (more = blocked)</label>
-                <input id={`${k}-mc`} type="number" min={0} max={100} style={input} value={q.max_contradicted}
+                <input id={`${k}-mc`} type="number" min={0} max={100} value={q.max_contradicted}
                   onChange={(e) => editBar(t.id, (b) => { b.max_contradicted = clamp(e.target.value, 0, 100); })} />
                 {check("No minimum supported share", q.min_supported_share == null, (on) => editBar(t.id, (b) => { b.min_supported_share = on ? null : 0.6; }))}
                 {q.min_supported_share != null && <>
@@ -251,7 +285,7 @@ export default function Setup() {
             {check("A citation with mismatched details needs attention", q.citations_mismatch_attention, (on) => editBar(t.id, (b) => { b.citations_mismatch_attention = on; }))}
             {check("A citation that could not be checked needs attention", q.citations_not_checked_attention, (on) => editBar(t.id, (b) => { b.citations_not_checked_attention = on; }))}
             {check("T2 and T3 need a named reviewer", q.require_reviewer, (on) => editBar(t.id, (b) => { b.require_reviewer = on; }))}
-            <button style={btn} disabled={draft.document_types.length <= 1}
+            <button className="btn-line" disabled={draft.document_types.length <= 1}
               onClick={() => edit((d) => { d.document_types = d.document_types.filter((x) => x.id !== t.id); })}>
               Remove this document type
             </button>
@@ -269,21 +303,22 @@ export default function Setup() {
       ))}
       <p>Escalations (read-only here): {Object.entries(tr.escalations).map(([k, v]) => `${ESCALATION_LABELS[k] ?? k} raises to at least ${v}`).join("; ")}</p>
       <label htmlFor="ret">T0 log retention (days)</label>
-      <input id="ret" type="number" min={1} max={3650} style={input} value={tr.retention_days?.T0 ?? 90}
+      <input id="ret" type="number" min={1} max={3650} value={tr.retention_days?.T0 ?? 90}
         onChange={(e) => edit((d) => { d.tier_rules.retention_days = { ...d.tier_rules.retention_days, T0: clamp(e.target.value, 1, 3650) }; })} />
 
       <h2>Guidance this policy cites</h2>
       <label htmlFor="guid">One per line</label>
-      <textarea id="guid" style={input} rows={4} value={guidance} onChange={(e) => setGuidance(e.target.value)} />
+      <textarea id="guid" rows={4} value={guidance} onChange={(e) => setGuidance(e.target.value)} />
 
       <div style={{ marginTop: 16 }}>
         {check("Confirm: discard my policy and go back to the preset defaults", resetOk, setResetOk)}
-        <button style={btn} disabled={!resetOk || busy}
+        <button className="btn-line" disabled={!resetOk || busy}
           onClick={() => fromPreset(presets.some((p) => p.id === saved.sector) ? saved.sector : presets[0].id, saved.organisation,
             (p) => `Policy v${p.version} saved (reset to ${p.sector_name || presetName(p.sector)} defaults)`)}>
           Reset to preset defaults
         </button>
       </div>
+          </div>
         </details>
       )}
     </>

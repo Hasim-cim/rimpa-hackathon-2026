@@ -2,28 +2,14 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { api, ATTN, CITE_COLOURS, GATE_COLOURS, GREY, OK, Pill, STATUS_COLOURS, STATUS_MARKS, WEIGHT_COLOURS, type S } from "@/lib/ui";
+import { useRouter, useSearchParams } from "next/navigation";
+import { api, ATTN, CITE_COLOURS, BAD, GATE_COLOURS, GREY, OK, Pill, STATUS_COLOURS, STATUS_MARKS, WEIGHT_COLOURS, type S } from "@/lib/ui";
 import PageHead from "../page-head";
-import Waves from "../waves";
+import { fmt, fp, utc, PassportCard as Card } from "../passport-card";
 
 const SUMMARY_ONLY = "Filed before checks were stored with the passport: summary counts only.";
-const TIER_WORDS: Record<string, string> = {
-  T0: "T0, a transitory log", T1: "T1, a retained output", T2: "T2, informs a decision", T3: "T3, an agent's action",
-};
-const CITE_WORDS: Record<string, string> = {
-  found: "found", mismatch: "details differ", not_found: "not found (possibly fabricated)", not_checked: "for a person to confirm",
-};
-// Stored times are naive UTC; read them as UTC so they show in the viewer's local time.
-const utc = (s: string) => new Date(/T[^Z+]*$/.test(s) && !/-\d\d:\d\d$/.test(s) ? `${s}Z` : s);
-const fmt = (s: string) => {
-  const d = utc(s);
-  const t = d.toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
-  return `${t.replace("Sept", "Sep")}, ${d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
-};
 const cap = (t: string) => t[0].toUpperCase() + t.slice(1);
 const fmtDay = (s: string) => utc(s).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }).replace("Sept", "Sep");
-const fp = (h?: string | null) => (h ? <span className="mono">{h.slice(0, 6)}…{h.slice(-6)}</span> : "none");
 
 type D = Record<string, unknown>;
 type Link_ = { record_id: string; rule: string; note: string };
@@ -133,52 +119,33 @@ function Detail({ check }: { check: S["CheckSummary"] }) {
   }
 }
 
-const KV2 = ({ k, children }: { k: string; children: React.ReactNode }) => (
-  <div className="pk"><span className="k">{k}</span><span>{children}</span></div>
-);
-
-function Card({ p, docName }: { p: S["Passport"]; docName: string }) {
-  const { record: r, agent: a, business: b, process: pr, review: rv, integrity: ig, paradata: pd } = p;
-  const ev = Object.entries(pr.evidence_summary).filter(([, n]) => n).map(([w, n]) => `${n} ${w}`).join(", ") || "no check recorded";
-  const ci = Object.entries(pr.citation_summary).filter(([, n]) => n).map(([k, n]) => `${n} ${CITE_WORDS[k] ?? k}`).join(", ") || "none checked";
-  const tools = pr.tool_calls.map((t) => t.name + (t.side_effect ? " (changed something)" : "")).join("; ") || "none";
-  const prompt = pr.prompt.length <= 160 ? pr.prompt : pr.prompt.slice(0, 157) + "...";
-  return (
-    <div className="pass" data-tour="passport">
-      <div className="pass-head"><Waves className="waves" count={10} height={40} yellow="#f2b705" magenta="#f2b705" /><b>Passport</b><span>The record package kept with this output</span></div>
-      <div className="groups">
-        <div className="group"><h5>Record</h5>
-          <KV2 k="Title">{r.title}</KV2><KV2 k="Created">{fmt(r.created)}</KV2>
-          <KV2 k="Made with AI">{r.ai_generated ? "Yes, in part" : "No"}</KV2>
-          <KV2 k="Filed into">{r.final_document ?? "no document"}</KV2><KV2 k="Content fingerprint">{fp(r.content_hash)}</KV2></div>
-        <div className="group"><h5>Agent</h5>
-          <KV2 k="Person">{a.person}</KV2><KV2 k="AI system">{a.ai_system}</KV2><KV2 k="Model asked for">{a.model_requested}</KV2>
-          <KV2 k="Model that answered">{a.model_returned}</KV2><KV2 k="Provider">{a.provider}</KV2></div>
-        <div className="group"><h5>Business</h5>
-          <KV2 k="Function">{b.function || "not stated"}</KV2><KV2 k="Risk tier">{TIER_WORDS[b.tier]}</KV2>
-          <KV2 k="Why this tier">{b.tier_reason}</KV2><KV2 k="Document type">{docName}</KV2>
-          <KV2 k="Filing gate">{b.gate ? GATE_COLOURS[b.gate][2] : "not recorded"}</KV2><KV2 k="Keep for">{b.disposal}</KV2></div>
-        <div className="group"><h5>Process</h5>
-          <KV2 k="Prompt">{prompt}</KV2><KV2 k="Source records">{pr.source_record_ids.join(", ") || "none"}</KV2>
-          <KV2 k="Statements">{ev}</KV2><KV2 k="References">{ci}</KV2><KV2 k="Agent actions">{tools}</KV2></div>
-        <div className="group"><h5>Review</h5>
-          {rv ? <>
-            <KV2 k="Reviewer">{rv.reviewer}</KV2>
-            <KV2 k="Decision">{rv.decision.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase())}</KV2>
-            <KV2 k="Reviewed">{fmt(rv.reviewed_at)}</KV2><KV2 k="Note">{rv.note || "none"}</KV2></>
-            : <KV2 k="Reviewer">No review recorded</KV2>}</div>
-        <div className="group"><h5>Integrity and policy</h5>
-          <KV2 k="Fingerprint">{fp(ig.hash)}</KV2><KV2 k="Previous in chain">{fp(ig.prev_hash)}</KV2>
-          <KV2 k="Checks at filing">{pr.checks_hash ? fp(pr.checks_hash) : "not stored (older record)"}</KV2>
-          <KV2 k="Judged against">{pd.policy_version}</KV2><KV2 k="Policy fingerprint">{fp(pd.policy_hash)}</KV2>
-          <KV2 k="AI use register">{pd.use_register_id}</KV2></div>
-      </div>
-    </div>
-  );
-}
+type Row = { record_id: string; title: string; case_id?: string | null; tier: string; function?: string | null; created: string;
+  gate?: string | null; status?: string | null; status_label?: string | null; changed_since?: boolean | null; document_type?: string | null };
+const rowFrom = (p: S["Passport"]): Row => ({ record_id: p.record.id, title: p.record.title, tier: p.business.tier, function: p.business.function, created: p.record.created, gate: p.business.gate });
+const chipColours = (label: string) => /person|problem/i.test(label) ? BAD : /changed/i.test(label) ? ATTN : /dispos|log/i.test(label) ? GREY : OK;
+const chipMark = (label: string) => /person|problem/i.test(label) ? "✕" : /changed/i.test(label) ? "!" : /dispos|log/i.test(label) ? "–" : "✓";
 
 function Records() {
-  const initial = useSearchParams().get("id");
+  const params = useSearchParams();
+  const router = useRouter();
+  const initial = params.get("id");
+  const q = params.get("q") ?? "", fStatus = params.get("status") ?? "", fTier = params.get("tier") ?? "", fFn = params.get("fn") ?? "";
+  const [rows, setRows] = useState<Row[] | null>(null);
+  const [hasStatus, setHasStatus] = useState(false);
+  const setFilter = (k: string, v: string) => {
+    const n = new URLSearchParams(params.toString());
+    if (v) n.set(k, v); else n.delete(k);
+    router.replace(`/records${n.toString() ? `?${n}` : ""}`, { scroll: false });
+  };
+  const clearFilters = () => {
+    const n = new URLSearchParams(params.toString());
+    ["q", "status", "tier", "fn"].forEach((k) => n.delete(k));
+    router.replace(`/records${n.toString() ? `?${n}` : ""}`, { scroll: false });
+  };
+  const rowHref = (id: string) => {
+    const n = new URLSearchParams(params.toString()); n.set("id", id);
+    return `/records?${n}`;
+  };
   const [list, setList] = useState<S["Passport"][] | null>(null);
   const [policy, setPolicy] = useState<S["Policy"] | null>(null);
   const [summary, setSummary] = useState<S["RecordSummary"] | null>(null);
@@ -187,6 +154,11 @@ function Records() {
   const [open, setOpen] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [missing, setMissing] = useState("");
+
+  useEffect(() => {
+    api<Row[]>("records/index").then((r) => { setRows(r); setHasStatus(r.some((x) => x.status)); })
+      .catch(() => api<S["Passport"][]>("passports").then((ps) => { setRows(ps.map(rowFrom)); setHasStatus(false); }).catch(() => {}));
+  }, []);
 
   useEffect(() => {
     api<S["Passport"][]>("passports").then((ps) => {
@@ -209,7 +181,12 @@ function Records() {
   if (!list) return <p className="muted">Loading...</p>;
 
   const cur = list.find((p) => p.record.id === sel);
-  const sorted = [...list].sort((x, y) => y.record.created.localeCompare(x.record.created));
+  const all = [...(rows ?? list.map(rowFrom))].sort((x, y) => y.created.localeCompare(x.created));
+  const statuses = [...new Map(all.filter((r) => r.status).map((r) => [r.status!, r.status_label ?? r.status!])).entries()];
+  const fns = [...new Set(all.map((r) => r.function).filter((f): f is string => !!f))].sort();
+  const needle = q.trim().toLowerCase();
+  const shown = all.filter((r) => (!needle || [r.title, r.record_id, r.case_id ?? ""].some((x) => x.toLowerCase().includes(needle)))
+    && (!fStatus || r.status === fStatus) && (!fTier || r.tier === fTier) && (!fFn || r.function === fFn));
   const dtype = cur?.business.document_type;
   const docName = !dtype ? "not stated" : policy?.document_types.find((d) => d.id === dtype)?.name ?? dtype;
 
@@ -222,23 +199,49 @@ function Records() {
           <h2>Records</h2>
           <Link href="/check" className="btn">Check a document</Link>
         </div>
+        <div className="filters">
+          <input type="search" aria-label="Search records" placeholder="Search title, record id or case id" value={q} onChange={(e) => setFilter("q", e.target.value)} />
+          <div className="frow">
+            {hasStatus && (
+              <select aria-label="Status" value={fStatus} onChange={(e) => setFilter("status", e.target.value)}>
+                <option value="">All statuses</option>
+                {statuses.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+              </select>
+            )}
+            <select aria-label="Tier" value={fTier} onChange={(e) => setFilter("tier", e.target.value)}>
+              <option value="">All tiers</option>
+              {["T0", "T1", "T2", "T3"].map((t) => <option key={t}>{t}</option>)}
+            </select>
+            <select aria-label="Business function" value={fFn} onChange={(e) => setFilter("fn", e.target.value)}>
+              <option value="">All functions</option>
+              {fns.map((f) => <option key={f}>{f}</option>)}
+            </select>
+          </div>
+          <div className="fcount">
+            <span className="muted" role="status">Showing {shown.length} of {all.length}</span>
+            {(q || fStatus || fTier || fFn) && <button type="button" className="linkbtn" onClick={clearFilters}>Clear filters</button>}
+          </div>
+        </div>
         {!list.length && <p className="muted" style={{ padding: "0 18px" }}>No records yet. Check a document and issue a passport.</p>}
+        {list.length > 0 && !shown.length && <p className="muted" style={{ padding: "0 18px 14px" }}>No records match these filters.</p>}
         <div>
-          {sorted.map((p) => {
-            const on = p.record.id === sel;
-            const [bg, fg, label] = p.business.gate ? GATE_COLOURS[p.business.gate] : [...GREY, "Filed"];
-            const changed = on && summary?.checks.some((c) => c.id === "since" && c.status === "problem");
+          {shown.map((p) => {
+            const on = p.record_id === sel;
+            const [bg, fg, label] = p.status_label ? [...chipColours(p.status_label), `${chipMark(p.status_label)} ${p.status_label}`]
+              : p.gate ? GATE_COLOURS[p.gate] : [...GREY, "Filed"];
+            const changed = p.changed_since ?? (on && summary?.checks.some((c) => c.id === "since" && c.status === "problem"));
             return (
-              <Link key={p.record.id} href={`/records?id=${encodeURIComponent(p.record.id)}`}
+              <Link key={p.record_id} href={rowHref(p.record_id)}
                 className={on ? "row on" : "row"} aria-current={on ? "true" : undefined}>
                 <div className="t">
-                  <span>{p.record.title}</span>
+                  <span>{p.title}</span>
                   {changed && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Changed since filing"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>}
                 </div>
                 <div className="s">
                   <span className="pill" style={{ background: bg, color: fg }}>{label}</span>
-                  <span>{fmtDay(p.record.created)}</span><span className="tier">{p.business.tier}</span>
+                  <span>{fmtDay(p.created)}</span><span className="tier">{p.tier}</span>
                 </div>
+                <div className="s ids"><span className="mono">{p.record_id}</span>{p.case_id && <span>Case {p.case_id}</span>}</div>
               </Link>
             );
           })}
