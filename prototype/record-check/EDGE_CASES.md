@@ -8,9 +8,9 @@
 
 | Status | Count |
 |---|---|
-| ✅ tested | 142 |
+| ✅ tested | 143 |
 | 🟡 by design, untested | 0 |
-| ❌ gap | 13 |
+| ❌ gap | 12 |
 | ⛔ out of scope by design | 5 |
 
 ## Citations (`recordcheck/citations.py`)
@@ -30,7 +30,7 @@
 | EC-CIT-11 | Reference with no parsable year or title (URL-only, "no year given") | Title is empty, so nothing is searched: `not_checked`, never `not_found` | ✅ tested | `tests/test_edge_cases.py::test_cit_reference_without_year_not_checked` |
 | EC-CIT-12 | Two references share the number [1], one `not_found` and one `found` | Flag the clash, or let the worst status win. Today the last one wins, so the `not_found` is hidden and the claim reads weak | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_duplicate_reference_numbers` |
 | EC-CIT-13 | A claim cites [9] but the references list has no [9] | The verdict should say reference [9] has no entry, so the author fixes it. Today `weigh` ignores it silently | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_claim_cites_reference_that_does_not_exist` |
-| EC-CIT-14 | A real paper that has since been retracted | Not plain `found`; the note should say it was retracted. Today it returns `found` because retraction metadata is never read (💭 Crossref carries update and retraction metadata; not opened this session) | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_retracted_paper_is_not_plain_found` |
+| EC-CIT-14 | A real paper that has since been retracted | Not plain `found`: `mismatch`, and the note names the notice and date ("Retracted on 2021-12-15 (notice 10.1177/17588359211061903)"); expressions of concern and withdrawals the same. Read from the Crossref record's `updated-by`, or `works?filter=updates:<DOI>` for fixture and OpenAlex matches; cached offline notices; a failed lookup never changes the result | ✅ tested | `tests/test_retractions.py::test_end_to_end_crossref_search_hit_that_was_retracted` |
 | EC-CIT-15 | A real title cited under the wrong authors | `mismatch`. Today only title, year and venue are compared, so it returns `found` | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_author_mismatch_is_not_found_status` |
 | EC-CIT-16 | A real paper cited for something it does not say | Out of scope: we check that the reference exists, not what the paper argues. Pitch answer: "Record Check tests whether a reference is real and whether a statement is supported by the organisation's own records; a claim that leans only on an outside paper reads weak and needs a person to confirm it is appropriate authority." | ⛔ out of scope by design | See EC-EVI-25 for the weak verdict |
 | EC-CIT-17 | The same reference looked up twice, second time offline | The cached result is reused with the new citation attached | ✅ tested | `tests/test_citations.py::test_online_judging_and_cache` |

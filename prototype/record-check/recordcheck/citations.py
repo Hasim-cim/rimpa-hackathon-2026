@@ -135,13 +135,13 @@ def _crossref(c: Citation) -> list[tuple[str | None, int | None, str | None, str
     q = " ".join(x for x in (c.title, c.authors) if x)
     r = httpx.get("https://api.crossref.org/works", timeout=TIMEOUT, params={
         "query.bibliographic": q, "rows": 5, "mailto": MAILTO,
-        "select": "DOI,title,author,issued,container-title"})
+        "select": "DOI,title,author,issued,container-title,updated-by"})
     r.raise_for_status()
     out = []
     for it in r.json().get("message", {}).get("items", []):
         parts = (it.get("issued") or {}).get("date-parts") or [[None]]
         out.append(((it.get("title") or [None])[0], (parts[0] or [None])[0],
-                    (it.get("container-title") or [None])[0], it.get("DOI")))
+                    (it.get("container-title") or [None])[0], it.get("DOI"), it.get("updated-by") or []))
     return out
 
 
@@ -155,17 +155,73 @@ def _openalex(c: Citation) -> list[tuple[str | None, int | None, str | None, str
     for it in r.json().get("results", []):
         src = ((it.get("primary_location") or {}).get("source") or {}).get("display_name")
         doi = (it.get("doi") or "").removeprefix("https://doi.org/") or None
-        out.append((it.get("title"), it.get("publication_year"), src, doi))
+        out.append((it.get("title"), it.get("publication_year"), src, doi, None))   # None: ask Crossref about updates
     return out
 
 
 def _best(c: Citation, cands: list[tuple[Any, ...]], source: str) -> CitationResult:
-    results = [_judge(c, *cand, source) for cand in cands if cand[0]]
+    results = [_with_updates(_judge(c, *cand[:4], source), cand[4] if len(cand) > 4 else None, True)
+               for cand in cands if cand[0]]
     rank = {"found": 2, "mismatch": 1, "not_found": 0}
     if not results:
         return CitationResult(citation=c, status="not_found", source=source, score=0.0,  # type: ignore[arg-type]
                               note="No results returned. Possibly fabricated. A person must confirm or remove it.")
     return max(results, key=lambda r: (rank[r.status], r.score or 0.0))
+
+
+# ---------- retractions and expressions of concern (Crossref update notices) ----------
+
+UPDATES_FILE = SEED_DIR / "crossref_updates.json"
+_UPDATE_WORDS = {"retraction": "Retracted", "withdrawal": "Withdrawn", "removal": "Removed",
+                 "expression_of_concern": "Expression of concern"}
+
+
+def _update_fixtures() -> dict[str, list[dict[str, Any]]]:
+    if not UPDATES_FILE.exists():
+        return {}
+    with open(UPDATES_FILE, encoding="utf-8") as f:
+        return {k.lower(): v for k, v in json.load(f).items() if not k.startswith("_")}
+
+
+def _notices_for(doi: str, online: bool) -> list[dict[str, Any]] | None:
+    """Update notices for a DOI: offline fixtures, else (online) Crossref works?filter=updates:<doi>.
+    Each {type, DOI (the notice), date}. None = could not ask."""
+    fx = _update_fixtures().get(doi.lower())
+    if fx is not None:
+        return fx
+    if not online:
+        return None
+    try:
+        r = httpx.get("https://api.crossref.org/works", timeout=TIMEOUT, params={
+            "filter": f"updates:{doi}", "rows": 5, "mailto": MAILTO, "select": "DOI,update-to"})
+        r.raise_for_status()
+    except Exception:  # never raise; an unanswered question about a retraction is not a retraction
+        return None
+    out = []
+    for it in r.json().get("message", {}).get("items", []):
+        for u in it.get("update-to") or []:
+            if (u.get("DOI") or "").lower() == doi.lower():
+                out.append({"type": u.get("type"), "DOI": it.get("DOI"), "date": (u.get("updated") or {}).get("date-time")})
+    return out
+
+
+def _with_updates(r: CitationResult, updated_by: list[dict[str, Any]] | None, online: bool) -> CitationResult:
+    """A found or mismatched paper that has been retracted, withdrawn or given an expression of concern is never plain
+    'found': it reads mismatch, and the note names the notice. (EC-CIT-14)"""
+    if r.status not in ("found", "mismatch") or not r.doi:
+        return r
+    if updated_by:
+        notices = [{"type": u.get("type"), "DOI": u.get("DOI"), "date": (u.get("updated") or {}).get("date-time")}
+                   for u in updated_by]
+    else:
+        notices = _notices_for(r.doi, online)
+    serious = [n for n in notices or [] if n.get("type") in _UPDATE_WORDS]
+    if not serious:
+        return r
+    n = next((x for x in serious if x["type"] != "expression_of_concern"), serious[0])
+    when = f" on {n['date'][:10]}" if n.get("date") else ""
+    note = f"{_UPDATE_WORDS[n['type']]}{when} (notice {n.get('DOI')}). A person must decide whether it can still be cited. " + r.note
+    return r.model_copy(update={"status": "mismatch", "note": note})
 
 
 def _cache_put(conn: sqlite3.Connection, key: str, res: CitationResult) -> None:
@@ -186,7 +242,8 @@ def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection 
     if fx:
         if fx.get("matched_title"):
             # the cache stores what the index holds; found vs mismatch depends on how *this* document cited it
-            return _judge(c, fx["matched_title"], fx.get("matched_year"), fx.get("matched_venue"), fx.get("doi"), "fixture")
+            return _with_updates(_judge(c, fx["matched_title"], fx.get("matched_year"), fx.get("matched_venue"),
+                                        fx.get("doi"), "fixture"), None, False)
         return CitationResult(citation=c, **fx)
     if conn is not None and key:
         row = conn.execute("SELECT payload FROM citation_cache WHERE key=?", (key,)).fetchone()

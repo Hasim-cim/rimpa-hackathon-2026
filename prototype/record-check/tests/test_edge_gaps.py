@@ -82,16 +82,6 @@ def _crossref_item(**extra):
     return item
 
 
-@pytest.mark.xfail(strict=True, reason="EC-CIT-14 a retracted paper still returns found; retraction metadata is not read")
-def test_gap_cit_retracted_paper_is_not_plain_found(monkeypatch):
-    item = _crossref_item(**{"update-to": [{"type": "retraction", "DOI": "10.1/notice"}],
-                             "updated-by": [{"type": "retraction", "DOI": "10.1/notice"}]})
-    monkeypatch.setattr(cit.httpx, "get", lambda *a, **k: _Resp(item))
-    (c,) = cit.extract_references("[1] Nobody, A. (2020). A wholly unknown title here. Some Journal.")
-    r = cit.lookup(c, online=True)
-    assert r.status != "found" or "retract" in r.note.lower()
-
-
 @pytest.mark.xfail(strict=True, reason="EC-CIT-15 a real title cited under the wrong authors still returns found")
 def test_gap_cit_author_mismatch_is_not_found_status(monkeypatch):
     monkeypatch.setattr(cit.httpx, "get", lambda *a, **k: _Resp(_crossref_item(author=[{"family": "Zed", "given": "Q"}])))

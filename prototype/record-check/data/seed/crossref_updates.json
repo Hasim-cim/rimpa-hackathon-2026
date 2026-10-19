@@ -1,0 +1,10 @@
+{
+  "_note": "Crossref update notices by the DOI they update (works?filter=updates:<DOI>), captured 19 Oct 2026. The one real entry was checked live by the planner and the builder: Therapeutic Advances in Medical Oncology article 10.1177/1758835919874651, retracted 15 Dec 2021 by notice 10.1177/17588359211061903 (source: publisher and Retraction Watch). No seed citation is retracted.",
+  "10.1177/1758835919874651": [
+    {
+      "type": "retraction",
+      "DOI": "10.1177/17588359211061903",
+      "date": "2021-12-15T00:00:00Z"
+    }
+  ]
+}
