@@ -273,6 +273,8 @@ def _series(conn, passports: list[Passport], checks: dict, approved: list[bool],
                                            "(ok: two or more current authoritative sources across two or more systems)")
     rows = conn.execute("SELECT status, COUNT(*) AS n FROM review_queue GROUP BY status").fetchall()
     q = {r["status"]: r["n"] for r in rows}
+    from . import drafts
     out["queue"] = QueueCounts(open=q.get("open", 0), closed=sum(n for k, n in q.items() if k != "open"),
-                               label="Records queued for a person to re-review (open) and already reviewed (closed)")
+                               label="Records queued for a person to re-review (open) and already reviewed (closed)",
+                               drafts_open=drafts.count_open(conn))
     return out

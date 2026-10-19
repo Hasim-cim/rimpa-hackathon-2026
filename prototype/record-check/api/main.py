@@ -11,12 +11,12 @@ from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from recordcheck import citations as cit
-from recordcheck import dashboard, db, disposal, evidence, gate, llm, passport, printout, recall, sources
+from recordcheck import dashboard, db, disposal, drafts, evidence, gate, llm, passport, printout, recall, sources
 from recordcheck import policy as policymod
 from recordcheck import view as vw
 from recordcheck.models import (
     AIEvent, Assessment, ChainReport, CitationResult, DashboardReport, DisposalEntry, DisposalItem, Document, GateResult,
-    ModelRegistryEntry, Passport, PassportView, RecordSummary, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
+    DraftReview, ModelRegistryEntry, Passport, PassportView, RecordSummary, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
     SourceRecord, Tier,
 )
 
@@ -173,6 +173,46 @@ def policy_levels() -> LevelsResponse:
     types = [TypeLevel(id=d.id, name=d.name, level=policymod.level_of(d) or "custom", summary=policymod.describe(d))
              for d in pol.document_types]
     return LevelsResponse(levels=levels, document_types=types)
+
+
+class DraftReviewRequest(BaseModel):
+    document_id: str | None = None           # a trial document, or leave out and send a pasted draft below
+    document_type: str
+    requested_by: str
+    note: str = ""
+    title: str | None = None                 # pasted draft: only the title and a hash of the body are kept
+    body: str | None = None
+    references: str = ""
+    case_id: str | None = None
+
+
+@app.post("/drafts/review", response_model=DraftReview)
+def send_for_review(req: DraftReviewRequest) -> DraftReview:
+    """Send a draft the gate does not pass to a person. The server re-runs the check and keeps its own reasons."""
+    with lock:
+        if req.document_id:
+            doc = db.get_document(conn, req.document_id)
+            if doc is None:
+                raise HTTPException(404, f"unknown document: {req.document_id}")
+        elif req.body is not None:
+            doc = Document(id="ADHOC", title=req.title or "Untitled", case_id=req.case_id, body=req.body,
+                           references=req.references)
+        else:
+            raise HTTPException(422, "provide document_id, or title and body")
+        try:
+            return drafts.send(conn, doc, req.document_type, req.requested_by, policymod.load(), note=req.note,
+                               ad_hoc=not req.document_id,
+                               use_llm=_use_llm(trial_document=bool(req.document_id), body=doc.body))
+        except drafts.NothingToReview as e:
+            raise HTTPException(422, str(e))
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+
+@app.get("/drafts/review", response_model=list[DraftReview])
+def list_draft_reviews() -> list[DraftReview]:
+    with lock:
+        return drafts.open_reviews(conn)
 
 
 @app.get("/policy", response_model=Policy)

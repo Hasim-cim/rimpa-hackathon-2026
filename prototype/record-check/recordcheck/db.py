@@ -251,7 +251,7 @@ def seed(conn: sqlite3.Connection, *, force: bool = False) -> dict[str, int]:
 
 
 TABLES = ("records", "documents", "ai_events", "passports", "model_registry", "review_queue", "citation_cache",
-          "disposal_register", "audit_log", "policy", "passport_checks")
+          "disposal_register", "audit_log", "policy", "passport_checks", "draft_reviews")
 
 
 def reset(conn) -> dict[str, int]:

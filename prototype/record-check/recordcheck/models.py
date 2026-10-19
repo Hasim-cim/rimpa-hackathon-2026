@@ -558,10 +558,27 @@ class BiasCounts(BaseModel):
     label: str
 
 
+class DraftReview(BaseModel):
+    """A draft sent to a person before filing, because the gate said it needs one. Never a passport, never filed.
+    For a pasted (ad hoc) draft only the title and a hash of the text are kept: nothing pasted is stored."""
+    id: str                                  # DR-000001
+    document_id: str | None                  # a known document, or None for a pasted draft
+    title: str
+    body_hash: str | None = None             # sha256 of a pasted body (its text is never stored)
+    document_type: str
+    status: Literal["open", "closed"] = "open"
+    gate: GateStatus                         # the server's own gate result (attention or blocked)
+    reasons: list[str]                       # the gate's reasons, as the server computed them
+    requested_by: str
+    note: str = ""
+    created: datetime
+
+
 class QueueCounts(BaseModel):
     open: int
     closed: int
     label: str
+    drafts_open: int = 0                     # drafts sent for a person's review before filing (not passports)
 
 
 class DashboardReport(BaseModel):

@@ -27,3 +27,6 @@ CREATE TABLE IF NOT EXISTS policy (
   id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS passport_checks (
   record_id TEXT PRIMARY KEY, hash TEXT NOT NULL, payload TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS draft_reviews (
+  id TEXT PRIMARY KEY, doc_key TEXT NOT NULL, document_type TEXT NOT NULL, status TEXT NOT NULL,
+  created TEXT NOT NULL, payload TEXT NOT NULL);

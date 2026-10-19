@@ -19,7 +19,7 @@ URL = os.environ.get("RECORDCHECK_TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not URL, reason="set RECORDCHECK_TEST_DATABASE_URL to run the Postgres tests")
 
 TABLES = ("records", "documents", "ai_events", "passports", "model_registry", "review_queue", "citation_cache",
-          "disposal_register", "audit_log", "policy", "passport_checks")
+          "disposal_register", "audit_log", "policy", "passport_checks", "draft_reviews")
 
 
 @pytest.fixture
