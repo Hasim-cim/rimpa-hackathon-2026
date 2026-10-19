@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import threading
 from datetime import date, datetime, timezone
 from typing import Literal
@@ -10,7 +11,7 @@ from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from recordcheck import citations as cit
-from recordcheck import dashboard, db, disposal, evidence, gate, passport, printout, recall, sources
+from recordcheck import dashboard, db, disposal, evidence, gate, llm, passport, printout, recall, sources
 from recordcheck import policy as policymod
 from recordcheck import view as vw
 from recordcheck.models import (
@@ -82,7 +83,20 @@ class SourceRecallRequest(BaseModel):
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "time": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    return {"status": "ok", "time": datetime.now(timezone.utc).isoformat(timespec="seconds"), "mode": mode(),
+            "ai_for_pasted_text": False, "ai_for_trial_documents": mode() == "demo" and llm.available()}
+
+
+def mode() -> str:
+    """The deployment's mode, from the environment only, never from a caller: 'demo' (the presentation URL) or 'app'
+    (the public working app, the default)."""
+    return "demo" if os.environ.get("RECORDCHECK_MODE", "app").strip().lower() == "demo" else "app"
+
+
+def _use_llm(trial_document: bool) -> bool:
+    """AI claim splitting only in demo mode and only on the trial documents. Pasted text never goes to the model, in
+    either mode, so the cost is bounded and nothing a visitor pastes leaves the server for the AI."""
+    return mode() == "demo" and trial_document and llm.available()
 
 
 @app.post("/check", response_model=CheckResponse)
@@ -102,7 +116,8 @@ def check(req: CheckRequest) -> CheckResponse:
         if req.document_type and dtype is None:
             raise HTTPException(422, f"unknown document type {req.document_type!r}")
         results = cit.check_document(doc.references, conn=conn)
-        assessment = evidence.assess(doc, conn, results, policy=pol, document_type=req.document_type)
+        assessment = evidence.assess(doc, conn, results, policy=pol, document_type=req.document_type,
+                                     use_llm=_use_llm(trial_document=bool(req.document_id)))
         result = gate.evaluate(assessment, results, None, dtype, dtype.default_tier) if dtype else None
         return CheckResponse(citations=results, assessment=assessment, gate=result,
                              relied_on=evidence.relied_on(assessment, conn, pol, req.document_type))
