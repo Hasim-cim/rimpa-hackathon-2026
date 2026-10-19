@@ -176,3 +176,35 @@ def test_old_policy_json_still_loads(pol):
     p = Policy.model_validate(d)
     assert p.recall_signal_threshold == 0.30 and p.recall_signal_min_refs == 10
     assert policymod.get_preset(policymod.DEFAULT_PRESET)
+
+
+# ---------- B2: series counted in the engine, so the web does no maths ----------
+
+def test_series_on_the_seed(conn, pol):
+    rep = dashboard.report(conn, pol)
+    assert len(rep.filed_by_week) == 8 and rep.filed_by_week[-1].week_start.weekday() == 0
+    assert sum(w.filed for w in rep.filed_by_week) <= 40 and all(w.approved <= w.filed for w in rep.filed_by_week)
+    assert [(g.document_type, g.not_recorded) for g in rep.gate_by_type] == [(None, 40)]   # seed predates types
+    assert sum(m.filed for m in rep.by_model) == 40 and {m.status for m in rep.by_model} <= {"active", "not registered"}
+    assert rep.bias.ok + rep.bias.attention + rep.bias.not_run == 40
+    assert rep.bias.attention == _kpi(rep, "narrow_evidence").count          # one rule, two views: they agree
+    assert (rep.queue.open, rep.queue.closed) == (0, 0)
+
+
+def test_series_follow_filing_queueing_and_recall(conn, pol):
+    from datetime import datetime, timezone
+    from recordcheck import citations as cit, evidence, passport, recall
+    from recordcheck.models import AIEvent, Review
+    doc = db.get_document(conn, "DOC-2026/0587-eligibility")
+    a = evidence.assess(doc, conn, [], use_llm=False, policy=pol, document_type="case-note")
+    ev = AIEvent(id="EVT-B2", app_id="agency-assistant", user="A. Caseworker", created=datetime(2026, 10, 19, 9),
+                 prompt="p", output=doc.body, model_requested="m-new", model_returned="m-new", provider="x",
+                 decision_flag=True, source_record_ids=evidence.relied_on(a, conn, pol, "case-note"))
+    passport.build(ev, tier="T2", assessment=a, conn=conn, policy=pol, document_type="case-note",
+                   review=Review(reviewer="B. Team Leader", decision="approved", reviewed_at=datetime.now(timezone.utc)))
+    recall.queue_for_review(conn, [db.get_passports(conn)[0].record.id], by="IM", reason="r")
+    rep = dashboard.report(conn, pol)
+    case_note = next(g for g in rep.gate_by_type if g.document_type == "case-note")
+    assert (case_note.name, case_note.ready) == ("Case note", 1)
+    assert next(m for m in rep.by_model if m.model_id == "m-new").status == "not registered"
+    assert rep.filed_by_week[-1].filed >= 1 and rep.queue.open == 1

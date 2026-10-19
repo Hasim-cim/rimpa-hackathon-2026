@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 from . import breadth, db, disposal, recall, sources
 from .evidence import is_evidence
-from .models import (AuthorshipCounts, DashboardReport, DisposalDue, FunctionRow, KpiTile, ModelSignal, Passport,
+from .models import (naive_utc, AuthorshipCounts, DashboardReport, DisposalDue, FunctionRow, KpiTile, ModelSignal, Passport,
                      Policy, RecentPassport, RotCounts, SourceRecord, SupportedStatement)
 from .policy import authoritative
 from .view import _stored
@@ -226,6 +226,49 @@ def report(conn: sqlite3.Connection, policy: Policy) -> DashboardReport:
     by_function = [FunctionRow(function=f, total=r[0], filed_approved=r[1], needs_review=r[2], narrow_evidence=r[3],
                                on_suggested_model=r[4]) for f, r in sorted(rows.items())]
 
+    extra = _series(conn, passports, checks, approved, queued, policy)
     return DashboardReport(kpis=kpis, model_signals=signals, recent=recent, recent_supported=statements,
                            authorship=authorship, rot=rot, disposal_due=disposal_due, by_function=by_function,
-                           generated_at=datetime.now(timezone.utc), policy_version=policy.version)
+                           generated_at=datetime.now(timezone.utc), policy_version=policy.version, **extra)
+
+
+def _series(conn, passports: list[Passport], checks: dict, approved: list[bool], queued: set[str],
+            policy: Policy) -> dict:
+    """Series for charts, counted here so the web does no maths. Plain labels."""
+    from datetime import date, timedelta
+    from . import view
+    from .models import BiasCounts, GateByType, ModelRow, QueueCounts, WeekCount
+    out: dict = {}
+    if passports:
+        day = lambda p: naive_utc(p.record.created).date()   # noqa: E731
+        last = max(day(p) for p in passports)
+        monday = last - timedelta(days=last.weekday())
+        weeks = [monday - timedelta(weeks=k) for k in range(7, -1, -1)]
+        out["filed_by_week"] = [WeekCount(week_start=w, filed=sum(w <= day(p) < w + timedelta(days=7) for p in passports),
+                                          approved=sum(a for p, a in zip(passports, approved)
+                                                       if w <= day(p) < w + timedelta(days=7)))
+                                for w in weeks]
+    names = {d.id: d.name for d in policy.document_types}
+    by_type: dict = {}
+    for p in passports:
+        row = by_type.setdefault(p.business.document_type, {"ready": 0, "attention": 0, "blocked": 0, "not_recorded": 0})
+        row[p.business.gate or "not_recorded"] += 1
+    out["gate_by_type"] = [GateByType(document_type=t, name=names.get(t, t) if t else "No document type recorded", **r)
+                           for t, r in sorted(by_type.items(), key=lambda kv: (kv[0] is None, kv[0] or ""))]
+    reg = {e.model_id: e for e in db.get_model_registry(conn)}
+    models = sorted({p.agent.model_returned for p in passports} | set(reg))
+    out["by_model"] = [ModelRow(model_id=m, provider=reg[m].provider if m in reg else "",
+                                status=reg[m].status if m in reg else "not registered",
+                                filed=sum(p.agent.model_returned == m for p in passports),
+                                in_recall_queue=sum(p.agent.model_returned == m and p.record.id in queued for p in passports))
+                       for m in models]
+    bias = {"ok": 0, "attention": 0, "not_run": 0}
+    for p in passports:
+        bias[view._bias(conn, p, checks.get(p.record.id), policy).status] += 1
+    out["bias"] = BiasCounts(**bias, label="Bias check: how broad and how current each passport's evidence is "
+                                           "(ok: two or more current authoritative sources across two or more systems)")
+    rows = conn.execute("SELECT status, COUNT(*) AS n FROM review_queue GROUP BY status").fetchall()
+    q = {r["status"]: r["n"] for r in rows}
+    out["queue"] = QueueCounts(open=q.get("open", 0), closed=sum(n for k, n in q.items() if k != "open"),
+                               label="Records queued for a person to re-review (open) and already reviewed (closed)")
+    return out

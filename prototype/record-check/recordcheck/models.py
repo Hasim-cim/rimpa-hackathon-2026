@@ -526,6 +526,42 @@ class FunctionRow(BaseModel):
     on_suggested_model: int                  # passports made by a model the recall signal flags
 
 
+class WeekCount(BaseModel):
+    week_start: date                         # Monday of the week
+    filed: int
+    approved: int
+
+
+class GateByType(BaseModel):
+    document_type: str | None                # None: filed without a document type (older passports)
+    name: str
+    ready: int
+    attention: int
+    blocked: int
+    not_recorded: int
+
+
+class ModelRow(BaseModel):
+    model_id: str
+    provider: str
+    status: str                              # registry status, or "not registered"
+    filed: int                               # passports that name it as the model that answered
+    in_recall_queue: int                     # of those, with an open entry in the review queue
+
+
+class BiasCounts(BaseModel):
+    ok: int
+    attention: int
+    not_run: int
+    label: str
+
+
+class QueueCounts(BaseModel):
+    open: int
+    closed: int
+    label: str
+
+
 class DashboardReport(BaseModel):
     kpis: list[KpiTile]
     model_signals: list[ModelSignal]
@@ -535,5 +571,10 @@ class DashboardReport(BaseModel):
     rot: RotCounts
     disposal_due: DisposalDue
     by_function: list[FunctionRow]
+    filed_by_week: list[WeekCount] = Field(default_factory=list)   # the last 8 weeks to the latest passport
+    gate_by_type: list[GateByType] = Field(default_factory=list)
+    by_model: list[ModelRow] = Field(default_factory=list)
+    bias: BiasCounts | None = None           # passports by Bias check status (same rule as the passport view)
+    queue: QueueCounts | None = None
     generated_at: datetime
     policy_version: str
