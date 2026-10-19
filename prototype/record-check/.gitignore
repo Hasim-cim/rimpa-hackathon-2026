@@ -10,3 +10,4 @@ data/*.sqlite-shm
 data/policy.json
 .DS_Store
 data/stage-policy.json
+data/outbox/

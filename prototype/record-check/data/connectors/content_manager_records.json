@@ -1,0 +1,31 @@
+{
+  "shape": "assumed",
+  "_note": "INVENTED records in an ASSUMED Content Manager ServiceAPI shape, for a contract test only; not from a live Content Manager. Property names (RecordNumber, RecordTitle, RecordRecordType, RecordDateRegistered, RecordDateFinalized, RecordOwnerLocation, RecordRetentionSchedule, RecordNotes, Fields) come from Kapish's 'Content Manager Power Connect' connector on Microsoft Learn (learn.microsoft.com/en-us/connectors/contentmanagerpowerc), not from the official ServiceAPI reference, which we could not open. The Results/TotalResults envelope is assumed. Replace this file with a real ServiceAPI Record response if OpenText staff provide one (research/records-connectors-2026-10-19.md).",
+  "TotalResults": 6,
+  "Results": [
+    {"Uri": 90001, "RecordNumber": "CM-26/0101", "RecordTitle": "Hardship policy guide, version 4", "RecordRecordType": "Policy",
+     "RecordDateRegistered": "2026-07-01T09:00:00", "RecordDateFinalized": "2026-07-01T09:05:00", "RecordOwnerLocation": "Policy branch",
+     "RecordRetentionSchedule": "Retain permanently (policy)", "RecordNotes": "Version 4. A delegate may waive a debt where recovery would cause serious financial hardship. Decisions should be made within 21 days of a complete application.",
+     "Fields": {"SupersededBy": null, "DecisionTimeframeDays": 21}},
+    {"Uri": 90002, "RecordNumber": "CM-24/0077", "RecordTitle": "Hardship policy guide, version 3", "RecordRecordType": "Policy",
+     "RecordDateRegistered": "2024-02-01T09:00:00", "RecordDateFinalized": "2024-02-01T09:10:00", "RecordOwnerLocation": "Policy branch",
+     "RecordRetentionSchedule": "Retain permanently (policy)", "RecordNotes": "Version 3. A delegate may waive a debt where recovery would cause severe financial hardship. Decisions should be made within 28 days of a complete application.",
+     "Fields": {"SupersededBy": "CM-26/0101", "DecisionTimeframeDays": 28}},
+    {"Uri": 90003, "RecordNumber": "CM-26/0412", "RecordTitle": "Debt notice, case 2026/0412", "RecordRecordType": "Case document",
+     "RecordDateRegistered": "2026-08-14T11:20:00", "RecordDateFinalized": "2026-08-14T11:21:00", "RecordOwnerLocation": "Debt management",
+     "RecordRetentionSchedule": "Destroy 7 years after the case is closed", "RecordNotes": "Debt notice for case 2026/0412: overpayment of $4,860 raised on 14 August 2026.",
+     "Fields": {"SupersededBy": null, "CaseNumber": "2026/0412", "DebtAmount": 4860}},
+    {"Uri": 90004, "RecordNumber": "CM-26/0413", "RecordTitle": "Tenancy record, case 2026/0412", "RecordRecordType": "Case document",
+     "RecordDateRegistered": "2026-08-20T10:00:00", "RecordDateFinalized": "2026-08-20T10:02:00", "RecordOwnerLocation": "Housing",
+     "RecordRetentionSchedule": "Destroy 7 years after the case is closed", "RecordNotes": "Tenancy record for case 2026/0412: two occupants at the address; weekly rent $380.",
+     "Fields": {"SupersededBy": null, "CaseNumber": "2026/0412", "Occupants": 2, "RentWeekly": 380}},
+    {"Uri": 90005, "RecordNumber": "CM-26/0500", "RecordTitle": "Hardship policy guide, version 5 (draft for consultation)", "RecordRecordType": "Policy",
+     "RecordDateRegistered": "2026-10-01T09:00:00", "RecordDateFinalized": null, "RecordOwnerLocation": "Policy branch",
+     "RecordRetentionSchedule": "Retain permanently (policy)", "RecordNotes": "Draft version 5 for consultation. Proposes decisions within 14 days.",
+     "Fields": {"SupersededBy": null}},
+    {"Uri": 90006, "RecordNumber": "CM-26/0600", "RecordTitle": "Delegation instrument, debt waivers", "RecordRecordType": "Governance",
+     "RecordDateRegistered": "2025-03-03T09:00:00", "RecordDateFinalized": "2025-03-03T09:00:00", "RecordOwnerLocation": "Governance",
+     "RecordRetentionSchedule": "Retain until superseded plus 10 years", "RecordNotes": "Instrument of delegation: debt waiver decisions may be made by an EL1 delegate.",
+     "Fields": {"SupersededBy": null}}
+  ]
+}
