@@ -1,4 +1,4 @@
-"""Reference extraction and lookup: fixture cache -> Crossref -> OpenAlex.
+"""Reference extraction and lookup: fixture cache -> Crossref -> OpenAlex; Acts -> Federal Register of Legislation.
 
 Offline by default. Online lookups run only when ``online`` is True, or when it is None and the
 RECORDCHECK_ONLINE env var is "true"/"1". Network failures never raise; they return ``not_checked``.
@@ -15,7 +15,7 @@ from typing import Any
 
 import httpx
 
-from . import db
+from . import db, frl
 from .db import SEED_DIR
 from .models import Citation, CitationResult, CitationStatus
 
@@ -175,7 +175,9 @@ def _cache_put(conn: sqlite3.Connection, key: str, res: CitationResult) -> None:
 
 
 def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection | None = None) -> CitationResult:
-    if c.kind in ("legislation", "case"):
+    if c.kind == "legislation":   # Commonwealth Acts: the Federal Register of Legislation (fixtures, then live)
+        return frl.lookup(c, online=_online(online), conn=conn)
+    if c.kind == "case":
         return CitationResult(citation=c, status="not_checked", source="none", note=LEGISLATION_NOTE)
     if c.kind == "other":
         return CitationResult(citation=c, status="not_checked", source="none", note=GOVERNMENT_NOTE)
@@ -236,6 +238,12 @@ _STAGE_SOURCE = {"crossref": "Crossref", "openalex": "OpenAlex"}
 def match_stage(r: CitationResult) -> tuple[str, str]:
     """(stage, strength) for display: which lookup step decided this result, and how strong it is. Presentation only."""
     sim = f", similarity {r.score:.2f}" if r.score is not None else ""
+    if r.citation.kind == "legislation" and r.source in ("fixture", "frl"):
+        where = "the Federal Register of Legislation"
+        stage = "Step 2: exact Act name on the Federal Register of Legislation" + (" (offline copy)" if r.source == "fixture" else "")
+        strength = {"found": "found in force on the register", "mismatch": "found, details differ (repealed or another year)",
+                    "not_checked": "no Commonwealth Act of this name; a person confirms"}.get(r.status, "a person confirms")
+        return stage, strength
     if r.source == "fixture":
         stage, where = "Step 2: lookup in offline cache" + sim, "cached index record"
     elif r.source in _STAGE_SOURCE:

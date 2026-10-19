@@ -126,7 +126,7 @@ def test_naa_guidance_is_flagged_for_a_person_never_called_fabricated(client, mo
     monkeypatch.setattr(cit, "_crossref", lambda c: [])
     monkeypatch.setattr(cit, "_openalex", lambda c: [])
     r = client.post("/check", json={**NAA_BRIEF, "document_type": "ministerial-brief"}).json()
-    assert [c["status"] for c in r["citations"]] == ["not_checked", "not_checked"]
+    assert [c["status"] for c in r["citations"]] == ["not_checked", "found"]   # [2] the Archives Act, on the register
     assert "Government guidance" in r["citations"][0]["note"]
     gate = r["gate"]
     assert gate["status"] != "ready"

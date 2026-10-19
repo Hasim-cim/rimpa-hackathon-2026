@@ -93,7 +93,7 @@ class Citation(BaseModel):
 class CitationResult(BaseModel):
     citation: Citation
     status: CitationStatus
-    source: Literal["fixture", "crossref", "openalex", "none"] = "none"
+    source: Literal["fixture", "crossref", "openalex", "frl", "none"] = "none"   # frl: Federal Register of Legislation
     doi: str | None = None
     matched_title: str | None = None
     matched_year: int | None = None

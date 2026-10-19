@@ -38,10 +38,10 @@ def test_kind_case():
 
 def test_check_document_statuses():
     res = cit.check_document(REFS)
-    assert [r.status for r in res] == ["not_checked", "found", "mismatch", "not_found"]
-    assert res[0].note.startswith("Legislation is outside")
-    assert [r.source for r in res] == ["none", "fixture", "fixture", "fixture"]
-    assert cit.summary(res) == {"found": 1, "mismatch": 1, "not_found": 1, "not_checked": 1}
+    assert [r.status for r in res] == ["found", "found", "mismatch", "not_found"]
+    assert res[0].note.startswith("Act found in force on the Federal Register of Legislation (C2004A04121)")
+    assert [r.source for r in res] == ["fixture", "fixture", "fixture", "fixture"]
+    assert cit.summary(res) == {"found": 2, "mismatch": 1, "not_found": 1, "not_checked": 0}
 
 
 def test_summary_zero_filled():
@@ -90,11 +90,14 @@ BANNED = ("true", "false", "fake", "verified", "%")
 
 
 def test_match_stage_labels():
-    nc, found, mm, nf = cit.check_document(REFS)
+    act, found, mm, nf = cit.check_document(REFS)
     assert cit.match_stage(found) == ("Step 2: lookup in offline cache, similarity 1.00", "found in cached index record")
     assert cit.match_stage(mm)[1] == "found, details differ"
     assert cit.match_stage(nf)[1] == "not found; possibly fabricated"
-    assert cit.match_stage(nc) == ("Not looked up", "not checked; a person confirms")
+    assert cit.match_stage(act) == ("Step 2: exact Act name on the Federal Register of Legislation (offline copy)",
+                                    "found in force on the register")
+    case = cit.lookup(cit.extract_references("[1] Smith v Jones [2020] HCA 5.")[0], online=False)
+    assert cit.match_stage(case) == ("Not looked up", "not checked; a person confirms")
     r = found.model_copy(update={"source": "openalex", "score": 0.912})
     assert cit.match_stage(r) == ("Step 3: fuzzy match in OpenAlex, similarity 0.91", "found in OpenAlex")
 

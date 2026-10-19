@@ -1,0 +1,146 @@
+{
+  "_note": "Answers of the Federal Register of Legislation (api.prod.legislation.gov.au/v1/titles), captured 19 Oct 2026 by the pre-plan probe (research/live-api-evidence/frl/). Keyed by normalised Act name; 'exact' = name eq (also matches former names), 'similar' = same stem, another year, Acts only. Public Service Act 1922 keeps the register's statusHistory. 'Privacy Act 1989' is constructed from the captured exact answer for Privacy Act 1988, not a captured contains response. 'Records Integrity Act 2021' is invented: no match.",
+  "Social Security Act 1991": {
+    "exact": [
+      {
+        "id": "C2004A04121",
+        "name": "Social Security Act 1991",
+        "status": "InForce",
+        "year": 1991
+      }
+    ],
+    "similar": []
+  },
+  "Public Service Act 1922": {
+    "exact": [
+      {
+        "id": "C1922A00021",
+        "name": "Public Service Act 1922",
+        "status": "Repealed",
+        "statusHistory": [
+          {
+            "status": "InForce",
+            "start": "1922-10-18T00:00:00",
+            "reasons": []
+          },
+          {
+            "status": "Repealed",
+            "start": "1999-12-05T00:00:00",
+            "reasons": [
+              {
+                "affect": "Repeal",
+                "markdown": "s 3(1), sch 1 (item 754) of the [Public Employment (Consequential and Transitional) Amendment Act 1999](/C2004A00537)",
+                "affectedByTitle": {
+                  "titleId": "C2004A00537",
+                  "name": "Public Employment (Consequential and Transitional) Amendment Act 1999",
+                  "provisions": "s 3(1), sch 1 (item 754)",
+                  "optionalSeriesNumber": null,
+                  "year": 1999,
+                  "number": 146,
+                  "seriesType": "Act"
+                },
+                "amendedByTitle": null,
+                "dateChanged": null
+              }
+            ]
+          }
+        ],
+        "year": 1922
+      }
+    ],
+    "similar": []
+  },
+  "Public Service Act 1999": {
+    "exact": [
+      {
+        "id": "C2004A00538",
+        "name": "Public Service Act 1999",
+        "status": "InForce",
+        "year": 1999
+      }
+    ],
+    "similar": []
+  },
+  "Archives Act 1983": {
+    "exact": [
+      {
+        "id": "C2004A02796",
+        "name": "Archives Act 1983",
+        "status": "InForce",
+        "year": 1983
+      }
+    ],
+    "similar": []
+  },
+  "Privacy Act 1988": {
+    "exact": [
+      {
+        "id": "C2004A03712",
+        "name": "Privacy Act 1988",
+        "status": "InForce",
+        "year": 1988
+      }
+    ],
+    "similar": []
+  },
+  "Freedom of Information Act 1982": {
+    "exact": [
+      {
+        "id": "C2004A02562",
+        "name": "Freedom of Information Act 1982",
+        "status": "InForce",
+        "year": 1982
+      }
+    ],
+    "similar": []
+  },
+  "Public Governance, Performance and Accountability Act 2013": {
+    "exact": [
+      {
+        "id": "C2013A00123",
+        "name": "Public Governance, Performance and Accountability Act 2013",
+        "status": "InForce",
+        "year": 2013
+      }
+    ],
+    "similar": []
+  },
+  "Data Availability and Transparency Act 2022": {
+    "exact": [
+      {
+        "id": "C2022A00011",
+        "name": "Data Availability and Transparency Act 2022",
+        "status": "InForce",
+        "year": 2022
+      }
+    ],
+    "similar": []
+  },
+  "Social Security Act 1947": {
+    "exact": [
+      {
+        "id": "C1947A00026",
+        "name": "Social Services Consolidation Act 1947",
+        "status": "Repealed",
+        "year": 1947
+      }
+    ],
+    "similar": []
+  },
+  "Privacy Act 1989": {
+    "exact": [],
+    "similar": [
+      {
+        "id": "C2004A03712",
+        "name": "Privacy Act 1988",
+        "status": "InForce",
+        "year": 1988,
+        "collection": "Act"
+      }
+    ]
+  },
+  "Records Integrity Act 2021": {
+    "exact": [],
+    "similar": []
+  }
+}
