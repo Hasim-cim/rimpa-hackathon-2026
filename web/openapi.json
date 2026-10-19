@@ -1035,6 +1035,34 @@
         ],
         "title": "AuthorshipCounts"
       },
+      "BiasCounts": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok"
+          },
+          "attention": {
+            "type": "integer",
+            "title": "Attention"
+          },
+          "not_run": {
+            "type": "integer",
+            "title": "Not Run"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "attention",
+          "not_run",
+          "label"
+        ],
+        "title": "BiasCounts"
+      },
       "ChainReport": {
         "properties": {
           "ok": {
@@ -1505,6 +1533,47 @@
             "type": "array",
             "title": "By Function"
           },
+          "filed_by_week": {
+            "items": {
+              "$ref": "#/components/schemas/WeekCount"
+            },
+            "type": "array",
+            "title": "Filed By Week"
+          },
+          "gate_by_type": {
+            "items": {
+              "$ref": "#/components/schemas/GateByType"
+            },
+            "type": "array",
+            "title": "Gate By Type"
+          },
+          "by_model": {
+            "items": {
+              "$ref": "#/components/schemas/ModelRow"
+            },
+            "type": "array",
+            "title": "By Model"
+          },
+          "bias": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BiasCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "queue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QueueCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "generated_at": {
             "type": "string",
             "format": "date-time",
@@ -1872,6 +1941,51 @@
         ],
         "title": "FunctionRow"
       },
+      "GateByType": {
+        "properties": {
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ready": {
+            "type": "integer",
+            "title": "Ready"
+          },
+          "attention": {
+            "type": "integer",
+            "title": "Attention"
+          },
+          "blocked": {
+            "type": "integer",
+            "title": "Blocked"
+          },
+          "not_recorded": {
+            "type": "integer",
+            "title": "Not Recorded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_type",
+          "name",
+          "ready",
+          "attention",
+          "blocked",
+          "not_recorded"
+        ],
+        "title": "GateByType"
+      },
       "GateReason": {
         "properties": {
           "status": {
@@ -2085,6 +2199,39 @@
           "provider"
         ],
         "title": "ModelRegistryEntry"
+      },
+      "ModelRow": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "filed": {
+            "type": "integer",
+            "title": "Filed"
+          },
+          "in_recall_queue": {
+            "type": "integer",
+            "title": "In Recall Queue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "provider",
+          "status",
+          "filed",
+          "in_recall_queue"
+        ],
+        "title": "ModelRow"
       },
       "ModelSignal": {
         "properties": {
@@ -2820,6 +2967,29 @@
         "type": "object",
         "title": "QualityBar",
         "description": "What good looks like for one document type. Thresholds over the four weights and four citation statuses."
+      },
+      "QueueCounts": {
+        "properties": {
+          "open": {
+            "type": "integer",
+            "title": "Open"
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "open",
+          "closed",
+          "label"
+        ],
+        "title": "QueueCounts"
       },
       "QueueRequest": {
         "properties": {
@@ -3894,6 +4064,30 @@
           "reason"
         ],
         "title": "Verdict"
+      },
+      "WeekCount": {
+        "properties": {
+          "week_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Week Start"
+          },
+          "filed": {
+            "type": "integer",
+            "title": "Filed"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          }
+        },
+        "type": "object",
+        "required": [
+          "week_start",
+          "filed",
+          "approved"
+        ],
+        "title": "WeekCount"
       }
     }
   }

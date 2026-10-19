@@ -535,6 +535,17 @@ export interface components {
             /** Plain */
             plain: string;
         };
+        /** BiasCounts */
+        BiasCounts: {
+            /** Ok */
+            ok: number;
+            /** Attention */
+            attention: number;
+            /** Not Run */
+            not_run: number;
+            /** Label */
+            label: string;
+        };
         /** ChainReport */
         ChainReport: {
             /** Ok */
@@ -695,6 +706,14 @@ export interface components {
             disposal_due: components["schemas"]["DisposalDue"];
             /** By Function */
             by_function: components["schemas"]["FunctionRow"][];
+            /** Filed By Week */
+            filed_by_week?: components["schemas"]["WeekCount"][];
+            /** Gate By Type */
+            gate_by_type?: components["schemas"]["GateByType"][];
+            /** By Model */
+            by_model?: components["schemas"]["ModelRow"][];
+            bias?: components["schemas"]["BiasCounts"] | null;
+            queue?: components["schemas"]["QueueCounts"] | null;
             /**
              * Generated At
              * Format: date-time
@@ -856,6 +875,21 @@ export interface components {
             /** On Suggested Model */
             on_suggested_model: number;
         };
+        /** GateByType */
+        GateByType: {
+            /** Document Type */
+            document_type: string | null;
+            /** Name */
+            name: string;
+            /** Ready */
+            ready: number;
+            /** Attention */
+            attention: number;
+            /** Blocked */
+            blocked: number;
+            /** Not Recorded */
+            not_recorded: number;
+        };
         /** GateReason */
         GateReason: {
             /**
@@ -942,6 +976,19 @@ export interface components {
             reason: string;
             /** Marked By */
             marked_by?: string | null;
+        };
+        /** ModelRow */
+        ModelRow: {
+            /** Model Id */
+            model_id: string;
+            /** Provider */
+            provider: string;
+            /** Status */
+            status: string;
+            /** Filed */
+            filed: number;
+            /** In Recall Queue */
+            in_recall_queue: number;
         };
         /** ModelSignal */
         ModelSignal: {
@@ -1213,6 +1260,15 @@ export interface components {
             require_reviewer: boolean;
             /** Min Supported Share */
             min_supported_share?: number | null;
+        };
+        /** QueueCounts */
+        QueueCounts: {
+            /** Open */
+            open: number;
+            /** Closed */
+            closed: number;
+            /** Label */
+            label: string;
         };
         /** QueueRequest */
         QueueRequest: {
@@ -1624,6 +1680,18 @@ export interface components {
             links?: components["schemas"]["ClaimLink"][];
             /** Reason */
             reason: string;
+        };
+        /** WeekCount */
+        WeekCount: {
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /** Filed */
+            filed: number;
+            /** Approved */
+            approved: number;
         };
     };
     responses: never;
