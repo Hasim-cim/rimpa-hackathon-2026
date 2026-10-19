@@ -31,6 +31,9 @@ class SourceRecord(BaseModel):
     content: str                             # plain text the linking rules search
     fields: dict[str, Any] = Field(default_factory=dict)   # structured facts: case_id, amount_weekly, occupants...
     hash: str | None = None
+    purpose: str = ""                        # intended use in plain words, e.g. "Discussion paper; not policy"
+    not_for: list[str] = Field(default_factory=list)       # policy document-type ids it must not be relied on for
+    review_due: date | None = None           # when the owner should next confirm it is still right
 
 
 # ---------- documents and claims ----------
@@ -165,6 +168,7 @@ class PassportProcess(BaseModel):
     citation_summary: dict[str, int]         # {"found": 1, "mismatch": 1, ...}
     evidence_summary: dict[str, int]         # {"supported": 2, ...}
     tool_calls: list[ToolCall]
+    checks_hash: str | None = None           # sha256 of the PassportChecks stored at issue (None: summary only)
 
 
 class PassportIntegrity(BaseModel):
@@ -267,6 +271,51 @@ class GateResult(BaseModel):
     counts: dict[str, int]                   # weights + citation statuses, zero-filled
 
 
+# ---------- passport view (what was checked at issue, for people) ----------
+
+class SourceSnapshot(BaseModel):
+    """A source record's state when the passport was issued."""
+    record_id: str
+    title: str
+    system: str
+    status: str
+    counted: bool                            # counted as evidence for this document at issue
+    why_not: str = ""                        # evidence.why_not_evidence at issue
+
+
+class PassportChecks(BaseModel):
+    """The detail behind a passport's summary counts, stored at issue and hashed into the passport."""
+    citations: list[CitationResult] = Field(default_factory=list)
+    assessment: Assessment | None = None
+    gate: GateResult | None = None
+    sources: list[SourceSnapshot] = Field(default_factory=list)
+
+
+CheckStatus = Literal["ok", "attention", "problem", "not_run"]
+
+
+class CheckSummary(BaseModel):
+    id: str                                  # citations | evidence | sources | gate | review | integrity | retention | since
+    name: str
+    status: CheckStatus
+    summary: str                             # one line
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class PassportView(BaseModel):
+    record_id: str
+    title: str
+    tier: Tier
+    gate: GateStatus | None
+    filed: datetime
+    model_returned: str
+    reviewer: str | None
+    document_type: str | None
+    at_issue: bool                           # full detail stored at issue; False = summary counts only (older passports)
+    disposed: bool
+    checks: list[CheckSummary]
+
+
 # ---------- disposal ----------
 
 class DisposalItem(BaseModel):
@@ -335,13 +384,38 @@ class SourceHealth(BaseModel):
     labels: list[RotLabel] = Field(default_factory=list)
     eligible: bool                           # counts as evidence when weighing claims
     notes: list[str] = Field(default_factory=list)   # one per label, e.g. "superseded by POL-HARDSHIP-v4"
+    purpose: str = ""                        # the record's intended use, shown as "Intended use"
+    not_for: list[str] = Field(default_factory=list)       # document types it must not be relied on for
+    review_due: date | None = None
+    overdue: bool = False                    # past review_due; still counts as evidence (the IM decides)
 
 
 class SourceHealthReport(BaseModel):
     total: int
     eligible: int
     counts: dict[RotLabel, int]
+    overdue: int = 0                         # records past their review date (not a ROT label: they still count)
     items: list[SourceHealth]                # flagged records first
+
+
+class ReliabilityDrag(BaseModel):
+    record_id: str
+    title: str
+    labels: list[RotLabel] = Field(default_factory=list)
+    why: str                                 # why it does not count as evidence, e.g. "superseded by REC-..."
+    outputs: int                             # retained outputs that list it as a source
+
+
+class ReliabilityReport(BaseModel):
+    """How much of the retained AI output still rests on current authoritative records (Andrea's question)."""
+    retained: int                            # T1-T3 passports not disposed
+    with_sources: int                        # of those, outputs that list at least one source record
+    sources_ok: int                          # ... whose every source record still counts as evidence
+    share: float | None                      # sources_ok / with_sources; None when nothing lists a source
+    claim_checked: int                       # retained outputs with an evidence check recorded on the passport
+    claim_supported: int                     # ... where every claim was supported by authoritative records
+    drag: list[ReliabilityDrag] = Field(default_factory=list)   # top sources pulling the share down
+    overdue: list[ReliabilityDrag] = Field(default_factory=list)  # sources relied on that are past their review date
 
 
 class ChainReport(BaseModel):

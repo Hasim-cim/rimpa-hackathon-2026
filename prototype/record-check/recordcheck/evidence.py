@@ -131,15 +131,17 @@ def link_claim(claim: Claim, records: list[SourceRecord], case_id: str | None = 
 
 # ---------- weighing ----------
 
-def is_evidence(rec: SourceRecord) -> bool:
-    return rec.authoritative and rec.status == "current"
+def is_evidence(rec: SourceRecord, document_type: str | None = None) -> bool:
+    """Current, authoritative, and (when the document type is known) not excluded by the record's intended use."""
+    return rec.authoritative and rec.status == "current" and not (document_type and document_type in rec.not_for)
 
 
-def weigh(claim: Claim, links: list[ClaimLink], records, citations: Iterable[CitationResult] = ()) -> Verdict:
+def weigh(claim: Claim, links: list[ClaimLink], records, citations: Iterable[CitationResult] = (),
+          document_type: str | None = None, type_name: str | None = None) -> Verdict:
     recs = records if isinstance(records, dict) else {r.id: r for r in records}
     cits = {c.citation.n: c for c in citations}
     linked = list(dict.fromkeys(l.record_id for l in links if l.record_id in recs))
-    good = [r for r in linked if is_evidence(recs[r])]
+    good = [r for r in linked if is_evidence(recs[r], document_type)]
 
     def verdict(weight: str, reason: str) -> Verdict:
         return Verdict(claim_id=claim.id, weight=weight, links=links, reason=reason)
@@ -177,11 +179,15 @@ def weigh(claim: Claim, links: list[ClaimLink], records, citations: Iterable[Cit
         return verdict("supported", f"Supported by current authoritative record(s) {', '.join(good)}.")
 
     return verdict("weak", "Only supported by records that cannot count as evidence: "
-                           + ", ".join(f"{r} ({why_not_evidence(recs[r])})" for r in linked) + ".")
+                           + ", ".join(f"{r} ({why_not_evidence(recs[r], document_type, type_name)})"
+                                       for r in linked) + ".")
 
 
-def why_not_evidence(rec: SourceRecord) -> str:
+def why_not_evidence(rec: SourceRecord, document_type: str | None = None, type_name: str | None = None) -> str:
     """Why a record does not count as evidence, in the information manager's terms; "" if it does."""
+    if rec.authoritative and rec.status == "current" and document_type and document_type in rec.not_for:
+        use = f": {rec.purpose}" if rec.purpose else ""
+        return f"its intended use excludes {type_name or document_type}{use}"
     if rec.status == "superseded":
         return f"superseded by {rec.superseded_by}" if rec.superseded_by else "superseded"
     if rec.status == "draft":
@@ -203,7 +209,8 @@ def summary(verdicts: Iterable[Verdict]) -> dict[str, int]:
 
 
 def assess(doc: Document, conn, citations: Iterable[CitationResult] = (), use_llm: bool | None = None,
-           policy: Policy | None = None) -> Assessment:
+           policy: Policy | None = None, document_type: str | None = None) -> Assessment:
+    """With a document type, a record whose intended use excludes that type (`not_for`) is not evidence for it."""
     citations = list(citations)
     records = db.get_records(conn)
     if policy is not None:
@@ -212,13 +219,15 @@ def assess(doc: Document, conn, citations: Iterable[CitationResult] = (), use_ll
                    else r.model_copy(update={"authoritative": False}) for r in records]
     recs = {r.id: r for r in records}
     claims, method = _split(doc, use_llm)
-    verdicts = [weigh(c, link_claim(c, records, doc.case_id), recs, citations) for c in claims]
+    dtype = next((d for d in policy.document_types if d.id == document_type), None) if policy and document_type else None
+    name = dtype.name if dtype else document_type
+    verdicts = [weigh(c, link_claim(c, records, doc.case_id), recs, citations, document_type, name) for c in claims]
     return Assessment(document_id=doc.id, claims=claims, verdicts=verdicts,
                       assessed_at=datetime.now(timezone.utc), method=method)
 
 
 def reassess(assessment: Assessment, conn, citations: Iterable[CitationResult] = (),
-             policy: Policy | None = None) -> Assessment:
+             policy: Policy | None = None, document_type: str | None = None) -> Assessment:
     """Re-weigh a caller-supplied assessment on the server: keep its claims, recompute every link and weight.
     A verdict sent over the API is never trusted as sent."""
     ids = [c.id for c in assessment.claims]
@@ -228,4 +237,47 @@ def reassess(assessment: Assessment, conn, citations: Iterable[CitationResult] =
     claims = [c.model_copy(update={"citation_refs": _refs(c.text)}) for c in assessment.claims]
     doc = Document(id=assessment.document_id, title=known.title if known else "", body="",
                    case_id=known.case_id if known else None, claims=claims)
-    return assess(doc, conn, citations, use_llm=False, policy=policy).model_copy(update={"method": assessment.method})
+    return assess(doc, conn, citations, use_llm=False, policy=policy,
+                  document_type=document_type).model_copy(update={"method": assessment.method})
+
+
+# ---------- display ----------
+
+_RULE_WORDS = {"case_id+amount": "exact field match", "keyphrase": "shared phrase", "household": "field check"}
+_WEIGHT_WORDS = {
+    "supported": "supported by authoritative records",
+    "weak": "weak: only an external source, or a record that cannot count as evidence",
+    "unsupported": "no authoritative record found",
+    "contradicted": "contradicted by a current record",
+}
+
+
+def claim_stage(v: Verdict) -> tuple[str, str]:
+    """(stage, strength) for display: which linking rules matched which records, and the weight in words.
+    Presentation only: the strength comes from v.weight as weigh() set it, never recomputed."""
+    if v.links:
+        by_rule: dict[str, list[str]] = {}
+        for l in v.links:
+            ids = by_rule.setdefault(_RULE_WORDS.get(l.rule, l.rule), [])
+            if l.record_id not in ids:
+                ids.append(l.record_id)
+        stage = "Step 1: checked against records, " + "; ".join(f"{rule} ({', '.join(ids)})" for rule, ids in by_rule.items())
+    else:
+        stage = "Step 1: no record linked"
+    return stage, _WEIGHT_WORDS.get(v.weight, "not weighed; a person confirms")
+
+
+def relied_on(assessment: Assessment, conn, policy: Policy | None = None, document_type: str | None = None) -> list[str]:
+    """The records an output's claims rest on: linked records that count as evidence for this document. A record that
+    matched only on wording but does not count (superseded, a draft, outside its intended use) is not a source."""
+    out: list[str] = []
+    for rid in dict.fromkeys(l.record_id for v in assessment.verdicts for l in v.links):
+        r = db.get_record(conn, rid)
+        if r is None:
+            continue
+        if policy is not None and r.authoritative and r.system not in policy.authoritative_systems:
+            r = r.model_copy(update={"authoritative": False})
+        if is_evidence(r, document_type):
+            out.append(rid)
+    return sorted(out)
+

@@ -109,3 +109,15 @@ def test_weak_when_only_non_authoritative_link():
     claim = Claim(id="cx", text="Forum says so.", author="human", position=1)
     v = evidence.weigh(claim, [ClaimLink(claim_id="cx", record_id="WEB-1", rule="keyphrase")], {"WEB-1": forum})
     assert v.weight == "weak" and "WEB-1" in v.reason
+
+
+def test_claim_stage_seed(assessment):
+    v = {x.claim_id: x for x in assessment.verdicts}
+    stage, strength = evidence.claim_stage(v["c1"])
+    assert stage.startswith("Step 1: checked against records") and "REC-2026/004811" in stage
+    assert strength == "supported by authoritative records"
+    assert evidence.claim_stage(v["c4"])[1] == "contradicted by a current record"
+    assert "REC-2026/003540" in evidence.claim_stage(v["c4"])[0]
+    assert evidence.claim_stage(v["c6"]) == ("Step 1: no record linked",
+                                             "weak: only an external source, or a record that cannot count as evidence")
+    assert evidence.claim_stage(v["c3"]) == ("Step 1: no record linked", "no authoritative record found")

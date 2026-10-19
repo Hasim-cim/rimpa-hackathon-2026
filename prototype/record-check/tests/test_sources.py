@@ -29,14 +29,14 @@ def _verdict(conn, text: str, case_id: str | None = None):
 def test_health_labels_rot_and_drafts(conn):
     h = sources.health(conn)
     assert h.counts == {"redundant": 1, "obsolete": 2, "trivial": 2, "draft": 1}
-    assert (h.total, h.eligible) == (19, 14)
+    assert (h.total, h.eligible) == (20, 15)
     by = {i.record_id: i for i in h.items}
     assert by["POL-HARDSHIP-v3"].labels == ["obsolete"] and "POL-HARDSHIP-v4" in by["POL-HARDSHIP-v3"].notes[0]
     assert by["POL-HARDSHIP-v5-draft"].labels == ["draft"] and not by["POL-HARDSHIP-v5-draft"].eligible
     copy = by["SHARE-DELEG-COPY"]
     assert copy.labels == ["redundant", "trivial"] and copy.notes[0] == "same content as INS-DELEG-2025"
     assert by["INS-DELEG-2025"].labels == [] and by["INS-DELEG-2025"].eligible     # the original is not flagged
-    flagged = [bool(i.labels) for i in h.items]
+    flagged = [bool(i.labels or i.overdue) for i in h.items]
     assert flagged == sorted(flagged, reverse=True)                                # flagged records first
 
 
@@ -104,3 +104,135 @@ def test_mark_superseded_refusals(conn):
     with pytest.raises(ValueError):
         recall.mark_superseded(conn, OLD_NOTICE, OLD_NOTICE, "r", "I. Manager")
     assert db.get_record(conn, OLD_NOTICE).status == "current"       # nothing changed
+
+
+# ---------- intended use (S1) ----------
+
+WG = "POL-HARDSHIP-WG-2026"
+PROPOSAL = ("Repayment plans running longer than five years attract an automatic partial waiver, "
+            "capped at one third of the outstanding balance.")
+
+
+@pytest.fixture
+def pol(tmp_path, monkeypatch):
+    monkeypatch.setenv("RECORDCHECK_POLICY", str(tmp_path / "policy.json"))
+    return policymod.load()
+
+
+def _typed(conn, pol, text, document_type):
+    doc = Document(id="T", title="t", case_id="2026/0412", body="",
+                   claims=[Claim(id="c1", text=text, author="ai", position=1)])
+    return evidence.assess(doc, conn, use_llm=False, policy=pol, document_type=document_type).verdicts[0]
+
+
+def test_record_outside_its_intended_use_is_not_evidence(conn, pol):
+    v = _typed(conn, pol, PROPOSAL, "decision-letter")
+    assert v.weight == "weak" and WG in v.reason
+    assert "intended use excludes Decision letter or assessment" in v.reason and "not policy" in v.reason
+    assert _typed(conn, pol, PROPOSAL, "briefing").weight == "supported"
+
+
+def test_without_a_document_type_intended_use_changes_nothing(conn, pol):
+    assert _typed(conn, pol, PROPOSAL, None).weight == "supported"
+    assert _verdict(conn, PROPOSAL, "2026/0412").weight == "supported"
+
+
+def test_seed_documents_are_unchanged_by_the_intended_use_record(conn, pol):
+    """The discussion paper links to no existing seed claim, so the demo gates do not move."""
+    for d in db.get_documents(conn):
+        for t in pol.document_types:
+            a = evidence.assess(d, conn, use_llm=False, policy=pol, document_type=t.id)
+            assert all(l.record_id != WG for v in a.verdicts for l in v.links), (d.id, t.id)
+
+
+def test_health_shows_intended_use_without_a_rot_flag(conn):
+    i = next(i for i in sources.health(conn).items if i.record_id == WG)
+    assert i.labels == [] and i.eligible and "not policy" in i.purpose and i.not_for == ["decision-letter"]
+
+
+@pytest.fixture
+def client(tmp_path, monkeypatch):
+    import importlib
+    from fastapi.testclient import TestClient
+    monkeypatch.setenv("RECORDCHECK_DB", str(tmp_path / "api.sqlite"))
+    monkeypatch.setenv("RECORDCHECK_POLICY", str(tmp_path / "policy.json"))
+    import api.main as main
+    main = importlib.reload(main)
+    yield TestClient(main.app)
+    main.conn.close()
+
+
+def test_api_check_and_passport_agree_on_intended_use(client):
+    body = {"title": "t", "body": PROPOSAL, "case_id": "2026/0412"}
+    letter = client.post("/check", json={**body, "document_type": "decision-letter"}).json()
+    brief = client.post("/check", json={**body, "document_type": "briefing"}).json()
+    assert letter["assessment"]["verdicts"][0]["weight"] == "weak"
+    assert brief["assessment"]["verdicts"][0]["weight"] == "supported"
+    ev = {"id": "EVT-S1", "app_id": "agency-assistant", "user": "u", "created": "2026-10-19T12:00:00", "prompt": "p",
+          "output": "o", "model_requested": "m", "model_returned": "m", "provider": "v"}
+    r = client.post("/passport", json={"event": ev, "assessment": brief["assessment"], "document_type": "briefing"})
+    assert r.status_code == 200 and r.json()["process"]["evidence_summary"]["supported"] == 1
+    r = client.post("/passport", json={"event": {**ev, "id": "EVT-S1b"}, "assessment": brief["assessment"],
+                                       "document_type": "decision-letter"})   # same claims, re-weighed for this type
+    assert r.status_code == 409 or r.json()["process"]["evidence_summary"]["weak"] == 1
+
+
+
+# ---------- reliability (B2) ----------
+
+def test_reliability_on_the_seed_and_after_a_source_is_superseded(conn):
+    r = sources.reliability(conn)
+    assert (r.retained, r.with_sources, r.sources_ok, r.share, r.drag) == (29, 29, 29, 1.0, [])
+    assert (r.claim_checked, r.claim_supported) == (0, 0)
+    recall.mark_superseded(conn, OLD_NOTICE, NEW_NOTICE, "reissued", by="IM")
+    r = sources.reliability(conn)
+    assert (r.sources_ok, r.with_sources) == (16, 29)
+    (d,) = r.drag
+    assert (d.record_id, d.outputs, d.labels) == (OLD_NOTICE, 13, ["obsolete"]) and NEW_NOTICE in d.why
+
+
+def test_reliability_counts_claim_checks_and_skips_t0_and_disposed(conn):
+    from recordcheck import disposal, passport
+    from recordcheck.models import AIEvent, Assessment, Verdict
+    from datetime import datetime
+    before = sources.reliability(conn)
+    ev = AIEvent(id="EVT-REL", app_id="agency-assistant", user="u", created=datetime(2026, 10, 19, 9), prompt="p",
+                 output="o", model_requested="m", model_returned="m", provider="x", decision_flag=True,
+                 source_record_ids=["NO-SUCH-RECORD"])
+    a = Assessment(document_id="D", claims=[], assessed_at=datetime(2026, 10, 19, 9), method="seed",
+                   verdicts=[Verdict(claim_id="c1", weight="supported", reason="r"),
+                             Verdict(claim_id="c2", weight="weak", reason="r")])
+    passport.build(ev, tier="T2", assessment=a, conn=conn)
+    r = sources.reliability(conn)
+    assert (r.retained, r.claim_checked, r.claim_supported) == (before.retained + 1, 1, 0)
+    assert any(d.record_id == "NO-SUCH-RECORD" and "not found" in d.why for d in r.drag)
+    due = disposal.due_for_disposal(conn, as_of=date(2026, 10, 17))
+    disposal.approve_disposal(conn, [due[0].record_id], approved_by="IM", reason="r", as_of=date(2026, 10, 17))
+    assert sources.reliability(conn).retained == r.retained          # T0 disposals never counted
+
+
+def test_api_reliability(client):
+    r = client.get("/sources/reliability")
+    assert r.status_code == 200 and r.json()["share"] == 1.0
+
+
+# ---------- review date (G3) ----------
+
+FILE_NOTE = "REC-2026/004809"
+
+
+def test_overdue_record_is_flagged_but_still_counts(conn):
+    h = sources.health(conn, as_of=date(2026, 10, 19))
+    i = next(i for i in h.items if i.record_id == FILE_NOTE)
+    assert i.overdue and i.eligible and i.labels == [] and "overdue for review since 2026-09-30" in i.notes
+    assert h.overdue == 1 and h.counts == {"redundant": 1, "obsolete": 2, "trivial": 2, "draft": 1}
+    assert not next(i for i in sources.health(conn, as_of=date(2026, 9, 30)).items if i.record_id == FILE_NOTE).overdue
+
+
+def test_overdue_changes_no_verdict_and_shows_in_reliability(conn):
+    r = sources.reliability(conn, as_of=date(2026, 10, 19))
+    assert r.share == 1.0 and r.drag == []                             # still counts as evidence
+    (o,) = r.overdue
+    assert (o.record_id, o.outputs) == (FILE_NOTE, 10) and "2026-09-30" in o.why
+    assert sources.reliability(conn, as_of=date(2026, 9, 1)).overdue == []
+

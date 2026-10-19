@@ -25,3 +25,5 @@ CREATE TABLE IF NOT EXISTS audit_log (
   subject TEXT, detail TEXT);
 CREATE TABLE IF NOT EXISTS policy (
   id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS passport_checks (
+  record_id TEXT PRIMARY KEY, hash TEXT NOT NULL, payload TEXT NOT NULL);

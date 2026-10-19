@@ -84,3 +84,32 @@ def test_year_mismatch(monkeypatch):
 def test_live_crossref():
     (c,) = cit.extract_references("[1] Edmiston, D. (2024). Indentured: benefit deductions, debt recovery and welfare disciplining. Social Policy & Administration.")
     assert cit.lookup(c, online=True).status in ("found", "mismatch", "not_checked")
+
+
+BANNED = ("true", "false", "fake", "verified", "%")
+
+
+def test_match_stage_labels():
+    nc, found, mm, nf = cit.check_document(REFS)
+    assert cit.match_stage(found) == ("Step 2: lookup in offline cache, similarity 1.00", "found in cached index record")
+    assert cit.match_stage(mm)[1] == "found, details differ"
+    assert cit.match_stage(nf)[1] == "not found; possibly fabricated"
+    assert cit.match_stage(nc) == ("Not looked up", "not checked; a person confirms")
+    r = found.model_copy(update={"source": "openalex", "score": 0.912})
+    assert cit.match_stage(r) == ("Step 3: fuzzy match in OpenAlex, similarity 0.91", "found in OpenAlex")
+
+
+def test_stage_labels_wording(tmp_path, monkeypatch):
+    """No label from either helper, across every seed document, says true/false/fake/verified or a percentage."""
+    from recordcheck import db, evidence
+    monkeypatch.setenv("RECORDCHECK_DB", str(tmp_path / "t.sqlite"))
+    conn = db.open_db()
+    labels: list[str] = []
+    for doc in db.get_documents(conn):
+        results = cit.check_document(doc.references)
+        labels += [s for r in results for s in cit.match_stage(r)]
+        labels += [s for v in evidence.assess(doc, conn, results).verdicts for s in evidence.claim_stage(v)]
+    conn.close()
+    assert labels
+    for s in labels:
+        assert not any(b in s.lower() for b in BANNED), s

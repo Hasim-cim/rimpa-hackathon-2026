@@ -83,6 +83,7 @@ def approve_disposal(conn: sqlite3.Connection, record_ids: list[str], *, approve
                      "VALUES (?,?,?,?,?,?,?,?)",
                      (rid, entry.tier, item.created.isoformat(), now.isoformat(), approved_by,
                       entry.authority, reason, entry.hash_retained))
+        conn.execute("DELETE FROM passport_checks WHERE record_id=?", (rid,))   # the detail goes with the content
         conn.execute("UPDATE passports SET disposed_at=?, payload=? WHERE record_id=?",
                      (now.isoformat(), _stub(p).model_dump_json(), rid))
         # the interaction itself lives in ai_events; destroying the passport alone would not be disposal

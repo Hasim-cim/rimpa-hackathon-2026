@@ -8,7 +8,7 @@
 
 | Status | Count |
 |---|---|
-| ✅ tested | 125 |
+| ✅ tested | 142 |
 | 🟡 by design, untested | 0 |
 | ❌ gap | 13 |
 | ⛔ out of scope by design | 5 |
@@ -34,6 +34,7 @@
 | EC-CIT-15 | A real title cited under the wrong authors | `mismatch`. Today only title, year and venue are compared, so it returns `found` | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_author_mismatch_is_not_found_status` |
 | EC-CIT-16 | A real paper cited for something it does not say | Out of scope: we check that the reference exists, not what the paper argues. Pitch answer: "Record Check tests whether a reference is real and whether a statement is supported by the organisation's own records; a claim that leans only on an outside paper reads weak and needs a person to confirm it is appropriate authority." | ⛔ out of scope by design | See EC-EVI-25 for the weak verdict |
 | EC-CIT-17 | The same reference looked up twice, second time offline | The cached result is reused with the new citation attached | ✅ tested | `tests/test_citations.py::test_online_judging_and_cache` |
+| EC-CIT-18 | A reference to government guidance or a web page (NAA's AI guidance page; a DTA policy), with live lookups on and no index hit | `not_checked`, note "Government guidance or a web page is outside Crossref and OpenAlex. Flagged for a person to confirm." Never `not_found`: before 19 Oct it read "possibly fabricated" and blocked filing. A DOI link is still looked up | ✅ tested | `tests/test_studio.py::test_naa_guidance_is_flagged_for_a_person_never_called_fabricated` |
 
 ## Evidence: linking and weighing (`recordcheck/evidence.py`)
 
@@ -69,6 +70,7 @@
 | EC-EVI-28 | Sentence with an abbreviation: "Dr. Smith assessed the case." | One claim. Today the splitter cuts after "Dr." and produces a one-word claim that reads `unsupported` | ❌ gap | `tests/test_edge_gaps.py::test_gap_evi_abbreviation_splits_a_sentence` |
 | EC-EVI-29 | The whole draft pasted into the body, References block included | Reference lines are not claims. Today they are split into fragments and weighed (the API and console take references in a separate field, so only a pasted body triggers it) | ❌ gap | `tests/test_edge_gaps.py::test_gap_evi_references_in_body_become_claims` |
 | EC-EVI-30 | A claim reworded so that no phrase or number matches the record | `unsupported`, so a person looks at it. Linking is deterministic rules, not semantic matching. Pitch answer: "We would rather under-link and send it to a person than let a model decide that two sentences mean the same thing; every link says which rule matched." | ⛔ out of scope by design | Deterministic by design; see the evidence contract in `ARCHITECTURE.md` |
+| EC-EVI-31 | A supported claim also matched a superseded record on wording only (eligibility note: income $1,240 matched old REC-2025/008800 by phrase, current REC-2026/005110 by amount) | The filed passport's sources are the records the claims rest on (`evidence.relied_on`), so the superseded match is not a source: the Sources check is OK and the reliability tile counts the output as resting on current records. The match stays visible in the Evidence detail | ✅ tested | `tests/test_console.py::test_stage_path_v2_passport_first` |
 
 ## Filing gate (`recordcheck/gate.py`, `passport.build`)
 
@@ -111,6 +113,11 @@
 | EC-PAS-10 | `build` is given a `record_id` that already exists | Refused (`DuplicateRecord`); the existing passport and the chain are untouched | ✅ tested | `tests/test_edge_cases.py::test_pas_duplicate_record_id_is_refused` |
 | EC-PAS-11 | A seeded chain with no changes | `verify_chain` ok with the right count | ✅ tested | `tests/test_passport.py::test_seed_chain_ok` |
 | EC-PAS-12 | AI use that never went through the gateway or passport (shadow AI) | Out of scope: Record Check manages the records of logged events. Pitch answer: "Capture is a control decision for each agency, and the risk-tiered rule means not every prompt is kept anyway. What we guarantee is that what is captured is provable and disposable." | ⛔ out of scope by design | Capture layer is outside the prototype |
+| EC-PAS-13 | The view of a new passport | Shows what was checked at issue: per-claim verdicts, citation results, gate reasons and a source snapshot are stored with the passport (`passport_checks`) and hashed into it (`checks_hash`); identical to the assessment that was filed | ✅ tested | `tests/test_view.py::test_view_of_a_new_passport_is_what_was_checked_at_issue` |
+| EC-PAS-14 | The stored checks are edited after issue | Integrity reads `problem`: "The checks stored at issue are missing or do not match the passport" | ✅ tested | `tests/test_view.py::test_stored_checks_are_tamper_evident` |
+| EC-PAS-15 | A seed passport (issued before checks were stored) | Hash and chain still verify (`checks_hash` is absent and excluded from the hash); the view says summary counts only | ✅ tested | `tests/test_view.py::test_seed_passports_still_verify_and_say_summary_only` |
+| EC-PAS-16 | A source is superseded, or the model is marked faulty, after filing | "Since filing" (the only live check) turns `problem` and names the record and its replacement, or the model and the recall | ✅ tested | `tests/test_view.py::test_since_filing_flips_when_a_source_is_superseded_and_a_model_is_recalled` |
+| EC-PAS-17 | Disposal of a passport with stored checks | The stored checks are deleted with the content; the view shows disposal and integrity still verifies | ✅ tested | `tests/test_view.py::test_disposal_destroys_stored_checks` |
 
 ## Recall (`recordcheck/recall.py`)
 
@@ -140,6 +147,13 @@
 | EC-SRC-08 | Mark superseded with an unknown record, a blank name, or a replacement that does not exist or is the record itself | `KeyError` or `ValueError`; nothing changes | ✅ tested | `tests/test_sources.py::test_mark_superseded_refusals` |
 | EC-SRC-09 | `GET /sources/health` and `POST /recall/record` | Health report; recall list; 404 unknown record; 422 bad replacement | ✅ tested | `tests/test_api.py::test_source_health_and_source_recall` |
 | EC-SRC-10 | A claim linked to several records, one of them now superseded, where the superseded one held the fact ("$4,860 debt" next to a rent figure) | Not `supported`. Today any current link supports the whole claim, so it stays `supported` (same root as EC-EVI-14) | ❌ gap | `tests/test_edge_gaps.py::test_gap_src_fact_from_superseded_record_hidden_by_other_links` |
+| EC-SRC-11 | A claim rests only on a current, authoritative record whose intended use excludes the document type (a discussion paper, `not_for: decision-letter`) | `weak`; reason names the record and says "its intended use excludes Decision letter or assessment: <purpose>". The same sentence in a briefing is `supported` | ✅ tested | `tests/test_sources.py::test_record_outside_its_intended_use_is_not_evidence` |
+| EC-SRC-12 | No document type given (ad hoc check, older callers) | Intended use is not applied; behaviour unchanged | ✅ tested | `tests/test_sources.py::test_without_a_document_type_intended_use_changes_nothing` |
+| EC-SRC-13 | The intended-use seed record against every seed document and type | Links to no existing claim, so every demo gate is unchanged | ✅ tested | `tests/test_sources.py::test_seed_documents_are_unchanged_by_the_intended_use_record` |
+| EC-SRC-14 | Source health for a record with an intended use | No ROT flag (it is current and authoritative); `purpose` and `not_for` carried for the Sources tab's Intended use table | ✅ tested | `tests/test_sources.py::test_health_shows_intended_use_without_a_rot_flag` |
+| EC-SRC-15 | `/check` and `/passport` with a document type | Both apply the intended use the same way: `/passport` re-weighs the claims for the type it files under | ✅ tested | `tests/test_sources.py::test_api_check_and_passport_agree_on_intended_use` |
+| EC-SRC-16 | A current record past its review date (invented: file note REC-2026/004809, due 2026-09-30) | Source health flags it "overdue for review since …" (not a ROT label); it still counts as evidence, so no verdict changes; not overdue on or before the due date | ✅ tested | `tests/test_sources.py::test_overdue_record_is_flagged_but_still_counts` |
+| EC-SRC-17 | Reliability when a relied-on source is overdue | The share is unchanged; a separate "overdue for review" list names the record and the outputs relying on it (10 in the seed) | ✅ tested | `tests/test_sources.py::test_overdue_changes_no_verdict_and_shows_in_reliability` |
 
 ## Disposal (`recordcheck/disposal.py`)
 
@@ -169,6 +183,9 @@
 | EC-POL-08 | Corrupt `policy.json` | Fails loudly; does not silently fall back to the default preset | ✅ tested | `tests/test_edge_cases.py::test_pol_corrupt_policy_file_fails_loudly` |
 | EC-POL-09 | Sector preset retention override | Overrides the seed retention days | ✅ tested | `tests/test_policy.py::test_retention_override` |
 | EC-POL-10 | Presets are sector starting points, not a regulator's rules | The information manager owns the bar. Pitch answer: "We ship defaults to start from, clearly labelled as ours; your information manager signs off the thresholds." | ⛔ out of scope by design | See the facts section of the repo `CLAUDE.md` |
+| EC-POL-11 | Strictness levels in the simple studio (Strict, Standard, Light) | Each equals a bar the Commonwealth preset ships (decision letter, briefing, case note); a type matching none shows Custom and is never rewritten unless a level is picked | ✅ tested | `tests/test_studio.py::test_levels_match_the_commonwealth_preset_exactly` |
+| EC-POL-12 | Adding a document type by name | Id made from the name; a blank name or a name already used (any case) is refused | ✅ tested | `tests/test_studio.py::test_new_type_and_describe` |
+| EC-POL-13 | An information manager adds NAA-facing types in the studio and checks a document under one | Saved with the chosen level and tier; the Check tab offers the new type and gates with its bar | ✅ tested | `tests/test_studio.py::test_naa_walkthrough_in_the_studio` |
 
 ## LLM boundary (`recordcheck/llm.py`, `evidence.py`, `policy.suggest`)
 

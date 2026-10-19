@@ -19,7 +19,7 @@ URL = os.environ.get("RECORDCHECK_TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not URL, reason="set RECORDCHECK_TEST_DATABASE_URL to run the Postgres tests")
 
 TABLES = ("records", "documents", "ai_events", "passports", "model_registry", "review_queue", "citation_cache",
-          "disposal_register", "audit_log", "policy")
+          "disposal_register", "audit_log", "policy", "passport_checks")
 
 
 @pytest.fixture
@@ -152,4 +152,25 @@ def test_a_read_between_requests_leaves_no_open_transaction(pg):
     db.latest_passport_hash(c)
     assert c._c.info.transaction_status == TransactionStatus.INTRANS
     c.rollback()
+    c.close()
+
+
+def test_stage_reset_on_postgres(pg):
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("stage", Path(__file__).resolve().parent.parent / "scripts" / "stage.py")
+    stage = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stage)
+    c = db.open_db()
+    passport.build(ev(9), tier="T1", conn=c)
+    pol = policy.load()
+    policy.save(pol, by="IM", conn=c)
+    c.close()
+    msg = stage.reset(database_url=URL)
+    assert "chain ok (40)" in msg
+    os.environ["DATABASE_URL"] = URL
+    db._shared = None
+    c = db.open_db()
+    assert c.execute("SELECT COUNT(*) FROM passports").fetchone()[0] == 40
+    assert policy.load().version == "2"
     c.close()

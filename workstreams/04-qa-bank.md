@@ -31,6 +31,14 @@ answer column) and the pressure-test log in `ideas/scorecard.md`.
 - Secis: "How does this fit NAA guidance?" → it implements the risk-tiered rule and the agentic list;
   tiers and retention are configuration an agency sets.
 
+**Added 19 Oct from session 1 deep research** (wording and sources in `research/session-1-outcomes-2026-10-19.md`):
+- "Vendors already clean up ROT; isn't this that?" → they clean the repository; we trace which AI outputs relied on a
+  source and recall them when it's superseded. Purview logs accessed files, but we found no workflow that acts on them.
+- "Why not sentiment analysis for intent?" → tone isn't evidence; we use the IAR's own Purpose field plus conditions of use.
+- "Isn't ROT just delete-it?" → no: flag and review; a superseded record is still a record and keeps its disposal authority.
+- "How do you know people over-trust AI?" → Microsoft Research, N=404: 80.9% agreement with an unhedged AI.
+- "Why now?" → Queensland's guidance names outdated documents and ROT as AI risks; Privacy Act APP 1.7 from 10 Dec 2026.
+
 Pressure-test each answer against the live app: if the app can't show it, soften the claim.
 
 ## Read first

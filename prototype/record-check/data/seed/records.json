@@ -105,7 +105,8 @@
     "fields": {
       "case_id": "2026/0412",
       "call_date": "2026-09-08"
-    }
+    },
+    "review_due": "2026-09-30"
   },
   {
     "id": "REC-2026/004740",
@@ -276,5 +277,23 @@
       "case_id": "2026/0587",
       "amount_fortnightly": 980
     }
+  },
+  {
+    "id": "POL-HARDSHIP-WG-2026",
+    "title": "Hardship working group discussion paper, October 2026",
+    "system": "Policy library",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-10-02",
+    "created_by": "Hardship working group",
+    "reviewed_by": "Policy director",
+    "content": "Discussion paper for consultation. The working group proposes that repayment plans running longer than five years attract an automatic partial waiver, capped at one third of the outstanding balance. This proposal has not been adopted and is not policy.",
+    "fields": {
+      "proposal": "automatic partial waiver for long repayment plans"
+    },
+    "purpose": "Discussion paper for consultation; not policy, not for decisions about individuals",
+    "not_for": [
+      "decision-letter"
+    ]
   }
 ]

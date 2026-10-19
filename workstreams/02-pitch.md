@@ -8,6 +8,9 @@
 **Done:** skeleton with timings in `team/04 Pitch and Q&A prep.md`; lines worth having; things not to say.
 The product and demo exist (see 01 and 05). The idea book (`docs/idea-book/`) has the story per feature.
 
+**New material, 19 Oct:** session 1's words plus verified stage lines (Queensland ROT quote, Microsoft over-trust
+figure, knee-surgery analogy wording, IAR Purpose field) in `research/session-1-outcomes-2026-10-19.md`, with a "Don't say" list.
+
 **Next:**
 1. Write the script against the real demo, beat by beat, with who speaks. Suggested spine:
    - **Hook (0:30):** the Deloitte fabricated references, or the AI scribe letter. One sentence each.

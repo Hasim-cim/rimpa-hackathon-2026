@@ -13,7 +13,7 @@ from . import gate as gatemod
 from .hashing import sha256
 from .models import (
     Policy,
-    AIEvent, Assessment, ChainReport, CitationResult, GateResult, Passport, PassportAgent, PassportBusiness,
+    AIEvent, Assessment, ChainReport, CitationResult, GateResult, Passport, PassportChecks, SourceSnapshot, PassportAgent, PassportBusiness,
     GateStatus, PassportIntegrity, PassportParadata, PassportProcess, PassportRecord, Review, Tier, TierRules,
 )
 
@@ -123,6 +123,7 @@ def build(event: AIEvent, *, tier: Tier, assessment: Assessment | None = None,
         raise ValueError("A review needs the reviewer's name.")
     if review is not None and gatemod.same_person(review.reviewer, event.user):
         raise SelfReview(f"{review.reviewer} produced this output and cannot also review it.")
+    result: GateResult | None = None
     if policy is not None:
         if document_type is None:
             dtype = gatemod.baseline_type(evidence=assessment is not None, citations=bool(citations))
@@ -145,18 +146,46 @@ def build(event: AIEvent, *, tier: Tier, assessment: Assessment | None = None,
         for v in assessment.verdicts:
             ev[v.weight] = ev.get(v.weight, 0) + 1
 
+    checks = PassportChecks(citations=list(citations), assessment=assessment, gate=result,
+                            sources=_snapshot(conn, event, assessment, policy, document_type))
+
     # one writer at a time from here to the commit: the id, prev_hash and seq all depend on the chain's head,
     # and on Postgres several instances may write at once
     db.lock(conn, db.CHAIN_LOCK)
     try:
-        p = _append(conn, event, tier, reason, rules, review, record_id, document_type, gate, policy, cit, ev)
+        p = _append(conn, event, tier, reason, rules, review, record_id, document_type, gate, policy, cit, ev, checks)
     except BaseException:
         conn.rollback()
         raise
     return p
 
 
-def _append(conn, event, tier, reason, rules, review, record_id, document_type, gate, policy, cit, ev) -> Passport:
+def _snapshot(conn, event: AIEvent, assessment: Assessment | None, policy, document_type) -> list[SourceSnapshot]:
+    """Each source the output relied on, as it stood at issue (judged by the policy in force). Every record a claim
+    matched, counted or not, stays visible in the stored assessment."""
+    from . import evidence
+    ids = list(event.source_record_ids)
+    out = []
+    for rid in dict.fromkeys(ids):
+        r = db.get_record(conn, rid)
+        if r is None:
+            out.append(SourceSnapshot(record_id=rid, title="(not in the records system)", system="", status="missing",
+                                      counted=False, why_not="not found in the records system"))
+            continue
+        if policy is not None and r.authoritative and r.system not in policy.authoritative_systems:
+            r = r.model_copy(update={"authoritative": False})
+        out.append(SourceSnapshot(record_id=r.id, title=r.title, system=r.system, status=r.status,
+                                  counted=evidence.is_evidence(r, document_type),
+                                  why_not=evidence.why_not_evidence(r, document_type)))
+    return out
+
+
+def checks_hash(checks: PassportChecks) -> str:
+    return sha256(checks.model_dump(mode="json", exclude_none=True))
+
+
+def _append(conn, event, tier, reason, rules, review, record_id, document_type, gate, policy, cit, ev,
+            checks: PassportChecks) -> Passport:
     if record_id is not None and db.get_passport(conn, record_id) is not None:
         raise DuplicateRecord(f"{record_id} is already in the chain.")
     rid = record_id or next_record_id(conn)
@@ -173,7 +202,8 @@ def _append(conn, event, tier, reason, rules, review, record_id, document_type, 
                                   disposal=rules.retention[tier], document_type=document_type, gate=gate),
         process=PassportProcess(prompt=event.prompt, system_prompt=event.system_prompt,
                                 source_record_ids=list(event.source_record_ids),
-                                citation_summary=cit, evidence_summary=ev, tool_calls=list(event.tool_calls)),
+                                citation_summary=cit, evidence_summary=ev, tool_calls=list(event.tool_calls),
+                                checks_hash=checks_hash(checks)),
         review=review,
         integrity=PassportIntegrity(hash="", prev_hash=db.latest_passport_hash(conn)),
         paradata=PassportParadata(
@@ -184,6 +214,8 @@ def _append(conn, event, tier, reason, rules, review, record_id, document_type, 
     )
     p.integrity.hash = compute_hash(p)
     db.insert_passport(conn, p)
+    db.upsert(conn, "passport_checks", "record_id",
+              dict(record_id=rid, hash=p.process.checks_hash, payload=checks.model_dump_json()))
     db.audit(conn, actor=event.user, action="passport.issued", subject=rid,
              detail=f"tier {tier}; hash {p.integrity.hash[:12]}")
     conn.commit()
@@ -212,3 +244,10 @@ def verify_chain(conn: sqlite3.Connection) -> ChainReport:
     if disposed:
         detail = f"{n} passports verified; chain intact; {disposed} disposed entries retained as hash stubs."
     return ChainReport(ok=True, checked=n, detail=detail)
+
+
+def view(conn, record_id: str, policy: "Policy | None" = None):
+    """The passport and the checks done on it, for people (see view.py). None for an unknown record."""
+    from . import view as viewmod
+    return viewmod.view(conn, record_id, policy)
+

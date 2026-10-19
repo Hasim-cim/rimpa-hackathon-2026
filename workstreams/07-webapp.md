@@ -147,3 +147,25 @@ every version from V0 has an entry in `docs/versions.md` and a git tag.
   (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `PG*`, `POSTGRES_*`). The current code ignores it until the `db.py` port
   lands; deploys are on hold until the engine chat says it's green. The install also added `.agents/`, `.claude/skills/`
   (Neon agent skills) and `skills-lock.json` at the repo root, which are not uploaded. The engine port of `db.py` to Postgres is requested from the backend-safety chat.
+- **19 Oct, V2.3 Postgres on Neon (preview):** the builder's port (db.py adapter, schema files, chain under advisory
+  lock, policy in the DB) is deployed to preview `record-check-iuhlvqqxb`. Smoke test: self-seed on first request, chain
+  ok 40; passport REC-2026/005113 filed and read back 200 ×6; policy PUT v2 → v3, persisted on 3 reads; chain ok 41.
+  `api/vercel_app.py` comment updated (the /tmp lines are now only a fallback without DATABASE_URL). **Caveat:**
+  Preview and Production share one Neon database, so preview writes (this smoke passport, policy v3) are production data.
+  Reset before the stage (S2), or give previews a Neon branch.
+  **Promoted to production** on Hasim's OK. Prod check: chain ok 41, REC-2026/005113 200 ×3, policy v3, summary gate
+  blocked, all six pages 200. `record-check.vercel.app` now keeps writes.
+- **19 Oct, deploy agent: S1 + S2 + S3 + B3 + B2 on production.** On Hasim's OK, reset the shared Neon DB with
+  `scripts/stage.py reset --database-url … --yes` (URL pulled to a temp file and deleted after; never printed): 40
+  passports, 20 records, policy v2, chain ok 40. Then promoted preview `record-check-bwbhk2ign`. Prod checks: S1 sentence
+  weak for decision-letter (intended use excludes it) and supported for briefing; summary Blocked 2/2/2/1; negation ok;
+  B3 `/api/passport/REC-2026/002444.pdf` 200 application/pdf; B2 `/api/sources/reliability` 29/29; six pages 200.
+  Suite `170 passed, 11 skipped, 13 xfailed`. Production DB = stage data now: no test writes against it. Not yet
+  in web/: the PDF link on Passport, the B2 figure, the intended-use columns (types regenerated).
+- **19 Oct, deploy agent: held for the Neon preview branch** (Hasim chose one shared `preview` branch; Production keeps
+  `main` = stage data; needs `npx neonctl auth` from Hasim). Queued: S4, G3, P1, P2 (builder), relied_on (`/check` returns
+  `relied_on`; `/passport` sets `source_record_ids` from the evidence) and **P3 web passport-first UI**: `/` = Records
+  (picker, passport header, 8 checks as expanders from `/passport/{id}/view`, PDF link, all records), `/check` = Check a
+  document (now sends `relied_on`), and an Information manager sub-nav (Setup, Recall, Disposal, Register, Passport detail).
+  Browser-tested locally (filed → lands on Records with full checks; seed passports show "summary counts only").
+  Suite `191 passed, 11 skipped, 13 xfailed`; `next build` clean.

@@ -9,3 +9,4 @@ data/*.sqlite-shm
 .streamlit/secrets.toml
 data/policy.json
 .DS_Store
+data/stage-policy.json

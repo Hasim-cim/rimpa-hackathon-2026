@@ -27,3 +27,13 @@ With a key and a network it upgrades to live Crossref/OpenAlex and LLM claim spl
 
 Design and module contracts: [`ARCHITECTURE.md`](ARCHITECTURE.md).
 Planning, research and the pitch: `~/repos/rimpa-hackathon-2026`.
+
+
+### Stage database
+The stage demo uses its own SQLite file, so rehearsals never touch the shared DB:
+```bash
+uv run python scripts/stage.py reset          # wipe and reseed data/stage.sqlite + data/stage-policy.json
+RECORDCHECK_DB=data/stage.sqlite RECORDCHECK_POLICY=data/stage-policy.json uv run streamlit run app/streamlit_app.py
+```
+For Postgres, set `DATABASE_URL` to use it (tests stay on SQLite); a Postgres stage branch resets with
+`scripts/stage.py reset --database-url <url> --yes`.

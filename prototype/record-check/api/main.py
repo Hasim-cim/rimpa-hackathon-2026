@@ -6,15 +6,15 @@ import threading
 from datetime import date, datetime, timezone
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from recordcheck import citations as cit
-from recordcheck import db, disposal, evidence, gate, passport, recall, sources
+from recordcheck import db, disposal, evidence, gate, passport, printout, recall, sources
 from recordcheck import policy as policymod
 from recordcheck.models import (
     AIEvent, Assessment, ChainReport, CitationResult, DisposalEntry, DisposalItem, Document, GateResult,
-    ModelRegistryEntry, Passport, Policy, RecallResult, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
+    ModelRegistryEntry, Passport, PassportView, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
     SourceRecord, Tier,
 )
 
@@ -44,6 +44,7 @@ class CheckResponse(BaseModel):
     citations: list[CitationResult]
     assessment: Assessment
     gate: GateResult | None = None
+    relied_on: list[str] = []                # records the claims rest on: what /passport will file as the sources
 
 
 class PassportRequest(BaseModel):
@@ -100,9 +101,10 @@ def check(req: CheckRequest) -> CheckResponse:
         if req.document_type and dtype is None:
             raise HTTPException(422, f"unknown document type {req.document_type!r}")
         results = cit.check_document(doc.references, conn=conn)
-        assessment = evidence.assess(doc, conn, results, policy=pol)
+        assessment = evidence.assess(doc, conn, results, policy=pol, document_type=req.document_type)
         result = gate.evaluate(assessment, results, None, dtype, dtype.default_tier) if dtype else None
-        return CheckResponse(citations=results, assessment=assessment, gate=result)
+        return CheckResponse(citations=results, assessment=assessment, gate=result,
+                             relied_on=evidence.relied_on(assessment, conn, pol, req.document_type))
 
 
 @app.get("/documents", response_model=list[Document])
@@ -135,9 +137,14 @@ def issue_passport(req: PassportRequest) -> Passport:
         # never trust a status or weight sent by the caller: look the citations up and re-weigh the claims here
         citations = cit.recheck(req.citations, conn=conn)
         try:
-            assessment = evidence.reassess(req.assessment, conn, citations, policy=pol) if req.assessment else None
+            assessment = evidence.reassess(req.assessment, conn, citations, policy=pol,
+                                           document_type=req.document_type) if req.assessment else None
+            event = req.event
+            if assessment is not None:  # the sources are what the evidence rests on, never what the caller claims
+                event = event.model_copy(update={"source_record_ids": evidence.relied_on(
+                    assessment, conn, pol, req.document_type)})
             # build runs the filing gate itself, so it cannot be skipped by leaving out document_type
-            return passport.build(req.event, tier=tier, assessment=assessment, citations=citations,
+            return passport.build(event, tier=tier, assessment=assessment, citations=citations,
                                   review=req.review, conn=conn, rules=pol.tier_rules,
                                   document_type=req.document_type, policy=pol)
         except passport.GateBlocked as e:
@@ -145,6 +152,29 @@ def issue_passport(req: PassportRequest) -> Passport:
             raise HTTPException(409, {"gate": "blocked", "reasons": reasons})
         except ValueError as e:  # tier below the rules, self-review, duplicate record, inconsistent assessment
             raise HTTPException(422, str(e))
+
+
+@app.get("/passport/{record_id:path}.pdf", response_class=Response,
+         responses={200: {"content": {"application/pdf": {}}}})
+def get_passport_pdf(record_id: str) -> Response:
+    """One-page printed passport. Registered before the JSON route, whose path parameter would swallow ".pdf"."""
+    with lock:
+        p = db.get_passport(conn, record_id)
+        chain = passport.verify_chain(conn) if p else None
+    if p is None:
+        raise HTTPException(404, f"unknown record: {record_id}")
+    return Response(printout.passport_pdf(p, chain), media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{printout.filename(p)}"'})
+
+
+@app.get("/passport/{record_id:path}/view", response_model=PassportView)
+def get_passport_view(record_id: str) -> PassportView:
+    """The passport and the checks done on it at issue, plus the live 'Since filing' check."""
+    with lock:
+        v = passport.view(conn, record_id, policymod.load())
+    if v is None:
+        raise HTTPException(404, f"unknown record: {record_id}")
+    return v
 
 
 @app.get("/passport/{record_id:path}", response_model=Passport)
@@ -186,6 +216,12 @@ def do_source_recall(req: SourceRecallRequest) -> SourceRecallResult:
 def source_health() -> SourceHealthReport:
     with lock:
         return sources.health(conn, policymod.load())
+
+
+@app.get("/sources/reliability", response_model=ReliabilityReport)
+def source_reliability() -> ReliabilityReport:
+    with lock:
+        return sources.reliability(conn, policymod.load())
 
 
 @app.get("/chain/verify", response_model=ChainReport)

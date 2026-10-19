@@ -107,6 +107,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/passport/{record_id}.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Passport Pdf
+         * @description One-page printed passport. Registered before the JSON route, whose path parameter would swallow ".pdf".
+         */
+        get: operations["get_passport_pdf_passport__record_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/passport/{record_id}/view": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Passport View
+         * @description The passport and the checks done on it at issue, plus the live 'Since filing' check.
+         */
+        get: operations["get_passport_view_passport__record_id__view_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/passport/{record_id}": {
         parameters: {
             query?: never;
@@ -167,6 +207,23 @@ export interface paths {
         };
         /** Source Health */
         get: operations["source_health_sources_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sources/reliability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Reliability */
+        get: operations["source_reliability_sources_reliability_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -465,6 +522,29 @@ export interface components {
             citations: components["schemas"]["CitationResult"][];
             assessment: components["schemas"]["Assessment"];
             gate?: components["schemas"]["GateResult"] | null;
+            /**
+             * Relied On
+             * @default []
+             */
+            relied_on: string[];
+        };
+        /** CheckSummary */
+        CheckSummary: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "attention" | "problem" | "not_run";
+            /** Summary */
+            summary: string;
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            };
         };
         /** Citation */
         Citation: {
@@ -835,6 +915,8 @@ export interface components {
             };
             /** Tool Calls */
             tool_calls: components["schemas"]["ToolCall"][];
+            /** Checks Hash */
+            checks_hash?: string | null;
         };
         /** PassportRecord */
         PassportRecord: {
@@ -871,6 +953,37 @@ export interface components {
             assessment?: components["schemas"]["Assessment"] | null;
             /** Document Type */
             document_type?: string | null;
+        };
+        /** PassportView */
+        PassportView: {
+            /** Record Id */
+            record_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Tier
+             * @enum {string}
+             */
+            tier: "T0" | "T1" | "T2" | "T3";
+            /** Gate */
+            gate: ("ready" | "attention" | "blocked") | null;
+            /**
+             * Filed
+             * Format: date-time
+             */
+            filed: string;
+            /** Model Returned */
+            model_returned: string;
+            /** Reviewer */
+            reviewer: string | null;
+            /** Document Type */
+            document_type: string | null;
+            /** At Issue */
+            at_issue: boolean;
+            /** Disposed */
+            disposed: boolean;
+            /** Checks */
+            checks: components["schemas"]["CheckSummary"][];
         };
         /**
          * Policy
@@ -1000,6 +1113,41 @@ export interface components {
             /** Items */
             items: components["schemas"]["RecallItem"][];
         };
+        /** ReliabilityDrag */
+        ReliabilityDrag: {
+            /** Record Id */
+            record_id: string;
+            /** Title */
+            title: string;
+            /** Labels */
+            labels?: ("redundant" | "obsolete" | "trivial" | "draft")[];
+            /** Why */
+            why: string;
+            /** Outputs */
+            outputs: number;
+        };
+        /**
+         * ReliabilityReport
+         * @description How much of the retained AI output still rests on current authoritative records (Andrea's question).
+         */
+        ReliabilityReport: {
+            /** Retained */
+            retained: number;
+            /** With Sources */
+            with_sources: number;
+            /** Sources Ok */
+            sources_ok: number;
+            /** Share */
+            share: number | null;
+            /** Claim Checked */
+            claim_checked: number;
+            /** Claim Supported */
+            claim_supported: number;
+            /** Drag */
+            drag?: components["schemas"]["ReliabilityDrag"][];
+            /** Overdue */
+            overdue?: components["schemas"]["ReliabilityDrag"][];
+        };
         /** Review */
         Review: {
             /** Reviewer */
@@ -1053,6 +1201,20 @@ export interface components {
             eligible: boolean;
             /** Notes */
             notes?: string[];
+            /**
+             * Purpose
+             * @default
+             */
+            purpose: string;
+            /** Not For */
+            not_for?: string[];
+            /** Review Due */
+            review_due?: string | null;
+            /**
+             * Overdue
+             * @default false
+             */
+            overdue: boolean;
         };
         /** SourceHealthReport */
         SourceHealthReport: {
@@ -1064,6 +1226,11 @@ export interface components {
             counts: {
                 [key: string]: number;
             };
+            /**
+             * Overdue
+             * @default 0
+             */
+            overdue: number;
             /** Items */
             items: components["schemas"]["SourceHealth"][];
         };
@@ -1126,6 +1293,15 @@ export interface components {
             };
             /** Hash */
             hash?: string | null;
+            /**
+             * Purpose
+             * @default
+             */
+            purpose: string;
+            /** Not For */
+            not_for?: string[];
+            /** Review Due */
+            review_due?: string | null;
         };
         /** SuggestRequest */
         SuggestRequest: {
@@ -1413,6 +1589,68 @@ export interface operations {
             };
         };
     };
+    get_passport_pdf_passport__record_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_passport_view_passport__record_id__view_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PassportView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_passport_passport__record_id__get: {
         parameters: {
             query?: never;
@@ -1526,6 +1764,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceHealthReport"];
+                };
+            };
+        };
+    };
+    source_reliability_sources_reliability_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReliabilityReport"];
                 };
             };
         };

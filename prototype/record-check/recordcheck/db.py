@@ -250,6 +250,20 @@ def seed(conn: sqlite3.Connection, *, force: bool = False) -> dict[str, int]:
     return counts
 
 
+TABLES = ("records", "documents", "ai_events", "passports", "model_registry", "review_queue", "citation_cache",
+          "disposal_register", "audit_log", "policy", "passport_checks")
+
+
+def reset(conn) -> dict[str, int]:
+    """Wipe every table (policy and disposal register included) and reseed. For a stage or test database only:
+    callers must name the target explicitly; nothing calls this on the shared database."""
+    lock(conn, SEED_LOCK)
+    for t in TABLES:
+        conn.execute(f"DELETE FROM {t}")
+    conn.commit()
+    return seed(conn)
+
+
 def insert_passport(conn: sqlite3.Connection, p: Passport, seq: int | None = None) -> None:
     if seq is None:
         seq = (conn.execute("SELECT COALESCE(MAX(seq),0) FROM passports").fetchone()[0] or 0) + 1

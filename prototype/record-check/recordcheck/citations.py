@@ -24,11 +24,18 @@ THRESHOLD = 0.85
 MAILTO = "hasim.rahman@cimenviro.com"
 TIMEOUT = 10.0
 LEGISLATION_NOTE = "Legislation is outside Crossref and OpenAlex. Flagged for a person to confirm."
+GOVERNMENT_NOTE = ("Government guidance or a web page is outside Crossref and OpenAlex. "
+                   "Flagged for a person to confirm.")
 
 _REF_MARKER = re.compile(r"^\s*\[(\d+)\]\s*", re.M)
 _YEAR = re.compile(r"\((\d{4})[a-z]?\)")
 _LEGISLATION = re.compile(r"\bAct\b|\((?:Cth|NSW|Vic|Qld|WA|SA|Tas|ACT|NT)\)|\bs \d")
 _CASE = re.compile(r"\sv\s|\[\d{4}\]\s*[A-Z]")
+# a web address other than a DOI, or a government body as author: the indexes hold neither, so an empty answer
+# would read "possibly fabricated" for, say, NAA's own guidance. These are flagged for a person instead.
+_WEB = re.compile(r"https?://(?!(?:dx\.)?doi\.org/)\S+|\bwww\.\S+", re.I)
+_GOV_AUTHOR = re.compile(r"\b(?:National Archives|Archives|Department|Agency|Commission(?:er)?|Office of|Government|"
+                         r"Authority|Ombudsman|Parliament|Council|Ministry|Bureau|Tribunal)\b")
 
 
 def normalise(title: str) -> str:
@@ -41,6 +48,9 @@ def _kind(raw: str) -> str:
         return "case"
     if _LEGISLATION.search(raw):
         return "legislation"
+    year = _YEAR.search(raw)
+    if _WEB.search(raw) or (year and _GOV_AUTHOR.search(raw[: year.start()])):
+        return "other"
     return "article"
 
 
@@ -167,6 +177,8 @@ def _cache_put(conn: sqlite3.Connection, key: str, res: CitationResult) -> None:
 def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection | None = None) -> CitationResult:
     if c.kind in ("legislation", "case"):
         return CitationResult(citation=c, status="not_checked", source="none", note=LEGISLATION_NOTE)
+    if c.kind == "other":
+        return CitationResult(citation=c, status="not_checked", source="none", note=GOVERNMENT_NOTE)
     key = normalise(c.title or "")
     fx = _load_fixtures().get(key)
     if fx:
@@ -216,3 +228,25 @@ def summary(results: list[CitationResult]) -> dict[str, int]:
     for r in results:
         counts[r.status] += 1
     return counts
+
+
+_STAGE_SOURCE = {"crossref": "Crossref", "openalex": "OpenAlex"}
+
+
+def match_stage(r: CitationResult) -> tuple[str, str]:
+    """(stage, strength) for display: which lookup step decided this result, and how strong it is. Presentation only."""
+    sim = f", similarity {r.score:.2f}" if r.score is not None else ""
+    if r.source == "fixture":
+        stage, where = "Step 2: lookup in offline cache" + sim, "cached index record"
+    elif r.source in _STAGE_SOURCE:
+        where = _STAGE_SOURCE[r.source]
+        stage = f"Step 3: fuzzy match in {where}" + sim
+    else:
+        stage, where = "Not looked up", "an index"
+    strength = {
+        "found": f"found in {where}",
+        "mismatch": "found, details differ",
+        "not_found": "not found; possibly fabricated",
+        "not_checked": "not checked; a person confirms",
+    }.get(r.status, "unknown result; a person confirms")
+    return stage, strength

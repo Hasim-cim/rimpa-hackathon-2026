@@ -199,6 +199,82 @@
         }
       }
     },
+    "/passport/{record_id}.pdf": {
+      "get": {
+        "summary": "Get Passport Pdf",
+        "description": "One-page printed passport. Registered before the JSON route, whose path parameter would swallow \".pdf\".",
+        "operationId": "get_passport_pdf_passport__record_id__pdf_get",
+        "parameters": [
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/passport/{record_id}/view": {
+      "get": {
+        "summary": "Get Passport View",
+        "description": "The passport and the checks done on it at issue, plus the live 'Since filing' check.",
+        "operationId": "get_passport_view_passport__record_id__view_get",
+        "parameters": [
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/passport/{record_id}": {
       "get": {
         "summary": "Get Passport",
@@ -325,6 +401,24 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SourceHealthReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sources/reliability": {
+      "get": {
+        "summary": "Source Reliability",
+        "operationId": "source_reliability_sources_reliability_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReliabilityReport"
                 }
               }
             }
@@ -975,6 +1069,14 @@
                 "type": "null"
               }
             ]
+          },
+          "relied_on": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Relied On",
+            "default": []
           }
         },
         "type": "object",
@@ -983,6 +1085,45 @@
           "assessment"
         ],
         "title": "CheckResponse"
+      },
+      "CheckSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "attention",
+              "problem",
+              "not_run"
+            ],
+            "title": "Status"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "summary"
+        ],
+        "title": "CheckSummary"
       },
       "Citation": {
         "properties": {
@@ -1930,6 +2071,17 @@
             },
             "type": "array",
             "title": "Tool Calls"
+          },
+          "checks_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checks Hash"
           }
         },
         "type": "object",
@@ -2055,6 +2207,105 @@
           "event"
         ],
         "title": "PassportRequest"
+      },
+      "PassportView": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "attention",
+                  "blocked"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          },
+          "filed": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Filed"
+          },
+          "model_returned": {
+            "type": "string",
+            "title": "Model Returned"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          },
+          "at_issue": {
+            "type": "boolean",
+            "title": "At Issue"
+          },
+          "disposed": {
+            "type": "boolean",
+            "title": "Disposed"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/CheckSummary"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "title",
+          "tier",
+          "gate",
+          "filed",
+          "model_returned",
+          "reviewer",
+          "document_type",
+          "at_issue",
+          "disposed",
+          "checks"
+        ],
+        "title": "PassportView"
       },
       "Policy": {
         "properties": {
@@ -2352,6 +2603,107 @@
         ],
         "title": "RecallResult"
       },
+      "ReliabilityDrag": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "labels": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "redundant",
+                "obsolete",
+                "trivial",
+                "draft"
+              ]
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "outputs": {
+            "type": "integer",
+            "title": "Outputs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "title",
+          "why",
+          "outputs"
+        ],
+        "title": "ReliabilityDrag"
+      },
+      "ReliabilityReport": {
+        "properties": {
+          "retained": {
+            "type": "integer",
+            "title": "Retained"
+          },
+          "with_sources": {
+            "type": "integer",
+            "title": "With Sources"
+          },
+          "sources_ok": {
+            "type": "integer",
+            "title": "Sources Ok"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share"
+          },
+          "claim_checked": {
+            "type": "integer",
+            "title": "Claim Checked"
+          },
+          "claim_supported": {
+            "type": "integer",
+            "title": "Claim Supported"
+          },
+          "drag": {
+            "items": {
+              "$ref": "#/components/schemas/ReliabilityDrag"
+            },
+            "type": "array",
+            "title": "Drag"
+          },
+          "overdue": {
+            "items": {
+              "$ref": "#/components/schemas/ReliabilityDrag"
+            },
+            "type": "array",
+            "title": "Overdue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "retained",
+          "with_sources",
+          "sources_ok",
+          "share",
+          "claim_checked",
+          "claim_supported"
+        ],
+        "title": "ReliabilityReport",
+        "description": "How much of the retained AI output still rests on current authoritative records (Andrea's question)."
+      },
       "Review": {
         "properties": {
           "reviewer": {
@@ -2485,6 +2837,35 @@
             },
             "type": "array",
             "title": "Notes"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose",
+            "default": ""
+          },
+          "not_for": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Not For"
+          },
+          "review_due": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Due"
+          },
+          "overdue": {
+            "type": "boolean",
+            "title": "Overdue",
+            "default": false
           }
         },
         "type": "object",
@@ -2520,6 +2901,11 @@
             },
             "type": "object",
             "title": "Counts"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue",
+            "default": 0
           },
           "items": {
             "items": {
@@ -2683,6 +3069,30 @@
               }
             ],
             "title": "Hash"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose",
+            "default": ""
+          },
+          "not_for": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Not For"
+          },
+          "review_due": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Due"
           }
         },
         "type": "object",

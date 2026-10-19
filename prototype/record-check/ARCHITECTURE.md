@@ -82,8 +82,12 @@ def weigh(claim: Claim, links: list[ClaimLink], records: dict[str, SourceRecord]
   #       (an external source exists, but it is not an organisational record)
     # contradicted: a current authoritative record's fields disagree with a number/fact in the claim
     # unsupported: no links; or the claim rests on a citation whose status is not_found
-def assess(doc: Document, conn, citations: list[CitationResult] = (), use_llm: bool | None = None, policy=None) -> Assessment
-def reassess(assessment: Assessment, conn, citations=(), policy=None) -> Assessment
+def assess(doc: Document, conn, citations: list[CitationResult] = (), use_llm: bool | None = None, policy=None, document_type=None) -> Assessment
+    # With a document type, a record whose `not_for` holds that type is not evidence for this document (weak, reason
+    # "its intended use excludes <type name>: <purpose>"). No type → unchanged. /check and /passport pass it through.
+def reassess(assessment: Assessment, conn, citations=(), policy=None, document_type=None) -> Assessment
+def relied_on(assessment, conn, policy=None, document_type=None) -> list[str]
+    # linked records that count as evidence: what a filed output's source_record_ids should be
     # server side: keep the caller's claims, recompute every link and weight. ValueError if verdicts ≠ claims.
 ```
 The LLM may only *split text into claims*. It never decides a weight.
@@ -105,6 +109,33 @@ def verify_chain(conn) -> ChainReport                            # recompute has
 Tiers: `T0` transitory, `T1` retained output, `T2` decision-informing, `T3` agentic action.
 Escalations (from tier_rules.json): `exported_to_document → ≥T1`, `decision_flag → ≥T2`, `tool_calls with side effects → T3`.
 
+### policy.py (simple studio)
+```python
+LEVELS: dict[str, Level]          # strict / standard / light: each equals a Commonwealth preset bar + checks
+def level_of(dtype) -> str | None # exact match, else None ("Custom"; never rewritten unless a level is picked)
+def apply_level(dtype, level) -> DocumentType
+def new_type(name, level, tier, existing) -> DocumentType   # id from the name; ValueError on blank or taken
+def describe(dtype) -> str        # the bar in one plain sentence
+```
+Citations: a reference with a non-DOI web address, or a government body as author, is kind `other` →
+`not_checked` with `GOVERNMENT_NOTE` (never `not_found`: the indexes hold neither).
+
+### printout.py
+```python
+def passport_pdf(p: Passport, chain: ChainReport | None = None) -> bytes   # one A4 page, six groups, "example data"
+def filename(p: Passport) -> str                                            # passport-REC-2026-000123.pdf
+```
+fpdf2 core fonts (Latin-1): arrows and quotes are mapped to plain text. API: `GET /passport/{id}.pdf`.
+
+### view.py (passport-first UI)
+```python
+def view(conn, record_id, policy=None) -> PassportView | None   # also passport.view; API GET /passport/{id}/view
+```
+Eight checks in order: citations, evidence, sources, gate, review, integrity, retention, since (live). Each
+`{id, name, status: ok|attention|problem|not_run, summary, details}`. Details come from `passport_checks`, written by
+`passport.build` at issue (citations, assessment, gate result, source snapshot) and hashed into
+`process.checks_hash`; older passports have none and show summary counts only. Disposal deletes the stored checks.
+
 ### recall.py
 ```python
 def mark_model(conn, model_id: str, status: Literal["withdrawn","faulty"], effective_from: date, reason: str, by: str) -> None
@@ -122,6 +153,12 @@ def health(conn, policy: Policy | None = None) -> SourceHealthReport
     # per record: redundant (same content as another, ignoring case and spacing; the copy that counts as
     # evidence, then the earliest, is the original), obsolete (superseded or disposed), trivial (not
     # authoritative, or its system is not in the policy), draft. `eligible` = evidence.is_evidence.
+def reliability(conn, policy: Policy | None = None, top: int = 5) -> ReliabilityReport
+    # over retained outputs (T1-T3 passports, not disposed): share whose source records ALL still count as
+    # evidence (headline; drops the moment a source is superseded), claim checks recorded on passports
+    # (fully supported n of m), and the top sources pulling the share down with why. API: GET /sources/reliability.
+    # G3: SourceRecord.review_due; health() flags `overdue` (not a ROT label, still evidence) and counts it;
+    # reliability().overdue lists relied-on sources past their review date. Both take as_of (default today).
 ```
 Only `current` records from authoritative systems count as evidence (`evidence.is_evidence`). A weak verdict
 names why each linked record does not count (`evidence.why_not_evidence`).
@@ -151,7 +188,7 @@ that is the "model returned" field the passport needs. Use `output_config` struc
 ### api/main.py
 `POST /check` (document → citations + assessment), `POST /passport` (event + review → passport),
 `GET /passport/{record_id}`, `POST /recall` (model_id → RecallResult), `POST /recall/record` (record_id, optional
-supersede mark → SourceRecallResult), `GET /sources/health` (SourceHealthReport under the saved policy), `GET /chain/verify`. Pydantic in, JSON out.
+supersede mark → SourceRecallResult), `GET /sources/health` (SourceHealthReport under the saved policy), `GET /sources/reliability`, `GET /chain/verify`. Pydantic in, JSON out.
 The API trusts no verdict or status from the caller: `/passport` looks every citation up again from its raw text
 (`citations.recheck`), re-weighs the claims (`evidence.reassess`), and lets `passport.build` run the gate. 409 =
 blocked (with reasons), 422 = refused (tier below the rules, self-review, inconsistent assessment, unknown type).
