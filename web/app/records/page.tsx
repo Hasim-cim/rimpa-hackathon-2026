@@ -135,7 +135,7 @@ function Card({ p, docName }: { p: S["Passport"]; docName: string }) {
   const tools = pr.tool_calls.map((t) => t.name + (t.side_effect ? " (changed something)" : "")).join("; ") || "none";
   const prompt = pr.prompt.length <= 160 ? pr.prompt : pr.prompt.slice(0, 157) + "...";
   return (
-    <div className="pass">
+    <div className="pass" data-tour="passport">
       <div className="pass-head"><b>Passport</b><span>The record package kept with this output</span></div>
       <div className="groups">
         <div className="group"><h5>Record</h5>
@@ -261,7 +261,7 @@ function Records() {
             </div>
             {!view.at_issue && !view.disposed && <div className="older">{SUMMARY_ONLY}</div>}
             {view.disposed && <div className="older">Content destroyed under the disposal authority; hash retained.</div>}
-            <div className="panel">
+            <div className="panel" data-tour="checks">
               <div className="panel-head"><h2>Checks done on this record</h2><span>Open any check for the detail</span></div>
               {view.checks.map((c) => {
                 const [bg, fg] = STATUS_COLOURS[c.status] ?? GREY;

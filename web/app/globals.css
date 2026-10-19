@@ -141,3 +141,28 @@ details.card-d > summary { cursor: pointer; font-weight: 600; }
 .live b { display: block; font-size: 26px; line-height: 1.2; color: #111827; }
 .bar-row { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 10px; font-size: 13px; margin: 4px 0; }
 .wbar { display: block; justify-self: start; height: 10px; border-radius: 5px; background: #1e3a8a; min-width: 2px; }
+
+/* Guided demo (U15): a bottom bar, and a ring on the element the current step is about */
+body.touring main { padding-bottom: 220px; }
+.tour { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #111827; color: #fff; padding: 12px 24px 16px; box-shadow: 0 -4px 16px rgba(0,0,0,0.25); }
+.tour-steps { list-style: none; margin: 0 auto 10px; padding: 0; max-width: 1280px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+.tour-steps li { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px; border: 1px solid #4b5563; color: #d1d5db; }
+.tour-steps .tn { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #374151; font-weight: 700; font-size: 13px; }
+.tour-steps .past .tn { background: #166534; }
+.tour-steps .now { border-color: #fff; background: #1e3a8a; color: #fff; font-weight: 600; }
+.tour-steps .now .tn { background: #fff; color: #1e3a8a; }
+.tour-row { max-width: 1280px; margin: 0 auto; display: flex; gap: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.tour-say { margin: 0; flex: 1 1 480px; font-size: 20px; line-height: 1.35; }
+.tour-act { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.tour-link { color: #bfdbfe; font-size: 16px; text-decoration: underline; }
+.tour-link:hover { color: #fff; }
+.tour-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; border-radius: 8px; border: 2px solid #fff; background: transparent; color: #fff; font-size: 18px; font-weight: 600; text-decoration: none; }
+.tour-btn.go { background: #fff; color: #111827; }
+.tour-btn:hover { background: #374151; color: #fff; }
+.tour-btn.go:hover { background: #e5e7eb; color: #111827; }
+.tour a:focus-visible { outline: 3px solid #fde047; outline-offset: 2px; }
+.tour-hl { outline: 4px solid #1e3a8a; outline-offset: 4px; border-radius: 8px; animation: tour-pulse 1.8s ease-in-out infinite; }
+@keyframes tour-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(30,58,138,0.45); } 50% { box-shadow: 0 0 0 12px rgba(30,58,138,0); } }
+@media (prefers-reduced-motion: reduce) { .tour-hl { animation: none; } }
+.start { display: inline-flex; align-items: center; min-height: 52px; padding: 0 32px; margin-top: 8px; border-radius: 10px; background: #1e3a8a; color: #fff; font-size: 20px; font-weight: 700; text-decoration: none; }
+.start:hover { background: #172554; color: #fff; }

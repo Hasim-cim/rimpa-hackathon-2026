@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { tourSet } from "@/lib/tour";
 import { api, OK, Pill, TIER_COLOURS, type S } from "@/lib/ui";
 import Reliability from "../reliability";
 import PageHead from "../page-head";
@@ -83,7 +84,7 @@ export default function Recall() {
   const callSource = useCallback(async (mark?: S["SupersedeMark"]) => {
     if (!recId) return;
     setSrcError("");
-    try { setSrcRes(await api<S["SourceRecallResult"]>("recall/record", { json: { record_id: recId, mark } })); if (mark) setRelKey((k) => k + 1); }
+    try { setSrcRes(await api<S["SourceRecallResult"]>("recall/record", { json: { record_id: recId, mark } })); if (mark) { setRelKey((k) => k + 1); tourSet("marked"); } }
     catch (e) { setSrcRes(null); setSrcError((e as Error).message); }
     refreshAudit();
   }, [recId, refreshAudit]);
@@ -97,6 +98,7 @@ export default function Recall() {
       const { queued } = await api<{ queued: number }>("recall/queue", {
         json: { record_ids: srcT2, by: BY, reason: `Source ${srcRes.record_id} ${srcRes.record.status}: ${supReason || "no reason given"}` } });
       await callSource();
+      tourSet("queued");
       setSrcQueued(`Queued ${queued} T2 records for re-review (${srcT2.length - queued} were already queued).`);
     } catch (err) { setSrcError((err as Error).message); }
   }
@@ -131,17 +133,19 @@ export default function Recall() {
         </select>
         <label htmlFor="sreason">Reason</label>
         <input id="sreason" value={supReason} onChange={(e) => setSupReason(e.target.value)} style={input} />
-        <button className="run" type="submit">Mark superseded</button>
+        <button className="run" type="submit" data-tour="mark">Mark superseded</button>
       </form>
       {srcError && <p className="error" role="alert">{srcError}</p>}
       {srcRes && (
         <>
           <h3>Recall by source record: {srcRes.record_id}</h3>
           <p className="muted">{srcRes.record.title}. Status {srcRes.record.status}.</p>
-          <Tiles counts={srcRes.counts} />
-          <Items items={srcRes.items} what="relied on this record" />
-          <button className="run" onClick={queueSource} disabled={!srcT2.length}>Queue T2 records for re-review ({srcT2.length})</button>
-          {srcQueued && <p role="status" style={ok}>{srcQueued}</p>}
+          <div data-tour="source-results">
+            <Tiles counts={srcRes.counts} />
+            <Items items={srcRes.items} what="relied on this record" />
+          </div>
+          <button className="run" onClick={queueSource} disabled={!srcT2.length} data-tour="queue">Queue T2 records for re-review ({srcT2.length})</button>
+          {srcQueued && <p role="status" style={ok} data-tour="queued">{srcQueued}</p>}
         </>
       )}
 

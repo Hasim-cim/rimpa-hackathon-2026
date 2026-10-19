@@ -55,6 +55,7 @@ export default function Landing() {
         <h1 className="name">Record Passport</h1>
         <p className="lead">Every AI-assisted output that becomes a record gets a passport: what it rests on, who approved it, and what changed since.</p>
         <p className="sub">For the information manager: check a document before it is filed, keep the evidence with the record, and recall what relied on a source when it changes.</p>
+        {process.env.NEXT_PUBLIC_MODE === "demo" && <Link href="/check?tour=1" className="start">Start the demo</Link>}
       </div>
       <nav aria-label="Start here" className="entries">
         {ENTRIES.map(([href, title, text]) => <Link key={href} href={href} className="entry"><b>{title}</b><span>{text}</span></Link>)}

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { tourSet } from "@/lib/tour";
 import { api, ApiError, OK, CITE_COLOURS, GATE_COLOURS, GatePill, GREY, Pill, WEIGHT_COLOURS, type S } from "@/lib/ui";
 import PageHead from "../page-head";
 
@@ -14,7 +16,13 @@ function defaultType(pol: S["Policy"], doc: S["Document"]) {
   return ids[0];
 }
 
-export default function Check() {
+// Guided demo steps: which document and type each one checks, and runs the (read-only) check on arrival.
+const TOUR_DOCS: Record<string, [string, string]> = {
+  "1": ["DOC-2026/0412-summary", "decision-letter"], "2": ["DOC-2026/0587-eligibility", "case-note"], "4b": ["DOC-2026/0412-summary", "decision-letter"],
+};
+
+function Check() {
+  const tour = useSearchParams().get("tour") ?? "";
   const [docs, setDocs] = useState<S["Document"][]>([]);
   const [records, setRecords] = useState<S["SourceRecord"][]>([]);
   const [policy, setPolicy] = useState<S["Policy"] | null>(null);
@@ -44,11 +52,19 @@ export default function Check() {
     if (d && policy) setTypeId(defaultType(policy, d));
   }
 
-  async function run() {
+  useEffect(() => {
+    const t = TOUR_DOCS[tour];
+    if (!t || !policy || !docs.some((d) => d.id === t[0])) return;
+    setDocId(t[0]); setTypeId(t[1]); setResult(null);
+    run(t[0], t[1]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tour, policy, docs]);
+
+  async function run(id = docId, type = typeId) {
     setLoading(true); setError("");
     try {
       const r = await api<S["CheckResponse"]>("check", {
-        json: { document_id: docId, document_type: typeId } });
+        json: { document_id: id, document_type: type } });
       setResult(r);
       setSelected([...r.assessment.claims].sort((a, b) => a.position - b.position)[0]?.id ?? "");
     } catch (e) {
@@ -85,7 +101,7 @@ export default function Check() {
       <select id="type" value={typeId} onChange={(e) => setTypeId(e.target.value)}>
         {policy?.document_types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
       </select>
-      <button className="run" onClick={run} disabled={loading || !doc}>{loading ? "Checking..." : "Run check"}</button>
+      <button className="run" onClick={() => run()} disabled={loading || !doc}>{loading ? "Checking..." : "Run check"}</button>
       {error && <p className="error" role="alert">{error}</p>}
       {!result && !loading && !error && doc && <p className="muted">Run the check to look up each reference and trace each sentence to authoritative records.</p>}
 
@@ -102,19 +118,19 @@ export default function Check() {
 
           <h2>Filing gate: {dtype?.name}</h2>
           {gate && (
-            <>
+            <div data-tour="gate">
               <span className="gate" style={{ background: GATE_COLOURS[gate.status][0], color: GATE_COLOURS[gate.status][1] }}>
                 {GATE_COLOURS[gate.status][2]}
               </span>
               <ul>{gate.reasons.map((r, i) => <li key={i}>{r.text}</li>)}</ul>
-            </>
+            </div>
           )}
           <p className="muted">Bar set by the information manager in policy v{policy?.version}.</p>
 
           <h2>Citations</h2>
           {!result.citations.length && <p className="muted">This document cites no references.</p>}
           {result.citations.map((r) => (
-            <div className="cite" key={r.citation.n}>
+            <div className="cite" key={r.citation.n} data-tour={`cite-${r.citation.n}`}>
               <Pill text={r.status.replace("_", " ")} colours={CITE_COLOURS[r.status]} />
               <div><b>[{r.citation.n}]</b> {r.citation.raw}<br /><span className="muted">{r.note}</span></div>
             </div>
@@ -127,7 +143,7 @@ export default function Check() {
               const [bg, fg] = v ? WEIGHT_COLOURS[v.weight] : GREY;
               return (
                 <span key={c.id}>
-                  <span className="sent" role="button" tabIndex={0} aria-pressed={c.id === selected}
+                  <span className="sent" data-tour={c.text.includes("$4,860") ? "claim-4860" : undefined} role="button" tabIndex={0} aria-pressed={c.id === selected}
                     title={v ? `${v.weight}: ${v.reason}` : ""} style={{ background: bg, color: fg }}
                     onClick={() => setSelected(c.id)}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(c.id); } }}>
@@ -204,6 +220,7 @@ function FileAsRecord({ doc, typeId, typeName, result, gate }: { doc: S["Documen
     try {
       const p = await api<S["Passport"]>("passport", {
         json: { event, review, document_type: typeId, citations: result.citations, assessment: result.assessment } });
+      tourSet("record", p.record.id); tourSet("issued");
       setMsg({ ok: true, text: `Passport issued: ${p.record.id} (${p.business.tier})`, id: p.record.id });
     } catch (e) {
       const d = e instanceof ApiError ? e.detail : null;
@@ -228,12 +245,16 @@ function FileAsRecord({ doc, typeId, typeName, result, gate }: { doc: S["Documen
       <p>Gate before review: <GatePill status={gate} /></p>
       <p className="muted">The engine runs the gate again with the review when you file.</p>
       {blocked && <p className="error" role="alert">Blocked by policy: fix the document or ask the information manager to change the bar.</p>}
-      <button className="run" onClick={issue} disabled={blocked}>Issue passport</button>
+      <button className="run" onClick={issue} disabled={blocked} data-tour="issue">Issue passport</button>
       {msg && (msg.ok
-        ? <p role="status" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6, marginTop: 12 }}>
+        ? <p role="status" data-tour="issued" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6, marginTop: 12 }}>
             {msg.text}. <a href={`/records?id=${encodeURIComponent(msg.id!)}`}>Open it in Records</a>
           </p>
         : <p className="error" role="alert">{msg.text}</p>)}
     </>
   );
+}
+
+export default function Page() {
+  return <Suspense fallback={<p className="muted">Loading...</p>}><Check /></Suspense>;
 }

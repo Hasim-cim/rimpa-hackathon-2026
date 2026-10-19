@@ -10,7 +10,7 @@ export default function Reliability({ refresh = 0 }: { refresh?: number }) {
   if (!rel) return null;
   const figure = rel.share == null ? "none yet" : `${rel.sources_ok} of ${rel.with_sources}`;
   return (
-    <section className="rel" aria-label="AI search reliability">
+    <section className="rel" aria-label="AI search reliability" data-tour="reliability">
       <div>
         <span className="eyebrow">AI search reliability</span>
         <span className="big">{figure}</span>
