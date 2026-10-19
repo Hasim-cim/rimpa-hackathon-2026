@@ -55,7 +55,12 @@ def test_kpis_match_independent_counts(conn, pol):
         ids = list(dict.fromkeys(p["process"]["source_record_ids"]))
         return bool(ids) and (len(ids) == 1 or len({recs[i]["system"] for i in ids}) == 1 or any(weak(recs[i]) for i in ids))
 
-    assert (_kpi(rep, "filed_approved").count, _kpi(rep, "filed_approved").total) == (approved, total)
+    t0 = sum(p["business"]["tier"] == "T0" for p in raw)
+    fa = _kpi(rep, "filed_approved")
+    assert (fa.count, fa.total, fa.not_counted) == (approved, total - t0, t0)      # T0 logs need no review
+    assert fa.not_counted_label == f"{t0} logs needed no review (T0, kept 90 days)"
+    assert _kpi(rep, "needs_review").label.startswith("Misinformation signals: ")
+    assert _kpi(rep, "narrow_evidence").label == f"Bias signals: {_kpi(rep, 'narrow_evidence').count} of {total} rest on narrow evidence"
     assert _kpi(rep, "needs_review").count == needs and needs > 0
     assert _kpi(rep, "narrow_evidence").count == sum(narrow(p) for p in raw)
     k = _kpi(rep, "needs_review")

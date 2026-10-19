@@ -464,6 +464,8 @@ class KpiTile(BaseModel):
     percent: float | None                    # 0-100; None when total is 0 ("none yet")
     display: str                             # "12 of 40 (30%)" or "none yet"
     plain: str                               # plain words saying what it counts
+    not_counted: int = 0                     # left out of `total` on purpose (e.g. T0 logs that need no review)
+    not_counted_label: str = ""
 
 
 class ModelSignal(BaseModel):

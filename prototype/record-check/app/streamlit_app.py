@@ -1041,7 +1041,7 @@ def tab_dashboard(conn) -> None:
         st.markdown("**Risk by business function**")
         if rep.by_function:
             st.dataframe(pd.DataFrame([{"Function": f.function, "Total": f.total, "Needs a person": f.needs_review,
-                                        "Narrow-evidence signals": f.narrow_evidence} for f in rep.by_function]),
+                                        "Bias signals": f.narrow_evidence} for f in rep.by_function]),
                          hide_index=True, width="stretch")
         else:
             st.caption("None yet")

@@ -40,6 +40,10 @@ def _tile(id_: str, label: str, n: int, total: int, plain: str, noun: str = "") 
                    plain=plain)
 
 
+def _n_logs(n: int) -> str:
+    return f"{n} log" + ("" if n == 1 else "s")
+
+
 # ---------- per-passport tests ----------
 
 def _filed_approved(p: Passport) -> bool:
@@ -143,6 +147,7 @@ def report(conn: sqlite3.Connection, policy: Policy) -> DashboardReport:
     needs = [bool(_attention(p, queued)) for p in passports]
     narrow = [_narrow_evidence(p, checks[p.record.id], recs, policy) for p in passports]
 
+    reviewable = sum(p.business.tier != "T0" for p in passports)
     pct = lambda x: f"{round(100 * x)}%"  # noqa: E731
     if flagged:
         by_id = {s.model_id: s for s in signals}
@@ -153,12 +158,17 @@ def report(conn: sqlite3.Connection, policy: Policy) -> DashboardReport:
         recall_plain = (f"No recall suggested. A model is flagged at {pct(policy.recall_signal_threshold)} or more "
                         f"of at least {policy.recall_signal_min_refs} checked references not found.")
     kpis = [
-        _tile("filed_approved", "Filed with a passport and approved", sum(approved), total,
-              "Passports a named reviewer approved (with or without edits), with the filing gate at ready or filed before the gate existed."),
-        _tile("needs_review", "Need a person: contradicted, unsupported or a reference not found", sum(needs), total,
+        _tile("filed_approved", "Filed with a passport and approved", sum(a for p, a in zip(passports, approved)
+                                                                       if p.business.tier != "T0"), reviewable,
+              "Passports that needed a review (T1 to T3) and that a named reviewer approved (with or without edits), "
+              "with the filing gate at ready or filed before the gate existed.").model_copy(
+            update={"not_counted": total - reviewable,
+                    "not_counted_label": f"{_n_logs(total - reviewable)} needed no review (T0, kept 90 days)"}),
+        _tile("needs_review", f"Misinformation signals: {sum(needs)} of {total} need a person (contradicted, "
+                              "unsupported or a reference not found)", sum(needs), total,
               "Passports with a contradicted or unsupported statement, a reference not found, a gate result of "
               "blocked or attention, or an open entry in the review queue."),
-        _tile("narrow_evidence", "Narrow-evidence signals: rests on one source, or on weak, draft or superseded records",
+        _tile("narrow_evidence", f"Bias signals: {sum(narrow)} of {total} rest on narrow evidence",
               sum(narrow), total,
               "Passports with a statement that rests on one record or one system, on a record that is not "
               "authoritative, is a draft or is superseded, or on a record not meant for that document type. "
