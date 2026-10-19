@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, ApiError, ESCALATION_LABELS, TIERS, type S } from "@/lib/ui";
+import { api, ApiError, OK, ESCALATION_LABELS, TIERS, type S } from "@/lib/ui";
 
 type Policy = S["Policy"];
 type DocType = S["DocumentType"];
 type Tier = (typeof TIERS)[number];
+// Advanced settings (suggest, exact limits, apps, guidance, reset) show only in a build with NEXT_PUBLIC_SHOW_ALL=1.
+const SHOW_ALL = process.env.NEXT_PUBLIC_SHOW_ALL === "1";
 const DEFAULT_BY = "Information manager";
 const BAR_DEFAULT: S["QualityBar"] = {
   max_unsupported: 0, max_contradicted: 0, citations_not_found_blocks: true,
@@ -35,7 +37,6 @@ export default function Setup() {
   const [resetOk, setResetOk] = useState(false);
   const [by, setBy] = useState(DEFAULT_BY);
   const [guidance, setGuidance] = useState("");
-  const [newId, setNewId] = useState("");
   const [newName, setNewName] = useState("");
   const [newTier, setNewTier] = useState<Tier>("T1");
   const [addWarn, setAddWarn] = useState("");
@@ -89,11 +90,11 @@ export default function Setup() {
   });
 
   function addType() {
-    const id = newId.trim().toLowerCase().replace(/\s+/g, "-");
-    if (!id || !newName.trim()) return setAddWarn("Give the new type an id and a name.");
+    const id = newName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (!id) return setAddWarn("Give the document type a name.");
     if (draft!.document_types.some((x) => x.id === id)) return setAddWarn(`A type with id ${id} already exists.`);
     edit((d) => { d.document_types.push({ id, name: newName.trim(), default_tier: newTier, description: "", checks: ["citations", "evidence"], quality: { ...BAR_DEFAULT } }); });
-    setNewId(""); setNewName(""); setNewTier("T1"); setAddWarn("");
+    setNewName(""); setNewTier("T1"); setAddWarn("");
   }
 
   const row = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0 16px" } as const;
@@ -109,13 +110,58 @@ export default function Setup() {
     <>
       <p className="muted">The information manager sets what good looks like once. The checks and the filing gate read this policy. An AI model may suggest a starting profile, but never sets a threshold, tier or gate.</p>
 
-      <h2>Your organisation</h2>
+      <h2>1. Start from your sector</h2>
       <label htmlFor="org">Organisation name</label>
       <input id="org" style={input} value={org} onChange={(e) => setOrg(e.target.value)} />
       <label htmlFor="preset">Sector preset</label>
       <select id="preset" value={presetId} onChange={(e) => setPresetId(e.target.value)}>
         {presets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
       </select>
+      {check("Replace my current policy", replaceOk, setReplaceOk)}
+      <button style={btn} disabled={!replaceOk || busy}
+        onClick={() => fromPreset(presetId, org.trim() || "Your organisation", (p) => `Policy v${p.version} saved from the ${p.sector_name} preset.`)}>
+        Start from this preset
+      </button>
+
+      <h2>2. Your document types</h2>
+      <p className="muted">Pick the default tier for each type. Exact limits for what blocks filing are under Advanced.</p>
+      {draft.document_types.map((t) => (
+        <div key={t.id} style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "8px 0" }}>
+          <b style={{ flex: "1 1 200px" }}>{t.name}</b>
+          <select aria-label={`Default tier for ${t.name}`} style={{ width: 220 }} value={t.default_tier} onChange={(e) => editType(t.id, (x) => { x.default_tier = e.target.value as Tier; })}>
+            {TIERS.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+          <button style={btn} disabled={draft.document_types.length <= 1}
+            onClick={() => edit((d) => { d.document_types = d.document_types.filter((x) => x.id !== t.id); })}>Remove</button>
+        </div>
+      ))}
+      <form onSubmit={(e) => { e.preventDefault(); addType(); }} style={{ border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "12px 0" }}>
+        <b>Add a document type</b>
+        <div style={row}>
+          <div><label htmlFor="nname">Name (e.g. Ministerial brief)</label><input id="nname" style={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
+          <div><label htmlFor="ntier">Default tier</label>
+            <select id="ntier" value={newTier} onChange={(e) => setNewTier(e.target.value as Tier)}>{TIERS.map((x) => <option key={x}>{x}</option>)}</select></div>
+        </div>
+        <p><button type="submit" style={btn}>Add document type</button></p>
+        {addWarn && <p className="muted" role="alert">{addWarn}</p>}
+      </form>
+      <h2>3. Which systems count as evidence</h2>
+      <p style={{ margin: 0, fontWeight: 600 }}>Systems whose records count as evidence</p>
+      {systems.map((s) => <div key={s}>{check(s, draft.authoritative_systems.includes(s), (on) => edit((d) => {
+        d.authoritative_systems = on ? [...d.authoritative_systems, s] : d.authoritative_systems.filter((x) => x !== s);
+      }))}</div>)}
+      <p className="muted">Anything not selected is treated as non-authoritative: records from it can never make a claim &apos;supported&apos;. A saved web page can never be evidence unless you say so.</p>
+
+      <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #e5e7eb" }} />
+      <label htmlFor="by">Name of the person saving</label>
+      <input id="by" style={input} value={by} onChange={(e) => setBy(e.target.value)} />
+      <button className="run" onClick={save} disabled={busy}>Save policy</button>
+      {error && <p className="error" role="alert">{error}</p>}
+      {msg && <p role="status" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6 }}>{msg}</p>}
+@@7@@
+      {SHOW_ALL && (
+        <details className="card-d" style={{ marginTop: 24 }}>
+          <summary>Advanced</summary>
       <label htmlFor="desc">Describe your organisation in a sentence</label>
       <textarea id="desc" style={input} rows={2} value={desc} onChange={(e) => setDesc(e.target.value)}
         placeholder="e.g. A regional hospital using an AI scribe for clinic notes" />
@@ -127,13 +173,7 @@ export default function Setup() {
           <button style={btn} onClick={() => { setOrg(suggestion.organisation); setPresetId(suggestion.preset.id); }}>Use this suggestion</button>
         </div>
       )}
-      {check("Replace my current policy", replaceOk, setReplaceOk)}
-      <button style={btn} disabled={!replaceOk || busy}
-        onClick={() => fromPreset(presetId, org.trim() || "Your organisation", (p) => `Policy v${p.version} saved from the ${p.sector_name} preset.`)}>
-        Start from this preset
-      </button>
-
-      <h2>Document types and what good looks like</h2>
+      <h2>Exact limits per document type</h2>
       <p className="muted">Each type has a quality bar. Going over a &apos;blocked&apos; limit stops filing; going over an &apos;attention&apos; limit asks for a closer look.</p>
       {draft.document_types.map((t) => {
         const q = { ...BAR_DEFAULT, ...t.quality };
@@ -189,25 +229,6 @@ export default function Setup() {
           </details>
         );
       })}
-      <form onSubmit={(e) => { e.preventDefault(); addType(); }} style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", margin: "12px 0" }}>
-        <b>Add document type</b>
-        <div style={row}>
-          <div><label htmlFor="nid">Id (e.g. ministerial-reply)</label><input id="nid" style={input} value={newId} onChange={(e) => setNewId(e.target.value)} /></div>
-          <div><label htmlFor="nname">Name</label><input id="nname" style={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
-          <div><label htmlFor="ntier">Default tier</label>
-            <select id="ntier" value={newTier} onChange={(e) => setNewTier(e.target.value as Tier)}>{TIERS.map((x) => <option key={x}>{x}</option>)}</select></div>
-        </div>
-        <p><button type="submit" style={btn}>Add document type</button></p>
-        {addWarn && <p className="muted" role="alert">{addWarn}</p>}
-      </form>
-
-      <h2>Authoritative systems</h2>
-      <p style={{ margin: 0, fontWeight: 600 }}>Systems whose records count as evidence</p>
-      {systems.map((s) => <div key={s}>{check(s, draft.authoritative_systems.includes(s), (on) => edit((d) => {
-        d.authoritative_systems = on ? [...d.authoritative_systems, s] : d.authoritative_systems.filter((x) => x !== s);
-      }))}</div>)}
-      <p className="muted">Anything not selected is treated as non-authoritative: records from it can never make a claim &apos;supported&apos;. A saved web page can never be evidence unless you say so.</p>
-
       <h2>Apps and tiers</h2>
       {Object.keys(tr.app_defaults).map((a) => (
         <div key={a}>
@@ -226,12 +247,6 @@ export default function Setup() {
       <label htmlFor="guid">One per line</label>
       <textarea id="guid" style={input} rows={4} value={guidance} onChange={(e) => setGuidance(e.target.value)} />
 
-      <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #e5e7eb" }} />
-      <label htmlFor="by">Name of the person saving</label>
-      <input id="by" style={input} value={by} onChange={(e) => setBy(e.target.value)} />
-      <button className="run" onClick={save} disabled={busy}>Save policy</button>
-      {error && <p className="error" role="alert">{error}</p>}
-      {msg && <p role="status" style={{ background: "#d1f0dc", color: "#14532d", padding: "8px 12px", borderRadius: 6 }}>{msg}</p>}
       <div style={{ marginTop: 16 }}>
         {check("Confirm: discard my policy and go back to the preset defaults", resetOk, setResetOk)}
         <button style={btn} disabled={!resetOk || busy}
@@ -240,6 +255,8 @@ export default function Setup() {
           Reset to preset defaults
         </button>
       </div>
+        </details>
+      )}
     </>
   );
 }

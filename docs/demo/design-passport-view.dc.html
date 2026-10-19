@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Record Check: records</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f5f7}
+a{color:#1e3a8a}a:hover{color:#172554}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height: 100vh; font-family: 'IBM Plex Sans', system-ui, sans-serif; color: #111827; background: #f4f5f7;">
+
+  <header style="background: #ffffff; border-bottom: 1px solid #d1d5db;">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 12l2 2 4-4"/></svg>
+        <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">Record Check</span>
+        <span style="font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #e5e7eb; color: #374151;">Example data: all cases, people and records are invented</span>
+      </div>
+      <nav aria-label="Main" style="display: flex; gap: 4px; background: #eef0f3; padding: 4px; border-radius: 10px;">
+        <button type="button" onClick="{{ showRecords }}" style="{{ tabRecordsStyle }}">Records</button>
+        <button type="button" onClick="{{ showIm }}" style="{{ tabImStyle }}">Information manager</button>
+      </nav>
+    </div>
+  </header>
+
+  <sc-if value="{{ isRecords }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width: 1280px; margin: 0 auto; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+
+    <section aria-label="Records" style="flex: 1 1 320px; min-width: 0; background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden;">
+      <div style="padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e5e7eb;">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 600;">Records</h2>
+        <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 8px; border: none; background: #1e3a8a; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">Check a document</button>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <sc-for list="{{ records }}" as="r" hint-placeholder-count="4">
+          <button type="button" onClick="{{ r.pick }}" style="{{ r.rowStyle }}">
+            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+              <span style="font-size: 14px; font-weight: 600; flex-grow: 1; text-align: left;">{{ r.title }}</span>
+              <sc-if value="{{ r.alert }}" hint-placeholder-val="{{ false }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Changed since filing"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              </sc-if>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; width: 100%; font-size: 12px; color: #4b5563;">
+              <span style="{{ r.pillStyle }}">{{ r.status }}</span>
+              <span>{{ r.when }}</span>
+              <span>{{ r.kept }}</span>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <article aria-label="Record passport" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+      <div style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #4b5563;">Record passport</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #4b5563;">{{ cur.id }}</span>
+        </div>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700; line-height: 1.25;">{{ cur.title }}</h1>
+        <div style="{{ cur.headStyle }}">
+          <span style="font-weight: 700;">{{ cur.status }}:</span>
+          <span>{{ cur.headline }}</span>
+        </div>
+        <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.5;">{{ cur.who }}</p>
+        <div style="margin-top: 8px; border: 1px solid #c7ccd4; border-radius: 10px; background: #fbfbf9; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 2px solid #111827; padding-bottom: 8px;">
+            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Passport</span>
+            <span style="font-size: 12px; color: #4b5563;">The record package kept with this output</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px 24px;">
+            <sc-for list="{{ cur.passport }}" as="g" hint-placeholder-count="6">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1e3a8a;">{{ g.group }}</span>
+                <sc-for list="{{ g.rows }}" as="row" hint-placeholder-count="3">
+                  <div style="display: flex; flex-direction: column; font-size: 14px; line-height: 1.4;">
+                    <span style="font-size: 12px; color: #4b5563;">{{ row.k }}</span>
+                    <span style="font-family: {{ row.font }}; word-break: break-word;">{{ row.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ cur.olderNote }}" hint-placeholder-val="{{ false }}">
+        <div style="background: #ffffff; border: 1px dashed #9ca3af; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #374151;">Older record: summary only. It was filed before detailed checks were kept with passports, so only the counts are shown.</div>
+      </sc-if>
+
+      <div style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden;">
+        <div style="padding: 14px 20px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 600;">Checks done on this record</h2>
+          <span style="font-size: 13px; color: #4b5563;">Open any check for the detail</span>
+        </div>
+        <sc-for list="{{ cur.checks }}" as="c" hint-placeholder-count="7">
+          <div style="border-bottom: 1px solid #eef0f3;">
+            <button type="button" onClick="{{ c.toggle }}" aria-expanded="{{ c.expanded }}" style="width: 100%; min-height: 56px; padding: 12px 20px; display: flex; align-items: center; gap: 14px; background: #ffffff; border: none; cursor: pointer; text-align: left; color: #111827;">
+              <span style="{{ c.dotStyle }}" aria-hidden="true">{{ c.mark }}</span>
+              <span style="width: 120px; flex-shrink: 0; font-size: 15px; font-weight: 600;">{{ c.name }}</span>
+              <span style="flex-grow: 1; font-size: 14px; color: #374151;">{{ c.summary }}</span>
+              <span style="font-size: 13px; color: #4b5563; flex-shrink: 0;">{{ c.chev }}</span>
+            </button>
+            <sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 4px 20px 18px 66px; display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ c.details }}" as="d" hint-placeholder-count="2">
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px; line-height: 1.5;">
+                    <span style="width: 170px; flex-shrink: 0; color: #4b5563;">{{ d.k }}</span>
+                    <span style="flex: 1 1 260px; min-width: 0; font-family: {{ d.font }}; word-break: break-word;">{{ d.v }}</span>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ c.sentences }}" as="s" hint-placeholder-count="0">
+                  <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                      <span style="{{ s.pillStyle }}">{{ s.weight }}</span>
+                      <span style="font-size: 14px;">{{ s.text }}</span>
+                    </div>
+                    <span style="font-size: 13px; color: #4b5563;">{{ s.why }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </article>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isIm }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width: 1280px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px; padding: 22px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+      <div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #4b5563;">AI search reliability</span>
+        <span style="font-size: 40px; font-weight: 700; line-height: 1.1;">17 of 30</span>
+        <span style="font-size: 14px; color: #374151;">retained AI outputs that cite records rest on current authoritative records</span>
+      </div>
+      <div style="flex: 1 1 320px; font-size: 14px; color: #374151; line-height: 1.5; border-left: 1px solid #e5e7eb; padding-left: 20px;">
+        <div style="font-weight: 600; color: #111827;">Pulling it down</div>
+        <div>REC-2026/004790 Debt notice: superseded by REC-2026/004912 (13 outputs)</div>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
+      <sc-for list="{{ imAreas }}" as="a" hint-placeholder-count="5">
+        <div style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 16px; font-weight: 600;">{{ a.name }}</span>
+          <span style="font-size: 14px; color: #374151; line-height: 1.5;">{{ a.desc }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: 'records', sel: 'REC-2026/004330', open: 'evidence' };
+  }
+
+  data() {
+    const ok = 'ok', att = 'attention', bad = 'problem';
+    return [
+      {
+        id: 'REC-2026/004330', title: 'Eligibility review note, case 2026/0587', when: '19 Oct 2026', kept: 'Kept with the case file',
+        status: 'Ready to file', tone: ok, alert: false, older: false,
+        headline: 'every statement is supported by authoritative records.',
+        who: 'Filed by A. Caseworker on 19 Oct 2026, 13:02 · drafted with northstar-8-2026-09-15 · reviewed by R. Delegate · document type: case note',
+        checks: [
+          { id: 'citations', name: 'Citations', tone: 'none', summary: 'No references in this note, so nothing to look up.', details: [] },
+          { id: 'evidence', name: 'Evidence', tone: ok, summary: '4 of 4 statements supported by authoritative records.', details: [],
+            sentences: [
+              { weight: 'Supported', tone: ok, text: 'The applicant’s identity was verified.', why: 'REC-2026/005101 Identity verification record' },
+              { weight: 'Supported', tone: ok, text: 'The applicant has been resident since 2019.', why: 'REC-2026/005104 Residency record' },
+              { weight: 'Supported', tone: ok, text: 'Declared income is $1,240 a fortnight.', why: 'REC-2026/005110 Income declaration, September 2026 (amount matches)' },
+              { weight: 'Supported', tone: ok, text: 'A medical certificate limits work to 15 hours a week until February 2027.', why: 'REC-2026/005112 Medical certificate summary' }
+            ] },
+          { id: 'sources', name: 'Sources', tone: ok, summary: 'All 4 source records are current and from authoritative systems.',
+            details: [ { k: 'Relied on', v: 'REC-2026/005101, REC-2026/005104, REC-2026/005110, REC-2026/005112' }, { k: 'Not relied on', v: 'REC-2025/008800 (superseded) matched by wording only' } ] },
+          { id: 'gate', name: 'Filing gate', tone: ok, summary: 'Meets the bar for a case note.',
+            details: [ { k: 'Bar', v: 'Standard: no unsupported or contradicted statements' }, { k: 'Policy', v: 'Commonwealth agency preset, version 2' } ] },
+          { id: 'review', name: 'Review', tone: ok, summary: 'Reviewed and approved by R. Delegate, who is not the author.',
+            details: [ { k: 'Decision', v: 'Approved, 19 Oct 2026 13:01' } ] },
+          { id: 'integrity', name: 'Integrity', tone: ok, summary: 'Unchanged since filing; the record chain is intact.',
+            details: [ { k: 'Chain', v: '41 passports verified' }, { k: 'Technical detail', v: 'sha256 9c37…a1f0', mono: true } ] },
+          { id: 'retention', name: 'Retention', tone: ok, summary: 'Kept with the case file it supports.',
+            details: [ { k: 'Category', v: 'T2: informs a decision about a person' }, { k: 'Disposal authority', v: 'Follows the case file (prototype setting)' } ] },
+          { id: 'since', name: 'Since filing', tone: ok, summary: 'Nothing has changed: its sources still count and its AI model is in good standing.', details: [] }
+        ]
+      },
+      {
+        id: 'REC-2026/003045', title: 'Hardship assessment draft, case 2026/0412', when: '22 Aug 2026', kept: 'Kept with the case file',
+        status: 'Needs review', tone: att, alert: true, older: true,
+        headline: 'a source it relied on has been superseded since it was filed.',
+        who: 'Filed by A. Caseworker on 22 Aug 2026 · drafted with northstar-7-2026-03-01 · reviewed by M. Senior',
+        checks: [
+          { id: 'since', name: 'Since filing', tone: att, summary: 'Source REC-2026/004790 (debt notice) was superseded by REC-2026/004912 on 19 Oct.',
+            details: [ { k: 'What changed', v: 'Debt recalculated; notice reissued with a corrected amount' }, { k: 'Action', v: 'Queued for review by the information manager' } ] },
+          { id: 'summary', name: 'At filing', tone: ok, summary: '3 statements supported; filed with a named reviewer.',
+            details: [ { k: 'Sources then', v: 'REC-2026/004790, REC-2026/004805, REC-2026/004802' } ] },
+          { id: 'integrity', name: 'Integrity', tone: ok, summary: 'Unchanged since filing; the record chain is intact.', details: [ { k: 'Technical detail', v: 'sha256 51be…e7c2', mono: true } ] },
+          { id: 'retention', name: 'Retention', tone: ok, summary: 'Kept with the case file it supports.', details: [ { k: 'Category', v: 'T2: informs a decision about a person' } ] }
+        ]
+      },
+      {
+        id: 'REC-2026/004321', title: 'Case note summary, case 2026/0412', when: '6 Oct 2026', kept: 'Kept with the case file',
+        status: 'Filed', tone: ok, alert: false, older: true,
+        headline: 'filed with a named reviewer; detailed checks were not kept for older records.',
+        who: 'Filed on 6 Oct 2026 · drafted with northstar-8-2026-09-15',
+        checks: [
+          { id: 'summary', name: 'At filing', tone: ok, summary: 'Filed; detailed checks were not kept for older records.', details: [] },
+          { id: 'integrity', name: 'Integrity', tone: ok, summary: 'Unchanged since filing; the record chain is intact.', details: [] },
+          { id: 'since', name: 'Since filing', tone: ok, summary: 'Nothing has changed.', details: [] }
+        ]
+      },
+      {
+        id: 'REC-2026/004380', title: 'Hardship assessment summary, case 2026/0412', when: 'Not filed', kept: 'Draft',
+        status: 'Blocked', tone: bad, alert: false, older: false,
+        headline: 'one statement is contradicted by the records and one reference is possibly fabricated.',
+        who: 'Checked on 19 Oct 2026 · drafted with northstar-8-2026-09-15 · document type: decision letter · not filed',
+        checks: [
+          { id: 'citations', name: 'Citations', tone: bad, summary: '2 found, 1 not found (possibly fabricated), 1 for a person to confirm.',
+            details: [ { k: '[4]', v: 'Not found in Crossref or OpenAlex. A person must confirm or remove it.' }, { k: '[3]', v: 'Legislation: flagged for a person to confirm' } ] },
+          { id: 'evidence', name: 'Evidence', tone: bad, summary: '4 supported, 2 weak, 2 unsupported, 1 contradicted.', details: [],
+            sentences: [
+              { weight: 'Contradicted', tone: bad, text: 'The applicant lives alone.', why: 'REC-2026/003540 Tenancy record shows 2 occupants (written by a person, not the AI)' },
+              { weight: 'Weak', tone: att, text: 'Decisions are made within 28 days.', why: 'Only POL-HARDSHIP-v3, superseded by POL-HARDSHIP-v4 (21 days)' }
+            ] },
+          { id: 'gate', name: 'Filing gate', tone: bad, summary: 'Blocked for a decision letter: fix the statements and references first.', details: [] }
+        ]
+      }
+    ];
+  }
+
+  passportFor(r) {
+    const p = {
+      'REC-2026/004330': {
+        model: 'northstar-8-2026-09-15', person: 'A. Caseworker', fn: 'Eligibility review', tier: 'T2: informs a decision about a person',
+        sources: 'REC-2026/005101, 005104, 005110, 005112', evidence: '4 supported', reviewer: 'R. Delegate, approved 19 Oct 2026', hash: '9c37…a1f0', prev: '5e02…4b9d', policy: 'Commonwealth agency preset v2'
+      },
+      'REC-2026/003045': {
+        model: 'northstar-7-2026-03-01', person: 'A. Caseworker', fn: 'Hardship assessment', tier: 'T2: informs a decision about a person',
+        sources: 'REC-2026/004790, 004805, 004802', evidence: '3 supported', reviewer: 'M. Senior, approved 22 Aug 2026', hash: '51be…e7c2', prev: '0d4a…9f13', policy: 'AI records policy v1.0'
+      },
+      'REC-2026/004321': {
+        model: 'northstar-8-2026-09-15', person: 'Case update agent', fn: 'Case note summary', tier: 'T1: kept with the business record',
+        sources: 'REC-2026/004790, 004802, 004740', evidence: 'Counts only (older record)', reviewer: 'None required at T1', hash: '9c37…0b55', prev: '9130…c1e8', policy: 'AI records policy v1.0'
+      },
+      'REC-2026/004380': {
+        model: 'northstar-8-2026-09-15', person: 'A. Caseworker', fn: 'Hardship decision letter', tier: 'T2: informs a decision about a person',
+        sources: 'REC-2026/004811, 003540, 004805, 004790', evidence: '4 supported, 2 weak, 2 unsupported, 1 contradicted', reviewer: 'Not reviewed', hash: 'Not issued: blocked', prev: '', policy: 'Commonwealth agency preset v2'
+      }
+    }[r.id];
+    return [
+      { group: 'Record', rows: [ { k: 'Identifier', v: r.id, mono: true }, { k: 'Title', v: r.title }, { k: 'AI-generated', v: 'Yes, reviewed by a person' } ] },
+      { group: 'Agent', rows: [ { k: 'Person', v: p.person }, { k: 'AI model returned', v: p.model, mono: true }, { k: 'Provider', v: 'Northstar AI (fictional vendor)' } ] },
+      { group: 'Business', rows: [ { k: 'Function', v: p.fn }, { k: 'Risk tier', v: p.tier }, { k: 'Disposal', v: 'Follows the case file' } ] },
+      { group: 'Process', rows: [ { k: 'Source records', v: p.sources, mono: true }, { k: 'Evidence at filing', v: p.evidence } ] },
+      { group: 'Review', rows: [ { k: 'Reviewer', v: p.reviewer } ] },
+      { group: 'Integrity and policy', rows: [ { k: 'Hash', v: p.hash, mono: true }, { k: 'Previous in chain', v: p.prev || '–', mono: true }, { k: 'Policy', v: p.policy } ] }
+    ];
+  }
+
+  renderVals() {
+    const tones = {
+      ok: { bg: '#d1f0dc', fg: '#14532d', mark: '✓' },
+      attention: { bg: '#fde8b8', fg: '#7a4a00', mark: '!' },
+      problem: { bg: '#f8d0d0', fg: '#7f1d1d', mark: '✕' },
+      none: { bg: '#e5e7eb', fg: '#374151', mark: '–' }
+    };
+    const pill = (t) => `display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:${tones[t].bg};color:${tones[t].fg}`;
+    const all = this.data();
+    const sel = all.find((r) => r.id === this.state.sel) || all[0];
+    const tab = (on) => `min-height:40px;padding:0 16px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:${on ? '#ffffff' : 'transparent'};color:${on ? '#111827' : '#374151'};box-shadow:${on ? '0 1px 2px rgba(0,0,0,0.12)' : 'none'}`;
+    const records = all.map((r) => ({
+      ...r,
+      pillStyle: pill(r.tone),
+      rowStyle: `display:flex;flex-direction:column;gap:6px;padding:14px 18px;border:none;border-bottom:1px solid #eef0f3;cursor:pointer;text-align:left;color:#111827;background:${r.id === sel.id ? '#eef2fb' : '#ffffff'};box-shadow:${r.id === sel.id ? 'inset 3px 0 0 #1e3a8a' : 'none'}`,
+      pick: () => this.setState({ sel: r.id, open: null })
+    }));
+    const checks = sel.checks.map((c) => {
+      const t = tones[c.tone];
+      const open = this.state.open === c.id;
+      return {
+        ...c,
+        open,
+        expanded: open ? 'true' : 'false',
+        mark: t.mark,
+        chev: open ? 'Hide' : 'Details',
+        dotStyle: `width:30px;height:30px;flex-shrink:0;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:${t.bg};color:${t.fg}`,
+        details: (c.details || []).map((d) => ({ ...d, font: d.mono ? "'IBM Plex Mono', monospace" : 'inherit' })),
+        sentences: (c.sentences || []).map((s) => ({ ...s, pillStyle: pill(s.tone) })),
+        toggle: () => this.setState({ open: open ? null : c.id })
+      };
+    });
+    const ht = tones[sel.tone];
+    return {
+      isRecords: this.state.view === 'records',
+      isIm: this.state.view === 'im',
+      showRecords: () => this.setState({ view: 'records' }),
+      showIm: () => this.setState({ view: 'im' }),
+      tabRecordsStyle: tab(this.state.view === 'records'),
+      tabImStyle: tab(this.state.view === 'im'),
+      records,
+      cur: {
+        ...sel,
+        checks,
+        passport: this.passportFor(sel).map((g) => ({
+          ...g,
+          rows: g.rows.map((r) => ({ ...r, font: r.mono ? "'IBM Plex Mono', monospace" : 'inherit' }))
+        })),
+        olderNote: sel.older && sel.id === 'REC-2026/004321',
+        headStyle: `display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;padding:12px 16px;border-radius:10px;font-size:17px;background:${ht.bg};color:${ht.fg}`
+      },
+      imAreas: [
+        { name: 'Setup', desc: 'Pick a sector preset, how strict each document type is, and which systems count as evidence.' },
+        { name: 'Sources', desc: 'Records flagged redundant, obsolete, trivial or draft. Mark a record superseded and see what relied on it.' },
+        { name: 'Recall', desc: 'Find every record a faulty or withdrawn AI model produced, by risk, and queue it for review.' },
+        { name: 'Disposal', desc: 'Short-term AI logs due for destruction, with holds while a recall is open.' },
+        { name: 'Register', desc: 'The active policy, the AI apps registered, and what each tier keeps.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

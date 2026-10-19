@@ -48,6 +48,191 @@ pre-built-code question can be answered either way: "V0 was the rehearsal, V1+ w
 6. **Parity gate:** the full demo path clicks through on the Vercel URL twice. Only then does the stage
    demo switch from Streamlit.
 
+### V2.x · Minimal layout and dashboard (decided 19 Oct; Streamlit has it first)
+Hasim's call: Streamlit is the stage UI today, and the web app follows the same layout so there's one design.
+The trimmed Streamlit console is the reference, and `recordcheck/view.py` holds the shared wording.
+1. **Records:** one page with a left rail of records and the selected record on the right. The headline status
+   (Ready / Blocked / Needs review and why) comes first, then **four check lines** from `view.four_checks()`:
+   Evidence, References, Filing, Since filing. **Then the passport shown as a visible document card** (six groups, plain labels;
+   Hasim, 19 Oct: "you need to see the passport"), with Download PDF as a small button. No metric row.
+2. **Information manager:** three tabs, **Dashboard, Recall, Setup**. Recall includes "mark source superseded".
+   Setup has only its three questions plus Save. Sources, Disposal and Register stay in the API and are hidden
+   from the nav. Bring them back behind a flag for Q&A, as `RECORDCHECK_SHOW_ALL` does in Streamlit.
+3. **Dashboard** from `GET /dashboard` (types already regenerated):
+   - a row of four KPI cards with a plain-words line under each number
+   - a recall banner when a model is suggested
+   - last 10 filed, and risk by business function
+   - small panels for supported statements, AI vs human statements, and sources/disposal
+   No KPI maths in the client.
+4. **Colours:** blue = in order, orange = needs a person, solid orange = blocked or changed, grey = not run.
+   No red, green or emoji.
+5. **Production data:** the Neon DB still holds the old seed. The dashboard's model recall flag needs the new
+   citation counts in `data/seed/passports.json`. Reset the stage branch on purpose (`scripts/stage.py reset
+   --database-url … --yes`), never as a side effect.
+
+**Planner review, 19 Oct (Hasim's answers):** (1) the passport is a **visible card** in both UIs, not collapsed;
+(2) the dashboard tile "Bias risk signals" is renamed **"Narrow-evidence signals"** (rests on one source, or on weak,
+draft or superseded records). In the pitch: narrow evidence is one way bias gets in; never call it a bias detector.
+Chunk A also restores the visible passport card in Streamlit and renames the tile (key, label, API field).
+Dispatch: A → builder (-88); B, C and deploy → deployer (-ed). Production reset: the deployer confirms with Hasim
+in its own chat right before resetting Neon `main`.
+
+**Planner update, 19 Oct 13:45:** Hasim had Streamlit rebuilt to his design canvas
+(https://claude.ai/artifact/Ub6wrz62KzniTx24bKxWDs). The Records page lists the **individual checks** (Citations,
+Evidence, Sources, Filing gate, Review, Integrity, Retention, Since filing; older records: At filing, Integrity,
+Retention, Since filing), each opening to its detail, **not** the four grouped lines. Web chunk B follows: the
+headline from `/summary`, the check list and the details from `/view` (`checks`), then the visible passport card.
+`four_checks` stays in the API for the dashboard and older callers. Colours stay the team rule (blue / orange /
+solid orange / grey; no red or green); the canvas has been recoloured to match.
+
+**V2.x build plan (planning pass, 19 Oct; the web chat builds and deploys):**
+- **A · API:**
+  - Add a `RecordSummary` model.
+  - Add `view.headline()` (moved from Streamlit's `_headline`) and `view.summary()`.
+  - Add `GET /passport/{id}/summary`, declared *before* the greedy `/passport/{id:path}` catch-all. It returns the headline, its status, the four checks and the policy line.
+  - Gate: `uv run pytest -q`, then `npm run types`.
+  - **Remove the TypeScript `headline()` and `HEAD_COLOURS` from `web/app/page.tsx`.** Check wording comes only from Python.
+- **B · Shell, colours, Records:**
+  - `lib/ui.tsx` gets the Streamlit colour pairs: blue `#d6e6fb/#1e3a8a`, orange `#fde8b8/#7a4a00`, solid orange `#c2410c/#fff`, grey `#e5e7eb/#374151`. Remap every red or green map. To find them, grep `#15803d|#b91c1c|#14532d|#7f1d1d|#d1f0dc|#f8d0d0`.
+  - Nav: Records / Check a document / Information manager (Dashboard, Recall, Setup). Disposal, Register and Passport detail appear only with `NEXT_PUBLIC_SHOW_ALL=1` (set at build time).
+  - Records page: the headline and four collapsed check lines come from `/summary`, the detail from `/view` (`details.parts`). The passport is a **visible card**, not collapsed; the PDF is a small button. An unknown `?id=` shows "not found".
+  - Gate: `npm run build`.
+- **C · Dashboard, Recall, Setup:**
+  - `app/dashboard/page.tsx` from `GET /dashboard`, with no client maths.
+  - Recall keeps "mark source superseded" visible and collapses the registry and audit.
+  - Setup shows only the three questions behind the flag; the PUT body stays the full policy.
+- **Deploy:**
+  1. Preview: seed the Neon `preview` branch with `scripts/stage.py reset`, then `vercel deploy --scope the-record-breakers`, then `vercel curl` on `/api/dashboard`, `/api/passport/REC-2026/002444/summary` and the pages.
+  2. Promote, then **reset production (Neon `main`) with `scripts/stage.py reset --database-url <main pooled URL> --yes`. Hasim approved this on 19 Oct.** Pull the URL with `vercel env pull` into a temp file, never print it, and delete it after.
+- **Risks:**
+  - The CLI deploy uploads the working tree, including other chats' work in progress. Run `git status` and the tests right before deploying.
+  - `NEXT_PUBLIC_SHOW_ALL` must be unset in production.
+- **Cut if short on time:** the Streamlit `_headline` swap (keep a `ponytail:` duplicate), the extra Setup trim, the Recall collapse.
+
+### V3a · Web app as the main product, plus integrations (planner, 19 Oct 14:30; Hasim: "improvements on the main one and API integration")
+Hasim's answers: the main one is the **web app**; integration means **a records-system connector** and **more live data
+sources**. Order below. Each item: engine to the builder (-88), web and deploy to the deployer (-ed), planner reviews.
+
+**Web app (the main one)**
+- **W1 · Web becomes the stage UI.** Parity check against the Streamlit stage path v2 (steps 1–7 in 05): every step
+  clickable on the web, including source health and the reliability figure. Then a Vercel "stage" environment on the Neon
+  `stage` branch with its own stable URL (the deployer offered this). Update 05 to present from the web.
+- **W2 · Setup strictness picker** (known gap: LEVELS not in the API). Expose the levels via `GET /policy/levels`, then add
+  the picker on the web.
+- **W3 · Show where each check came from.** Every citation row says its source and when it was checked: "Crossref, live,
+  19 Oct 14:20", "Federal Register of Legislation, offline copy of 19 Oct", "not checked: register did not respond". This
+  makes live data visible and honest. Engine: `CitationResult.checked_at` plus the existing `source`.
+- **W5 · One top menu (Hasim, 14:40).** Replace the two tabs plus sub-tabs with one top bar that reaches every
+  important page in one click: **Records · Check a document · Dashboard · Recall · Setup**, with a small divider
+  before the information-manager items (Dashboard, Recall, Setup). A **More** menu on the right holds Disposal and
+  Register, reachable but out of the way (drop the `NEXT_PUBLIC_SHOW_ALL` gate for these two). The current page is
+  marked (`aria-current`). At phone width the bar wraps or becomes a menu button. "Check a document" stays a button on
+  Records too.
+- **W4 · Judges' phones:** the stage URL works at phone width, with a QR code on the last slide.
+
+**More live data sources** (engine; all offline by default, live behind `RECORDCHECK_ONLINE`, cached, with a timeout → `not_checked`)
+- **D1 · Retractions (Crossref, verified 14:30).** For a `found` reference with a DOI, query
+  `/works?filter=updates:<DOI>`. Any notice of type `retraction` → `mismatch` with "Retracted on <date> (notice <DOI>)";
+  `expression_of_concern` → `mismatch` with "Expression of concern". Closes EC-CIT-14. One extra call per DOI, cached.
+- **D2 · Authors (no new API).** Compare cited authors with Crossref's authors (surnames) → `mismatch` "cited as X; the
+  record lists Y". Closes EC-CIT-15.
+- **D3 · Regulations and instruments (FRL, same API as L1).** ⚠️ Check that `collection` holds legislative instruments
+  before building; then extend L1's lookup to instruments named in references.
+- **Merge L1 first** (sequence in 01-build). D1–D3 build on it.
+- **Engine order (Hasim, 14:35):** L1 merge → **G1** → D1 → W2 levels → W3 checked_at → D2 → I1 → I2 → D3, then M1, G2, G4.
+
+**Records-system connector** (engine; waits for the connector research in progress)
+- **I1 · Connector contract:** `RecordSource` (list and get authoritative records, with status, superseded-by, purpose,
+  review date) and `PassportSink` (write a filed passport back as a record or metadata). The seed DB is the first adapter.
+  The engine never calls a vendor API directly.
+- **I2 · One real adapter**, chosen from the research. Demo it against a real or locally run server if one exists for
+  free; otherwise against recorded responses, and say so on stage.
+- **I2 decision (planner, 14:45; research in `research/records-connectors-2026-10-19.md`): a Content Manager adapter
+  on recorded fixtures.** Content Manager is what the judges and the OpenText venue know, and it is the only option
+  with no outside dependency in ~3 hours (Graph needs a tenant; Alfresco and RecordPoint access are unverified).
+  Field and operation names come from Kapish's "Content Manager Power Connect" connector on Microsoft Learn (publisher
+  Kapish Services Pty Ltd; the planner re-checked Find Records, Create Record, Attach Electronic File, Finalise,
+  RecordNumber, RecordTitle, RecordDateRegistered, RecordRecordType, RecordOwnerLocation, RecordRetentionSchedule),
+  **not** the official ServiceAPI schema. Build:
+  1. **Read mapper** (RecordSource): fixture search results → `SourceRecord` (RecordNumber → id, RecordTitle → title,
+     RecordRecordType → record type, RecordDateRegistered → created, RecordOwnerLocation → owner,
+     RecordRetentionSchedule → disposal). Content Manager has no standard current/superseded field: make it a
+     **declared mapping rule** in the adapter config (e.g. a named field or a "superseded by" relationship), not a guess.
+     Fixtures include a superseded policy and a record with a retention schedule.
+  2. **Write mapper** (PassportSink): a filed passport → a "Create Record" request plus the passport JSON as an
+     attached electronic file, written to a local outbox and request log. No network.
+  3. Tests offline; one row each in EDGE_CASES. Mark the fixtures `"shape": "assumed"` unless the team gets a real
+     ServiceAPI Record response from the OpenText mentors (ask today; it would replace the assumed shape).
+  Fallback only after a 15-minute smoke test: Alfresco Community in Docker over the CMIS browser binding.
+- **I3 · Wording:** "Record Check reads your authoritative records where they already live and files the passport back
+  there." On stage: "a contract test against Content Manager-shaped records". **Never** "integrated with" or "connected
+  to OpenText Content Manager", "one CMIS adapter reads every system", "Content Manager has a public sandbox", "the
+  official ServiceAPI schema", "Purview has an isRecord flag", or "Objective has an open API".
+
+### V3b · Demo-ready UI: Record Passport (Hasim, 19 Oct 15:00; plan by the deployer, for the planner to review)
+Hasim's list: a main landing page, an easy-to-follow directory, a logo, a colour scheme (green for acceptance), the
+name **Record Passport**, trial documents only for the presentation plus another mode (**separate URLs**), a visible
+**bias check**, more on the dashboard, and fewer steps. Decisions he made today: green / amber / red / grey (each with
+an icon, so it never relies on colour alone), the row is called "Bias check", and the modes live on separate URLs.
+
+**Two URLs, one codebase** (a build-time `NEXT_PUBLIC_MODE`; no new project code paths beyond what's listed)
+- **Presentation:** `record-check-stage.vercel.app` (project `record-check-stage`, Neon `stage`). `MODE=demo`:
+  the document picker shows only the trial documents; a persistent "Demo: invented data" banner; a presenter-only
+  **Reset demo** action (calls a new guarded `POST /stage/reset`, or the deployer runs `stage.py`, see U8); no Disposal
+  or Register in More.
+- **Working app:** `record-check.vercel.app` (Neon `main`). Full menus, plus **Try your own document**: paste a title,
+  text and references and run the same checks (`/check` already takes `title`/`body`/`references`). The QR code on the
+  last slide points here.
+
+**Web (deployer), in order**
+- **U1 · Name and logo.** "Record Passport" everywhere: tab title, header, PDF heading (engine), slides. Logo: an inline
+  SVG mark (a passport booklet with a check), in one colour so it prints; favicon from the same mark (fixes the 404).
+- **U2 · Colour scheme.** Green `#d1f0dc/#14532d` = supported, ready, in order; amber `#fde8b8/#7a4a00` = needs a
+  person; red `#f8d0d0/#7f1d1d` (solid `#b91c1c/#fff` for Blocked) = blocked, contradicted, not found; grey = not run.
+  Icons ✓ ! ✕ – on every status. One map in `lib/ui.tsx`; Streamlit mirrors it (builder).
+- **U3 · Landing page `/`.** One sentence ("Every AI-assisted output that becomes a record gets a passport: what it
+  rests on, who approved it, and what changed since"), three entry cards (Check a document · Records · Information
+  manager), a four-step strip (Check → Gate → Passport → Recall), and live counts from `/dashboard`. Records moves to
+  `/records`; old links redirect.
+- **U4 · Directory.** The top bar groups: **Work** (Check a document, Records) | **Information manager** (Dashboard,
+  Recall, Setup) | More. Every page gets a title and a one-line "what this page is for" caption; Check → passport →
+  Records keeps the user on one path with a "Next" link at each step.
+- **U5 · Bias check row.** A visible row in "Checks done on this record": "Bias check: evidence rests on 4 independent
+  current sources" (green) or "Bias check: narrow evidence, rests on one source" (amber), with the detail listing the
+  sources. **Wording guard (Hasim chose the name; the rest stays honest):** never "unbiased", "bias-free" or "no bias
+  found". The detail explains it checks how broad and how current the evidence is, which is one way bias gets in.
+  Engine needs a per-passport `bias` check in `/view` (builder, B1 below).
+- **U6 · Dashboard additions** (all from the API, no client maths): filed per week (last 8 weeks), gate outcomes by
+  document type, by model (filed, recalled), bias-check results, review queue (open/closed), overdue reviews, and the
+  reliability card (done). Each tile links to the filtered Records list.
+- **U7 · Streamlining.** Issue passport goes straight to the passport. Empty, loading and error states on every page.
+  Phone width checked on each page. Remove "Passport detail" (the Records page is the passport). Setup: three questions,
+  plus the strictness picker once `GET /policy/levels` ships (W2).
+- **U8 · Presenter reset.** A guarded reset for the stage URL only (a secret header from Vercel env), so a rehearsal can
+  restart from the slide, not a terminal. Only if the builder agrees; otherwise the deployer resets via `stage.py`.
+
+**Engine (builder)**
+- **B1 · Bias check** in `view.checks`: id `bias`, status ok (≥2 independent current authoritative sources),
+  attention (one source, or any weak, draft or superseded), not_run (no sources); details list the sources and why.
+  Reuse the narrow-evidence logic from the dashboard. The row label is "Bias check".
+- **B2 · Dashboard series:** `filed_by_week`, `gate_by_type`, `by_model`, `bias_results`, `queue`, with plain labels.
+- **B3 · Name:** "Record Passport" in the PDF and the console header; colours U2 in Streamlit.
+- **B4 · (optional) `POST /stage/reset`**, guarded by an env secret and enabled only when `RECORDCHECK_STAGE=1`.
+
+**Planner review (15:10):**
+1. **B1 wording: count, don't claim independence.** Two records from the same case system aren't independent. The ok
+   line reads "Bias check: rests on 4 current authoritative sources across 3 systems"; ok needs ≥2 sources from
+   ≥2 systems; one system or one source → amber "narrow evidence". The guard words stand.
+2. **"Try your own document" is check-only.** It runs `/check` and shows the result; it never files a passport into
+   the production DB (no auth, public URL). A banner: "Don't paste personal or sensitive information; nothing you paste
+   is stored." Confirm `/check` stores nothing for ad hoc bodies (citation cache entries hold only reference text).
+3. **Builder order** (G1 stays ahead, per Hasim): L1 merge → G1 → B3 → B1 → W2 levels → B2 → B4 → D3 → M1 → G2 → G4.
+4. **Name change:** README, the pitch brief and the slides say Record Passport; `CLAUDE.md` still says Record Check
+   (Hasim edits that file himself).
+
+**Order:** L1 merge and deploy → U1 + U2 (small, visible) → U3 + U4 → B1 → U5 → B2 → U6 → U7 → U8. Each step is
+deployed to preview, then to the stage URL, then promoted. Cut if short: U8, then U6's weekly series.
+
 ### V3 · IM rules framework (after parity; design room reserved now)
 The IM configures the engine for any sector or document; no code per sector.
 1. **Information asset register** as the source of authoritative systems, modelled on OVIC's Sample IAR
@@ -169,3 +354,38 @@ every version from V0 has an entry in `docs/versions.md` and a git tag.
   document (now sends `relied_on`), and an Information manager sub-nav (Setup, Recall, Disposal, Register, Passport detail).
   Browser-tested locally (filed → lands on Records with full checks; seed passports show "summary counts only").
   Suite `191 passed, 11 skipped, 13 xfailed`; `next build` clean.
+- **19 Oct, deploy agent: Neon preview branch live.** Neon project `quiet-feather-33630786` (org "Vercel: The Record
+  Breakers"): branch `preview` (br-purple-king-b8aj35v5) created from `main`. The Vercel store is now connected to
+  **Production only** (`main` = stage data); Preview has its own sensitive `DATABASE_URL` (pooled, preview branch).
+  Reseed the preview branch any time: `stage.py reset --database-url "$(npx neonctl connection-string preview
+  --project-id quiet-feather-33630786 --pooled)" --yes`. Isolation verified: a passport filed on preview
+  `record-check-5zoaakszy` reads 200 there, 404 on prod; preview chain 41, prod 40. Bundle smoke on that preview
+  (commit 561c21a + P4 web): relied_on overrides a forged source; P1 view at_issue true; G3 overdue 1; S4 government
+  cite not_checked; summary Blocked 2/2/2/1; 7 pages 200. Promote waits for Hasim.
+  Also added (Hasim's request): Neon MCP at project scope via OAuth (`.mcp.json`, no key in the file) and skill
+  `neon-postgres-branches` (`.claude/skills/`, `skills-lock.json`).
+  **Promoted to production** on Hasim's OK, then reset the prod `main` branch with stage.py (40 passports, 20 records,
+  policy v2, chain ok 40). Prod check: G3 overdue 1 (REC-2026/004809); B2 share 1.0; summary Blocked 2/2/2/1 with
+  `relied_on`; P1 view 8 checks; 40 passports; the preview test passport is 404 on prod; 7 pages 200.
+- **19 Oct, deploy agent: V2.x B + C live on production** (built to Hasim's design canvas,
+  `docs/demo/design-passport-view.dc.html`; team colours blue/orange/solid orange/grey per decisions.md). Records = list +
+  passport hero (headline from `/summary`, filed-by line, PDF button) + visible six-group passport + "Checks done on this
+  record" as individual rows from `/view`; unknown id → not found. Nav: Records · Information manager (Dashboard, Recall,
+  Setup; Disposal/Register/Passport detail only with `NEXT_PUBLIC_SHOW_ALL=1`, unset in prod). New `/dashboard` (no client
+  maths, "Narrow-evidence signals"); Recall leads with "Mark a source superseded"; Setup = three questions. Check page takes
+  function and prompt from the document; web reads stored naive-UTC times as UTC (local display). Builder fixed the
+  aware/naive recall 500 in the engine. Preview `record-check-e3l8sqqhp` (preview branch reseeded) clicked through:
+  summary Blocked + Issue disabled, eligibility Ready → REC-2026/005113 → lands in Records with 8 checks; Dashboard, Recall,
+  Setup render; `/recall/record` 004790→004912 gives 13 (4 T2). Promoted, then reset prod `main` (Hasim pre-approved): 40
+  passports, chain ok; summary Blocked 2/2/2/1; preview passport 404 on prod; pages 200. Suite `209 passed, 11 skipped,
+  13 xfailed`. Known gap: Setup has no strictness picker (LEVELS not in the API).
+- **19 Oct 14:33, deploy agent: demo path clicked through twice on production** (Hasim asked). Both runs, no errors
+  or 4xx/5xx: Setup renders → Check: summary **Blocked**, Issue disabled → eligibility note **Ready to file** →
+  passport issued (REC-2026/005113, then 005114; T2) → lands in Records: "Ready to file" headline, PDF button, 8 check
+  rows → Recall: northstar-7 marked faulty, **14 affected / 3 T2**, 3 queued (run 2: 0 new, 3 already queued) →
+  Disposal: 3 due / **3 on hold** → back on the passport, Since filing OK (its model, northstar-8, isn't recalled).
+  Chain ok (43). These runs wrote to prod `main`: 2 passports, northstar-7 faulty, 3 queue entries. A third passport,
+  REC-2026/005115 (03:34 UTC), was filed by someone else in the same minute. The parity gate ("clicks through twice
+  on the Vercel URL") is met for the web app; offline use and the backup video are separate (05-demo-ops).
+  Then, on Hasim's OK, reset prod `main` with stage.py: 40 passports, chain ok, northstar-7 active, queue empty,
+  005113 gone (404).

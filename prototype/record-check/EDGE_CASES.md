@@ -8,7 +8,7 @@
 
 | Status | Count |
 |---|---|
-| ✅ tested | 142 |
+| ✅ tested | 143 |
 | 🟡 by design, untested | 0 |
 | ❌ gap | 13 |
 | ⛔ out of scope by design | 5 |
@@ -118,6 +118,7 @@
 | EC-PAS-15 | A seed passport (issued before checks were stored) | Hash and chain still verify (`checks_hash` is absent and excluded from the hash); the view says summary counts only | ✅ tested | `tests/test_view.py::test_seed_passports_still_verify_and_say_summary_only` |
 | EC-PAS-16 | A source is superseded, or the model is marked faulty, after filing | "Since filing" (the only live check) turns `problem` and names the record and its replacement, or the model and the recall | ✅ tested | `tests/test_view.py::test_since_filing_flips_when_a_source_is_superseded_and_a_model_is_recalled` |
 | EC-PAS-17 | Disposal of a passport with stored checks | The stored checks are deleted with the content; the view shows disposal and integrity still verifies | ✅ tested | `tests/test_view.py::test_disposal_destroys_stored_checks` |
+| EC-PAS-18 | A passport filed with an aware timestamp (ISO ending in Z, as the web sends) beside naive seed passports | Stored as naive UTC (`models.naive_utc`), so recall, recall by source and disposal sort and compare without error; recall also tolerates aware times already stored. Before 19 Oct, `POST /recall/record` returned 500 | ✅ tested | `tests/test_view.py::test_aware_timestamp_passport_files_and_recalls_beside_the_seed` |
 
 ## Recall (`recordcheck/recall.py`)
 

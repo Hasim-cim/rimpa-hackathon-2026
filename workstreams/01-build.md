@@ -213,6 +213,45 @@ Done when: the stage-path test passes with the new layout, the first screen afte
 shows one headline and the check list with no "Not run" rows, and a screenshot of Records and of Information
 manager → Sources is saved to `docs/demo/`.
 
+**Live data and NAA metadata (planner, 19 Oct 13:40; research in `research/live-data-and-metadata-2026-10-19.md`).**
+Order: **now (before the 14:30 freeze): fix the hard-coded function and case on Issue passport** (-46's bug: every
+document is filed as "Debt waiver assessment", case 2026/0412; take them from the document and the event). Then
+after the 15:00 mentor pitch, in this order: **L1 → G1 → M1 → G2 → G4** (L1 moved up 13:55: Hasim wants live, accurate data; 14:00 Hasim: start L1 now, isolated from the demo tree, merged after the 15:00 pitch. Uncommitted work means a worktree from HEAD lacks today's changes: either commit the green tree first, or build L1 in the main tree behind a switch that is off by default).
+- **M1 · NAA Minimum Metadata Set on the passport.** `models.py` first: add Protective Marking (default
+  "OFFICIAL"), Format (e.g. "text/plain"), Rights (default "none recorded"), Disposal Class as a structured field
+  (authority, class, action), and Identifier Scheme. A "Metadata (NAA Minimum Metadata Set)" group on the passport
+  card, labelled with NAA's property names. New passports only; the seed chain must still verify (older passports
+  show "not recorded"). AGRkMS marks Rights, Format and Integrity Check as conditional: don't label them mandatory.
+  Levels confirmed on the live NAA page in a browser, 19 Oct (-46). The pitch line is cleared once M1 lands.
+- **L1 · Live legislation check (Federal Register of Legislation).** `citations.py`: a reference of kind
+  `legislation` is looked up at `https://api.prod.legislation.gov.au/v1/` (no key; 1–4 s): name normalised (strip
+  "(Cth)" and section numbers), current version via `isCurrent eq true`, never filter on status. Results:
+  in force → `found` with the note "Act found in force on the Federal Register of Legislation; the section is for
+  a person to confirm"; repealed → `mismatch` with "repealed on <date>" (say "repealed"; say "replaced by" only if
+  the register's record states it); not found → `not_checked`, never "possibly fabricated" (EC-CIT-18 holds).
+  Offline fixtures from `research/live-api-evidence/frl/`, live behind the same switch as Crossref. Re-run the seed
+  demo gates: citation [1] in the summary changes from not_checked to found, so update the script's numbers.
+  Optional, only if time remains: a demo document citing the 1922 Act.
+  **Pre-plan test results (-46, 13:50; `research/live-data-and-metadata-2026-10-19.md` addendum, `probe.py`):**
+  normalise by stripping "(Cth)" and everything from "s/sch/pt <n>", then exact `name eq` (7 of 7 real Acts resolved).
+  `name eq` also hits `nameHistory`: show both names ("cited as Social Security Act 1947; the register lists it as
+  Social Services Consolidation Act 1947, repealed"). Wrong year: `contains` on the stem, keep collection == Act
+  client-side, compare years → `mismatch` ("the register has Privacy Act 1988"). **The API rate-limits** (calls went
+  from 1.4 s to 7–12 s, then timeouts after ~25 calls), so: a per-title cache in `citation_cache`, an 8 s timeout
+  that falls back to `not_checked` ("The register did not respond"), fixtures prefetched for every demo citation, and
+  no cold live call on stage. Generate fixtures slowly, after the API has rested.
+  **Test pass (-46, 14:10):** green; live spot checks agree. The wrong-year case does **not** work live (`contains`
+  with `$top=10` misses the 1988 Act), so its fixture is dropped and we don't claim wrong-year detection on stage.
+  **Merge sequence after the 15:00 pitch (planner, 14:15):** (1) Hasim says go and the main tree is committed
+  (suite green first); (2) the builder merges `l1-legislation` (ba28055), adds the EDGE_CASES rows and the
+  ARCHITECTURE contract, re-runs the suite and the stage-path test; (3) the builder hands to the deployer, who
+  deploys preview → promote; (4) reset the stage branch and rehearse step 2 with the new [1] line.
+  **No match is never "possibly fabricated" (planner, overrides the test note):** it could be state legislation, a
+  regulation or a misnaming. It reads `not_checked` with "No Commonwealth Act of this name on the Federal Register
+  of Legislation; a person should confirm (it may be state legislation or misnamed)". "Possibly fabricated" stays
+  for scholarly references not found in Crossref or OpenAlex.
+- Not building: data.gov.au (dataset metadata, not records), NAA RecordSearch (no API), Trove (key takes a week).
+
 **Garbage-in specs (planner, 19 Oct 12:40; the frame is in `research/session-1-outcomes-2026-10-19.md`).
 After B4. In this order:**
 - **G1 · Facts must match, not just words** (folds in B4): when a claim links to a record by wording, compare
@@ -230,6 +269,23 @@ After B4. In this order:**
   sentiment.
 Same rules as before: `models.py` first, seed invented, tests offline, EDGE_CASES rows and counts, hand to the
 deployer when green. Wording: "supported by authoritative records", never "true" or "accurate".
+
+**Done (19 Oct): minimal layout and dashboard engine.**
+- **Console trimmed** to the Records page (headline, four check lines from `view.four_checks()`, collapsed
+  passport) and an Information manager side (Recall with mark-superseded folded in, and Setup with its three
+  questions). `RECORDCHECK_SHOW_ALL=1` brings back Sources, Disposal and Register. Status colours are blue,
+  orange and grey only.
+- **Dashboard engine:** `recordcheck/dashboard.py` `report()`, served by `GET /dashboard`. The four KPIs are
+  approved; needs a person; bias risk signals (fixed rules: one source or one system, a weak, draft or
+  superseded record, or a not_for match); and recall suggested.
+- **Recall threshold:** policy `recall_signal_threshold` 0.30, with `recall_signal_min_refs` 10. These are
+  excluded from `policy_hash`.
+- **Seed:** 9 passports gained citation counts through `scripts/seed_citation_counts.py`, which also re-hashes
+  the chain. northstar-7 now shows 5 of 15 references not found (33%), so recall is suggested. Passports filed
+  before the gate existed count as approved when a named reviewer approved them.
+- **Shared DBs:** the local DB and Neon still hold the old seed. Reset the stage DB to see the flag.
+- **Dashboard screen:** first Information manager tab (Dashboard, Recall, Setup), reading only `dashboard.report()`. Suite `204 passed`.
+- Suite: `203 passed, 11 skipped, 13 xfailed`.
 
 **Next, in priority order:**
 1. **Printed passport.** Export a one-page passport PDF (the six groups, tier, hash, policy version) so
@@ -261,3 +317,28 @@ Concept and tiers: `ideas/concept-records-gateway.md`. Policy studio: `ideas/con
 ## Done when
 The demo path (Setup → Check: Blocked → fix/eligibility note: Ready → Passport → Recall: 14/3 →
 Disposal: holds) clicks through twice without error on the venue laptop, offline, and a backup video exists.
+
+**Done (19 Oct 13:37, builder): Streamlit rebuilt to Hasim's mockup** (claude.ai design canvas "Record Check: records").
+Header: logo, "Record Check", "Example data" pill, Records | Information manager switch (top, not the sidebar).
+Records: left card (Records, blue "Check a document", rows with title, status pill, date, how long it is kept,
+"(changed)" marker); right article: RECORD PASSPORT + id, title, coloured headline box ("Ready to file: …"), who line,
+the passport card (six groups as in the mockup), the older-record note, then "Checks done on this record": one row
+per check with a ✓ ! ✕ – mark, name and summary; opened rows show key-value lines and, for Evidence, sentence cards.
+Full records list the eight engine checks; older records fold into At filing, Integrity, Retention, Since filing.
+Information manager: reliability card ("29 of 29", pulling it down), then the tabs with the mockup's one-line
+descriptions. Colours follow the team rule (blue/orange/grey, no red or green), not the mockup's green/red.
+`.streamlit/config.toml` sets primary blue. Fixed with it: Issue passport took function "Debt waiver assessment" and
+case 2026/0412 for every document; now from the document (-46 finding 1). Double full stop in the four-check
+evidence line (finding 4). Note: the console no longer uses `view.four_checks`; `/summary` (web) still does.
+Screenshots: `docs/demo/records.png`, `docs/demo/im-dashboard.png`. Suite `207 passed, 13 xfailed`.
+
+**Built on branch `l1-legislation` (worktree `../rimpa-l1`, 19 Oct 14:20–14:40, builder), waiting for the merge after
+the pitch.** Worktree suite `225 passed, 11 xfailed`. Commits:
+- `4eb7f9a`, `ba28055` **L1** live legislation check (Federal Register of Legislation); tested by -46, offline + 3 live.
+- `09230ae` **D1** retractions: Crossref `updated-by`, else `filter=updates:<DOI>`; closes EC-CIT-14.
+- `216e27c` **D2** authors vs the index's surnames → mismatch naming both; closes EC-CIT-15.
+- `7fd448e` **W3** `CitationResult.checked_at` + `citations.provenance()` ("Crossref, live, 19 Oct 14:20" / "offline copy").
+- `f0dc7cf` **I1** `recordcheck/connectors.py`: `RecordSource`, `PassportSink`, seed-database adapters.
+At the merge: add the L1, W3 and I1 rows to EDGE_CASES and ARCHITECTURE; move `FiledReceipt` into `models.py`; wire
+`evidence.assess` through `RecordSource`; re-run the stage-path test. No seed demo result changes except L1's [1] → found.
+Still main-tree: G1 (first after the merge), W2 `GET /policy/levels`, D3 (check `collection` live first), I2.

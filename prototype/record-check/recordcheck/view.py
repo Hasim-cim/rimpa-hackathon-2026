@@ -11,7 +11,7 @@ from datetime import date
 from . import db, passport
 from .disposal import HELD_STATUSES
 from .evidence import is_evidence, why_not_evidence
-from .models import CheckSummary, Passport, PassportChecks, PassportView, Policy
+from .models import CheckSummary, Passport, PassportChecks, PassportView, Policy, RecordSummary
 
 WEIGHTS = ("supported", "weak", "unsupported", "contradicted")
 TIER_WORDS = {"T0": "transitory log", "T1": "retained output", "T2": "informs a decision", "T3": "agent action"}
@@ -205,3 +205,179 @@ def view_all(conn, policy: Policy | None = None, as_of: date | None = None) -> l
     """Every passport's view, newest first (for the Records list)."""
     ids = [r["record_id"] for r in conn.execute("SELECT record_id FROM passports ORDER BY seq DESC")]
     return [v for v in (view(conn, i, policy) for i in ids) if v is not None]
+
+
+# ---------- the four checks people see (UI grouping only; the engine's eight stay as they are) ----------
+
+FOUR = ("evidence", "references", "filing", "since")
+_WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine"}
+_RANK = {"not_run": 0, "ok": 1, "attention": 2, "problem": 3}
+
+
+def _num(k: int, noun: str) -> str:
+    return f"{_WORDS.get(k, k)} {noun}" + ("" if k == 1 else "s")
+
+
+def _worst(parts: list[CheckSummary]) -> str:
+    ran = [c.status for c in parts if c.status != "not_run"]
+    return max(ran, key=_RANK.__getitem__) if ran else "not_run"
+
+
+def policy_line(p: Passport) -> str:
+    """'Bar set by the information manager, policy v3.' from the version stored on the passport."""
+    head = p.paradata.policy_version.split(" (")[0]
+    return f"Bar set by the information manager, {head}."
+
+
+def _superseded_on(conn, record_id: str) -> str | None:
+    row = conn.execute("SELECT at FROM audit_log WHERE action='record.marked_superseded' AND subject=? "
+                       "ORDER BY id DESC LIMIT 1", (record_id,)).fetchone()
+    return str(row["at"])[:10] if row else None
+
+
+def four_checks(conn, v: PassportView, p: Passport, policy: Policy | None = None) -> list[CheckSummary]:
+    """Evidence, References, Filing, Since filing: each a status, one line made from the passport's real data, and the
+    ids of the engine checks that make up its detail. Retention is shown in the passport's Business group instead."""
+    c = {x.id: x for x in v.checks}
+    pr, b = p.process, p.business
+
+    # Evidence = Evidence + Sources
+    ev, src = c["evidence"], c["sources"]
+    if ev.status == "not_run":
+        ev_line = ev.summary.rstrip(".")
+    else:
+        ev_line = ev.summary.rstrip(".")
+        items = src.details.get("items")
+        if items:
+            bad = [s for s in items if not s["counted"]]
+            ev_line += (f"; all {_num(len(items), 'source')} current" if not bad else
+                        f"; {len(bad)} of {_num(len(items), 'source')} did not count at filing")
+        else:
+            ev_line += "; source state at filing not recorded"
+    evidence_check = CheckSummary(id="evidence", name="Evidence", status=_worst([ev, src]), summary=ev_line + ".",
+                                  details={"parts": ["evidence", "sources"]})
+
+    # References = Citations
+    ci = c["citations"]
+    cs = pr.citation_summary
+    if ci.status == "not_run":
+        ref_line = ci.summary
+    else:
+        bits = [f"{cs.get('found', 0)} found"]
+        if cs.get("not_found"):
+            bits.append(f"{cs['not_found']} not found (possibly fabricated)")
+        if cs.get("mismatch"):
+            bits.append(f"{cs['mismatch']} with details that do not match")
+        if cs.get("not_checked"):
+            bits.append(f"{cs['not_checked']} for a person to confirm")
+        ref_line = ", ".join(bits) + "."
+    refs_check = CheckSummary(id="references", name="References", status=ci.status, summary=ref_line,
+                              details={"parts": ["citations"]})
+
+    # Filing = Filing gate + Review
+    gate, rv = c["gate"], c["review"]
+    dtype = next((d for d in policy.document_types if d.id == b.document_type), None) if policy else None
+    tname = (dtype.name if dtype else b.document_type or "this document").lower()
+    ws = pr.evidence_summary
+    # most serious first, so the two a judge reads are contradicted and possibly fabricated
+    issues = [_num(n, label) for n, label in (
+        (ws.get("contradicted"), "contradicted statement"), (cs.get("not_found"), "reference not found"),
+        (ws.get("unsupported"), "unsupported statement"), (ws.get("weak"), "weak statement"),
+        (cs.get("not_checked"), "reference to confirm"), (cs.get("mismatch"), "reference with details that do not match"),
+    ) if n]
+    review_bit = ("" if p.review is None else
+                  f"rejected by {p.review.reviewer}" if p.review.decision == "rejected" else
+                  f"{p.review.decision.replace('_', ' ')} by {p.review.reviewer}, not the author")
+    if gate.status == "not_run":
+        fl, fstatus = gate.summary, "not_run"
+    else:
+        if b.gate == "ready":
+            level = policymod_level(dtype)
+            fl = f"Met the {level + ' ' if level else ''}bar for a {tname}" + (f"; {review_bit}" if review_bit else "")
+        elif b.gate == "attention":
+            fl = f"Needs review for a {tname}: " + ("; ".join(issues) or "items need attention") + \
+                 (f"; {review_bit}" if review_bit else "; no named reviewer" if p.review is None else "")
+        else:
+            more = len(issues) - 2  # a judge reads two reasons; the detail is in the expanders
+            fl = f"Blocked for a {tname}: " + (", ".join(issues[:2]) + (f", and {more} more" if more > 0 else "")
+                                               if issues else "see the reasons")
+        fl += ". " + policy_line(p)
+        fstatus = _worst([gate, rv])
+    filing_check = CheckSummary(id="filing", name="Filing", status=fstatus, summary=fl,
+                                details={"parts": ["gate", "review"]})
+
+    # Since filing = Integrity + Retention + Since filing
+    ig, rt = c["integrity"], c["retention"]
+    if "since" in c:
+        sn, d = c["since"], c["since"].details
+        if sn.status == "ok":
+            bits = ["Unchanged since filing", "sources still count", "model in good standing"]
+            bits.append(rt.summary.split(": ", 1)[-1].rstrip(".") if rt.details.get("retention_days") else
+                        "kept with the case file")
+            line = "; ".join(bits)
+        else:
+            bits = []
+            for x in d.get("sources_changed", []):
+                on = _superseded_on(conn, x["record_id"])
+                bits.append(f"Source {x['record_id']} {x['why']}" + (f" on {on}" if on and "superseded" in x["why"] else ""))
+            if d.get("model_status") not in (None, "not registered", "current", "active"):
+                bits.append(f"model {d['model']} marked {d['model_status']}")
+            if d.get("queued"):
+                bits.append("queued for review")
+            line = "; ".join(bits) or sn.summary.rstrip(".")
+        if ig.status != "ok":
+            line += "; integrity problem: " + ig.summary.rstrip(".")
+        parts = [sn, ig, rt]
+        since_check = CheckSummary(id="since", name="Since filing", status=_worst([sn, ig]), summary=line + ".",
+                                   details={"parts": ["since", "integrity"]})
+    else:
+        since_check = CheckSummary(id="since", name="Since filing", status="ok", summary=rt.summary,
+                                   details={"parts": ["retention"]})
+    return [evidence_check, refs_check, filing_check, since_check]
+
+
+def policymod_level(dtype) -> str:
+    """The strictness name ('Standard') of a document type, or '' for a custom bar."""
+    if dtype is None:
+        return ""
+    from . import policy as policymod   # local import: keeps view.py's import list to what the checks need
+    lv = policymod.level_of(dtype)
+    return policymod.LEVELS[lv].name if lv else ""
+
+
+# ---------- headline and summary (the wording every UI shows first) ----------
+
+HEADLINE_TIER = {"T0": "T0, a transitory log", "T1": "T1, a retained output", "T2": "T2, informs a decision",
+                 "T3": "T3, an agent's action"}
+
+
+def headline(v: PassportView) -> tuple[str, str]:
+    """(headline, status) in plain words: what a records person needs to know first."""
+    c = {x.id: x for x in v.checks}
+    if v.disposed:
+        return "Disposed: the content was destroyed under an approved authority; its hash is kept in the chain.", "not_run"
+    if "since" in c and c["since"].status == "problem":
+        return "Changed since filing: " + c["since"].summary.removeprefix("Since filing: "), "problem"
+    if not v.at_issue:
+        return f"Older record: summary only. {HEADLINE_TIER[v.tier].capitalize()}.", "not_run"
+    ev = c["evidence"]
+    if v.gate == "ready":
+        line = ("every statement is supported by authoritative records" if ev.status == "ok"
+                else ev.summary[0].lower() + ev.summary[1:].rstrip("."))
+        return f"Ready to file: {line}.", "ok"
+    if v.gate == "attention":
+        return f"Needs review: {ev.summary[0].lower() + ev.summary[1:]}", "attention"
+    return f"Filed: {ev.summary}", "ok"
+
+
+def summary(conn, record_id: str, policy: Policy | None = None) -> RecordSummary | None:
+    """Headline, its status, the four checks and the policy line for one record; None for an unknown record."""
+    v = view(conn, record_id, policy)
+    if v is None:
+        return None
+    p = Passport.model_validate_json(
+        conn.execute("SELECT payload FROM passports WHERE record_id=?", (record_id,)).fetchone()["payload"])
+    head, status = headline(v)
+    return RecordSummary(record_id=record_id, headline=head, status=status,
+                         checks=four_checks(conn, v, p, policy), policy_line=policy_line(p))
+

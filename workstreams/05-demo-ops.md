@@ -9,6 +9,25 @@
 with the laptop). Keys in `prototype/record-check/.env`: Anthropic (about $5 credit; Haiku costs cents),
 OpenAlex free key, `RECORDCHECK_ONLINE=true`.
 
+**Stage database (Neon branch `stage`, 19 Oct).** Its URL lives only in `prototype/record-check/.env.stage`
+(git-ignored, chmod 600, never printed). The subshell keeps `DATABASE_URL` out of your shell; plain `uv run` stays
+on local SQLite.
+```bash
+cd prototype/record-check
+# reset stage before each rehearsal (stage only; shared and production are never touched)
+(set -a; . ./.env.stage; set +a; uv run python scripts/stage.py reset --database-url "$DATABASE_URL" --yes)
+# run the console on stage
+(set -a; . ./.env.stage; set +a; uv run streamlit run app/streamlit_app.py)
+```
+On another laptop: `npx neonctl auth`, then
+`npx neonctl connection-string stage --project-id quiet-feather-33630786 --pooled`, written into `.env.stage` as
+`DATABASE_URL="…"` (quoted). **Network: Hasim presents on his own internet (hotspot), not venue Wi-Fi (19 Oct).** Fallback if that fails too:
+local SQLite, `scripts/stage.py reset` with no URL.
+
+**When L1 merges (after the pitch), update step 2's numbers:** the summary's references become 2 found, 1 details
+differ, 1 not found (say: "[1], the Social Security Act 1991, is found in force on the Federal Register of Legislation, C2004A04121; the section is for a person to confirm"), and the "could not be checked automatically ([1])" reason disappears.
+The gate is still Blocked. Briefing: 2 found, 2 not found.
+
 **Stage path v2, passport-first (planner, 19 Oct 12:50). Supersedes item 1 below. Rehearse and time it.**
 Start on a fresh stage DB (`scripts/stage.py` reset). All data is invented; say so once.
 
@@ -58,3 +77,12 @@ Share the tunnel URL with the team only: anyone with the link spends the API cre
 
 ## Done when
 Two clean run-throughs on the venue laptop with Wi-Fi off; video on two devices; QR code resolves.
+
+**Present from the web (W1, deployer, 19 Oct 15:00).** The stage UI is now the web app at
+**https://record-check-stage.vercel.app** (Vercel project `record-check-stage`, public, Neon branch `stage`). Stage path
+v2, steps 1–7, was clicked through on the web build: Records → Check a document (summary, decision letter: Blocked) →
+eligibility note, case note → Issue passport → lands on its passport (8 checks; Evidence 4 of 4) → Dashboard: reliability
+**30 of 30** → Recall: mark REC-2026/004790 superseded by REC-2026/004912 → **17 of 30**, the notice named → recall by
+source **13 / 4 T2** → Queue T2 → click a record id in the recall list → **Since filing** shows the change. Reset the stage
+branch before each rehearsal (deployer, or `.env.stage` + `stage.py`, above). Streamlit on `.env.stage` is the fallback.
+The last-slide QR code points at the working app, `record-check.vercel.app`, so judges never change the stage data.

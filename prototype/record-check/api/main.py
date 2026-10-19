@@ -10,11 +10,12 @@ from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from recordcheck import citations as cit
-from recordcheck import db, disposal, evidence, gate, passport, printout, recall, sources
+from recordcheck import dashboard, db, disposal, evidence, gate, passport, printout, recall, sources
 from recordcheck import policy as policymod
+from recordcheck import view as vw
 from recordcheck.models import (
-    AIEvent, Assessment, ChainReport, CitationResult, DisposalEntry, DisposalItem, Document, GateResult,
-    ModelRegistryEntry, Passport, PassportView, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
+    AIEvent, Assessment, ChainReport, CitationResult, DashboardReport, DisposalEntry, DisposalItem, Document, GateResult,
+    ModelRegistryEntry, Passport, PassportView, RecordSummary, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
     SourceRecord, Tier,
 )
 
@@ -167,6 +168,16 @@ def get_passport_pdf(record_id: str) -> Response:
                     headers={"Content-Disposition": f'inline; filename="{printout.filename(p)}"'})
 
 
+@app.get("/passport/{record_id:path}/summary", response_model=RecordSummary)
+def get_passport_summary(record_id: str) -> RecordSummary:
+    """Headline, status, the four checks and the policy line: what a person reads first."""
+    with lock:
+        s = vw.summary(conn, record_id, policymod.load())
+    if s is None:
+        raise HTTPException(404, f"unknown record: {record_id}")
+    return s
+
+
 @app.get("/passport/{record_id:path}/view", response_model=PassportView)
 def get_passport_view(record_id: str) -> PassportView:
     """The passport and the checks done on it at issue, plus the live 'Since filing' check."""
@@ -222,6 +233,13 @@ def source_health() -> SourceHealthReport:
 def source_reliability() -> ReliabilityReport:
     with lock:
         return sources.reliability(conn, policymod.load())
+
+
+@app.get("/dashboard", response_model=DashboardReport)
+def get_dashboard() -> DashboardReport:
+    """Read-only information-manager dashboard: KPIs, model signals, recent passports, sources, disposal."""
+    with lock:
+        return dashboard.report(conn, policymod.load())
 
 
 @app.get("/chain/verify", response_model=ChainReport)

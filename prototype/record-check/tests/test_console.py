@@ -16,7 +16,10 @@ from recordcheck import passport
 APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_app.py")
 SUMMARY = "DOC-2026/0412-summary"
 ELIGIBILITY = "DOC-2026/0587-eligibility"
-IM_TABS = ["Setup", "Sources", "Recall", "Disposal", "Register"]
+IM_TABS = ["Dashboard", "Setup", "Sources", "Recall", "Disposal", "Register"]     # RECORDCHECK_SHOW_ALL=1
+IM_TABS_DEFAULT = ["Dashboard", "Recall", "Setup"]
+FULL_CHECKS = ["Citations", "Evidence", "Sources", "Filing gate", "Review", "Integrity", "Retention", "Since filing"]
+OLDER_CHECKS = ["At filing", "Integrity", "Retention", "Since filing"]
 
 
 @pytest.fixture
@@ -35,6 +38,16 @@ def db_path(tmp_path, monkeypatch):
 
 @pytest.fixture
 def at(db_path):
+    app = AppTest.from_file(APP, default_timeout=30)
+    app.run()
+    assert not app.exception
+    return app
+
+
+@pytest.fixture
+def at_all(db_path, monkeypatch):
+    """The full console: RECORDCHECK_SHOW_ALL=1 brings back the Sources, Disposal and Register tabs."""
+    monkeypatch.setenv("RECORDCHECK_SHOW_ALL", "1")
     app = AppTest.from_file(APP, default_timeout=30)
     app.run()
     assert not app.exception
@@ -83,10 +96,44 @@ def n_passports(db_path):
     return rows(db_path, "SELECT COUNT(*) FROM passports")[0][0]
 
 
-def test_every_tab_loads(at):
-    assert not at.exception and any("Check a document" == b.label for b in at.button)    # Records is the default
+def test_every_tab_loads(at_all):
+    assert not at_all.exception and any("Check a document" == b.label for b in at_all.button)    # Records is the default
+    go(at_all, "Information manager")
+    assert [t.label for t in at_all.tabs] == IM_TABS
+
+
+def check_rows(at):
+    """Check names in order, from the expander labels ':blue-background[**✓**]  **Evidence**  4 of 4 ...'."""
+    names = []
+    for e in at.expander:
+        if "]  **" in e.label:
+            names.append(e.label.split("]  **", 1)[1].split("**", 1)[0])
+    return names
+
+
+def test_minimal_layout_default_mode(at):
+    """Default demo: the passport card visible, then every check in the mockup's order; three IM tabs."""
+    # open a passport that has stored checks: issue one first
+    start_check(at)
+    select(at, "Document", ELIGIBILITY)
+    at.run()
+    select(at, "Document type", "case-note")
+    at.run()
+    button(at, "Run check").click().run()
+    assert not at.metric, "no metric row on the check page"
+    next(t for t in at.text_input if t.label == "Reviewer name").set_value("B. Team Leader")
+    at.run()
+    button(at, "Issue passport").click().run()
+    assert not at.exception
+    assert check_rows(at) == FULL_CHECKS
+    assert any('class="rc-passport"' in m.value for m in at.markdown), "the passport card is visible, not collapsed"
+    assert any("Eligibility review" in m.value and "Debt waiver" not in m.value for m in at.markdown
+               if 'class="rc-passport"' in m.value), "function comes from the document"
+    assert not any(e.label.startswith("Record passport") for e in at.expander)
+    assert not at.metric
     go(at, "Information manager")
-    assert [t.label for t in at.tabs] == IM_TABS
+    assert [t.label for t in at.tabs] == IM_TABS_DEFAULT
+    assert not any("Exact thresholds" in m.value for m in at.markdown)
 
 
 def test_stage_path_check_gate_and_issue_passport(at, db_path):
@@ -151,7 +198,8 @@ def test_sources_mark_superseded_and_queue(at, db_path):
     assert any("Queued" in s.value for s in at.success)
 
 
-def test_disposal_approve(at, db_path):
+def test_disposal_approve(at_all, db_path):
+    at = at_all
     go(at, "Information manager")
     before = rows(db_path, "SELECT COUNT(*) FROM disposal_register")[0][0]
     b = button(at, "Approve destruction")
@@ -162,7 +210,8 @@ def test_disposal_approve(at, db_path):
     assert any("chain verified" in s.value for s in at.success)
 
 
-def test_disposal_caption_and_match_steps(at):
+def test_disposal_caption_and_match_steps(at_all):
+    at = at_all
     go(at, "Information manager")
     assert any("Retention here is a decision, not a timer" in c.value for c in at.caption)
     go(at, "Records")
@@ -180,20 +229,19 @@ def metric(at, label):
 
 
 def row(at, name):
-    """The expander label of a check, e.g. ':green[**OK**] Evidence: 4 of 4 ...'."""
-    return next(e.label for e in at.expander if f"] {name}:" in e.label)
+    """The expander label of a check, e.g. ':blue-background[**✓**]  **Evidence**  4 of 4 ...'."""
+    return next(e.label for e in at.expander if f"]  **{name}**" in e.label)
 
 
 def test_first_screen_on_a_fresh_db_explains_itself(at):
     # no passport has stored checks yet: open the newest, say it is an older record, fold its unrecorded checks
-    assert any("File a document to see its passport" in i.value for i in at.info)
     assert any("Older record: summary only" in m.value for m in at.markdown)
-    assert any(c.value.startswith("Not recorded for this older record:") for c in at.caption)
-    assert not any("Not run" in e.label for e in at.expander)
+    assert check_rows(at) == OLDER_CHECKS    # what was not kept folds into one "At filing" line
 
 
-def test_stage_path_v2_passport_first(at, db_path):
-    """workstreams/05-demo-ops.md, 'Stage path v2', steps 1-7, clicked in order on a fresh DB."""
+def test_stage_path_v2_passport_first(at_all, db_path):
+    """workstreams/05-demo-ops.md, 'Stage path v2', steps 1-7, clicked in order on a fresh DB (full console)."""
+    at = at_all
     # 1. Records is the first place
     assert next(r for r in at.radio if r.label == "Go to").value == "Records"
 
@@ -220,12 +268,14 @@ def test_stage_path_v2_passport_first(at, db_path):
     assert opened(at) == new_id and any("Passport issued" in s.value for s in at.success)
 
     # 4. one headline, then its checks: no "Not run" rows
-    assert any("Ready to file: every statement is supported by authoritative records" in m.value for m in at.markdown)
-    assert "OK" in row(at, "Evidence") and "4 of 4 statements supported by authoritative records" in row(at, "Evidence")
-    assert row(at, "Filing gate").startswith(":green") and "Ready to file" in row(at, "Filing gate")
-    assert "Approved by B. Team Leader" in row(at, "Review")
-    assert row(at, "Integrity").startswith(":green") and row(at, "Sources").startswith(":green")
-    assert not any("Not run" in e.label for e in at.expander)
+    assert any("<b>Ready to file:</b>" in m.value and "every statement is supported by authoritative records" in m.value
+               for m in at.markdown)
+    assert row(at, "Evidence").startswith(":blue") and "4 of 4 statements supported by authoritative records" in row(at, "Evidence")
+    assert row(at, "Sources").startswith(":blue") and "All 4 sources" in row(at, "Sources")
+    assert row(at, "Filing gate").startswith(":blue") and "Ready to file" in row(at, "Filing gate")
+    assert "Approved by B. Team Leader, not the author" in row(at, "Review")
+    assert row(at, "Since filing").startswith(":blue") and "Nothing has changed since filing" in row(at, "Since filing")
+    assert row(at, "Citations").startswith(":gray")          # the note has no references
 
     # 5. Information manager -> Sources: tile 30 of 30 -> supersede the debt notice -> 17 of 30
     go(at, "Information manager")
@@ -247,5 +297,19 @@ def test_stage_path_v2_passport_first(at, db_path):
     at.run()
     assert not at.exception
     since = row(at, "Since filing")
-    assert since.startswith(":red") and "REC-2026/004790" in since and "REC-2026/004912" in since
+    assert since.startswith(":orange-background") and "REC-2026/004790" in since and "REC-2026/004912" in since
     assert any("Changed since filing" in m.value for m in at.markdown)
+
+
+def test_dashboard_tab_default_mode(at, db_path):
+    import re
+    from recordcheck import dashboard, db, policy as policymod
+    go(at, "Information manager")
+    assert [t.label for t in at.tabs] == ["Dashboard", "Recall", "Setup"]
+    conn = db.open_db()
+    rep = dashboard.report(conn, policymod.load())
+    text = " ".join([m.value for m in at.markdown] + [c.value for c in at.caption])
+    for k in rep.kpis:
+        assert k.label.replace("&", "&amp;") in text or k.label in text, k.label
+    assert "Last 10 filed" in text and "Risk by business function" in text
+    assert not re.search(r"\b(verified|true|false|fake)\b", text, re.I)

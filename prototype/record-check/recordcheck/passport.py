@@ -13,7 +13,7 @@ from . import gate as gatemod
 from .hashing import sha256
 from .models import (
     Policy,
-    AIEvent, Assessment, ChainReport, CitationResult, GateResult, Passport, PassportChecks, SourceSnapshot, PassportAgent, PassportBusiness,
+    AIEvent, Assessment, ChainReport, CitationResult, GateResult, Passport, PassportChecks, SourceSnapshot, naive_utc, PassportAgent, PassportBusiness,
     GateStatus, PassportIntegrity, PassportParadata, PassportProcess, PassportRecord, Review, Tier, TierRules,
 )
 
@@ -92,7 +92,7 @@ class DuplicateRecord(ValueError):
 
 def policy_hash(policy: "Policy") -> str:
     """Hash of the policy *content*: version, author and timestamp excluded, so an unchanged bar hashes the same."""
-    return sha256(policy.model_dump(mode="json", exclude={"version", "updated_by", "updated_at"}))
+    return sha256(policy.model_dump(mode="json", exclude={"version", "updated_by", "updated_at", "recall_signal_threshold", "recall_signal_min_refs"}))
 
 
 def compute_hash(p: Passport) -> str:
@@ -192,7 +192,7 @@ def _append(conn, event, tier, reason, rules, review, record_id, document_type, 
     p = Passport(
         record=PassportRecord(
             id=rid, title=f"{event.function or 'AI-assisted output'} ({_app_name(event, rules)})",
-            created=event.created, ai_generated=True, final_document=event.exported_to_document,
+            created=naive_utc(event.created), ai_generated=True, final_document=event.exported_to_document,
             content_hash=sha256(event.output.encode("utf-8")),
         ),
         agent=PassportAgent(person=event.user, ai_system=_app_name(event, rules),

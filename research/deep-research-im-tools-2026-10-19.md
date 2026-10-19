@@ -106,3 +106,8 @@ specifics, AGRkMS field mapping, information-asset registers, DATA Scheme rules,
 beyond citation checkers. **So any connector we name (Graph or Purview API, Objective, OpenText,
 RecordPoint) is 💭 until we check the vendor docs.** We're at OpenText today, so ask them about the
 Content Manager API.
+
+## Addendum: existing APIs we could connect to (19 Oct, search snippets only)
+- ⚠️ **OpenText Content Manager ServiceAPI.** Content Manager exposes the ServiceAPI. Microsoft's "Content Manager Power Connect" connector returns raw ServiceAPI responses from its "Find Records (Advanced)" action, and has actions that update a record's fields and access controls ([connector listing](https://learn.microsoft.com/en-us/connectors/contentmanagerpowerc), not opened). We haven't seen endpoint docs; developer.opentext.com is the place to look. Ask OpenText on site.
+- ⚠️ **Microsoft Graph records management.** `GET /security/labels/retentionLabels`, with delegated permission `RecordsManagement.Read.All` or `.ReadWrite.All`. Application permissions aren't supported per the snippet. Labels carry retention duration, the action after it, and a trigger (`dateCreated`, or `dateOfEvent` with a `retentionEventType`) ([Learn reference](https://learn.microsoft.com/en-us/graph/api/security-labelsroot-list-retentionlabel?view=graph-rest-1.0), not opened).
+- 💭 **What this would give us.** Read records from Content Manager to use as evidence. Read the file plan from Graph into the policy studio. Write a label or field back when an output is filed. Nothing has been built.

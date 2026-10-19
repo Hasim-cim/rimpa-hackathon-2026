@@ -127,6 +127,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/passport/{record_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Passport Summary
+         * @description Headline, status, the four checks and the policy line: what a person reads first.
+         */
+        get: operations["get_passport_summary_passport__record_id__summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/passport/{record_id}/view": {
         parameters: {
             query?: never;
@@ -224,6 +244,26 @@ export interface paths {
         };
         /** Source Reliability */
         get: operations["source_reliability_sources_reliability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dashboard
+         * @description Read-only information-manager dashboard: KPIs, model signals, recent passports, sources, disposal.
+         */
+        get: operations["get_dashboard_dashboard_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -484,6 +524,17 @@ export interface components {
             /** Method */
             method: string;
         };
+        /** AuthorshipCounts */
+        AuthorshipCounts: {
+            /** Ai */
+            ai: number;
+            /** Human */
+            human: number;
+            /** Passports Counted */
+            passports_counted: number;
+            /** Plain */
+            plain: string;
+        };
         /** ChainReport */
         ChainReport: {
             /** Ok */
@@ -627,6 +678,40 @@ export interface components {
              */
             note: string;
         };
+        /** DashboardReport */
+        DashboardReport: {
+            /** Kpis */
+            kpis: components["schemas"]["KpiTile"][];
+            /** Model Signals */
+            model_signals: components["schemas"]["ModelSignal"][];
+            /** Recent */
+            recent: components["schemas"]["RecentPassport"][];
+            /** Recent Supported */
+            recent_supported: components["schemas"]["SupportedStatement"][];
+            authorship: components["schemas"]["AuthorshipCounts"];
+            rot: components["schemas"]["RotCounts"];
+            disposal_due: components["schemas"]["DisposalDue"];
+            /** By Function */
+            by_function: components["schemas"]["FunctionRow"][];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Policy Version */
+            policy_version: string;
+        };
+        /** DisposalDue */
+        DisposalDue: {
+            /** Count */
+            count: number;
+            /** Held By Recall */
+            held_by_recall: number;
+            /** Authority */
+            authority: string;
+            /** Plain */
+            plain: string;
+        };
         /** DisposalEntry */
         DisposalEntry: {
             /** Record Id */
@@ -754,6 +839,21 @@ export interface components {
             /** By */
             by: string;
         };
+        /** FunctionRow */
+        FunctionRow: {
+            /** Function */
+            function: string;
+            /** Total */
+            total: number;
+            /** Filed Approved */
+            filed_approved: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Narrow Evidence */
+            narrow_evidence: number;
+            /** On Suggested Model */
+            on_suggested_model: number;
+        };
         /** GateReason */
         GateReason: {
             /**
@@ -784,6 +884,23 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** KpiTile */
+        KpiTile: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Count */
+            count: number;
+            /** Total */
+            total: number;
+            /** Percent */
+            percent: number | null;
+            /** Display */
+            display: string;
+            /** Plain */
+            plain: string;
         };
         /** Mark */
         Mark: {
@@ -823,6 +940,29 @@ export interface components {
             reason: string;
             /** Marked By */
             marked_by?: string | null;
+        };
+        /** ModelSignal */
+        ModelSignal: {
+            /** Model Id */
+            model_id: string;
+            /**
+             * Status
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "withdrawn" | "faulty";
+            /** Passports */
+            passports: number;
+            /** References Checked */
+            references_checked: number;
+            /** References Not Found */
+            references_not_found: number;
+            /** Rate */
+            rate: number | null;
+            /** Suggested */
+            suggested: boolean;
+            /** Plain */
+            plain: string;
         };
         /** Passport */
         Passport: {
@@ -1015,6 +1155,16 @@ export interface components {
             updated_by: string;
             /** Updated At */
             updated_at?: string | null;
+            /**
+             * Recall Signal Threshold
+             * @default 0.3
+             */
+            recall_signal_threshold: number;
+            /**
+             * Recall Signal Min Refs
+             * @default 10
+             */
+            recall_signal_min_refs: number;
         };
         /** PolicySave */
         PolicySave: {
@@ -1113,6 +1263,49 @@ export interface components {
             /** Items */
             items: components["schemas"]["RecallItem"][];
         };
+        /** RecentPassport */
+        RecentPassport: {
+            /** Record Id */
+            record_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Filed
+             * Format: date-time
+             */
+            filed: string;
+            /** Function */
+            function: string;
+            /**
+             * Tier
+             * @enum {string}
+             */
+            tier: "T0" | "T1" | "T2" | "T3";
+            /** Gate */
+            gate: ("ready" | "attention" | "blocked") | null;
+            /** Status */
+            status: string;
+        };
+        /**
+         * RecordSummary
+         * @description What a person reads first: one headline, its status, the four grouped checks and the policy line.
+         *     The wording is made here, once, for every UI.
+         */
+        RecordSummary: {
+            /** Record Id */
+            record_id: string;
+            /** Headline */
+            headline: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "attention" | "problem" | "not_run";
+            /** Checks */
+            checks: components["schemas"]["CheckSummary"][];
+            /** Policy Line */
+            policy_line: string;
+        };
         /** ReliabilityDrag */
         ReliabilityDrag: {
             /** Record Id */
@@ -1167,6 +1360,21 @@ export interface components {
              * @default
              */
             note: string;
+        };
+        /** RotCounts */
+        RotCounts: {
+            /** Total */
+            total: number;
+            /** Eligible */
+            eligible: number;
+            /** Overdue */
+            overdue: number;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Plain */
+            plain: string;
         };
         /** SectorPreset */
         SectorPreset: {
@@ -1326,6 +1534,22 @@ export interface components {
             reason: string;
             /** By */
             by: string;
+        };
+        /** SupportedStatement */
+        SupportedStatement: {
+            /** Record Id */
+            record_id: string;
+            /** Claim Id */
+            claim_id: string;
+            /** Text */
+            text: string;
+            /**
+             * Filed
+             * Format: date-time
+             */
+            filed: string;
+            /** Source Record Ids */
+            source_record_ids: string[];
         };
         /** TierRules */
         TierRules: {
@@ -1620,6 +1844,37 @@ export interface operations {
             };
         };
     };
+    get_passport_summary_passport__record_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_passport_view_passport__record_id__view_get: {
         parameters: {
             query?: never;
@@ -1784,6 +2039,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReliabilityReport"];
+                };
+            };
+        };
+    };
+    get_dashboard_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardReport"];
                 };
             };
         };

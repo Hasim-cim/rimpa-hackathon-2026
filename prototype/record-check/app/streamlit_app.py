@@ -15,45 +15,85 @@ import pandas as pd
 import streamlit as st
 
 from recordcheck import citations as cit
-from recordcheck import db, disposal, evidence, gate as gatemod, llm, passport, printout, recall, sources
+from recordcheck import dashboard, db, disposal, evidence, gate as gatemod, llm, passport, printout, recall, sources
 from recordcheck import policy as policymod
 from recordcheck import view as vw
 from recordcheck.hashing import short
 from recordcheck.models import AIEvent, DocumentType, Policy, Review
 
+SHOW_ALL = os.getenv("RECORDCHECK_SHOW_ALL") == "1"   # 1 brings back the Sources, Disposal and Register tabs and the extras
 DEFAULT_DOC = "DOC-2026/0412-summary"
 AUTHOR = "A. Caseworker"            # the demo user who drafted with AI; cannot also review
 FALLBACK_MODEL = "northstar-8-2026-09-15"
 FALLBACK_PROVIDER = "Northstar AI (fictional vendor)"
 
-CITE_COLOURS = {"found": ("#d1f0dc", "#14532d"), "mismatch": ("#fde8b8", "#7a4a00"),
-                "not_found": ("#f8d0d0", "#7f1d1d"), "not_checked": ("#e5e7eb", "#374151")}
-WEIGHT_COLOURS = {"supported": ("#d1f0dc", "#14532d"), "weak": ("#fde8b8", "#7a4a00"),
-                  "unsupported": ("#f8d0d0", "#7f1d1d"), "contradicted": ("#4b5563", "#ffffff")}
-DISPOSAL_COLOURS = {"due": ("#fde8b8", "#7a4a00"), "on hold": ("#e5e7eb", "#374151")}
-ROT_COLOURS = {"redundant": ("#d6e6fb", "#1e3a8a"), "obsolete": ("#fde8b8", "#7a4a00"),
-               "trivial": ("#e5e7eb", "#374151"), "draft": ("#f8d0d0", "#7f1d1d")}
+# status colours: blue = supported / in order, orange = needs a person, solid orange = blocked or changed, grey = not run
+BLUE, ORANGE, SOLID, GREY = ("#d6e6fb", "#1e3a8a"), ("#fde8b8", "#7a4a00"), ("#c2410c", "#ffffff"), ("#e5e7eb", "#374151")
+CITE_COLOURS = {"found": BLUE, "mismatch": ORANGE, "not_found": SOLID, "not_checked": ORANGE}
+WEIGHT_COLOURS = {"supported": BLUE, "weak": ORANGE, "unsupported": ORANGE, "contradicted": SOLID}
+DISPOSAL_COLOURS = {"due": ORANGE, "on hold": GREY}
+ROT_COLOURS = {"redundant": BLUE, "obsolete": ORANGE, "trivial": GREY, "draft": SOLID}
 ROT_NAMES = {"redundant": "Redundant", "obsolete": "Obsolete", "trivial": "Trivial", "draft": "Draft"}
 OVERDUE_COLOURS = {"overdue": ("#ede9fe", "#4c1d95")}   # not ROT: an overdue record still counts as evidence
 DEMO_OLD, DEMO_NEW = "REC-2026/004790", "REC-2026/004912"   # debt notice and its reissue (example data)
-TIER_COLOURS = {"T0": ("#e5e7eb", "#374151"), "T1": ("#d6e6fb", "#1e3a8a"),
-                "T2": ("#fde8b8", "#7a4a00"), "T3": ("#f8d0d0", "#7f1d1d")}
+TIER_COLOURS = {"T0": GREY, "T1": BLUE, "T2": ORANGE, "T3": SOLID}
 
 CSS = """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* the app font everywhere except Streamlit's icon spans: those draw arrows from an icon font's ligatures */
+.stApp, .stApp *:not([data-testid="stIconMaterial"]):not([class*="material-symbols"]) {font-family:'IBM Plex Sans', system-ui, sans-serif;}
+.stApp code, .stApp pre, .stApp pre * {font-family:'IBM Plex Mono', ui-monospace, monospace !important;}
+.stApp {background:#f4f5f7;}
+.rc-mono {font-family:'IBM Plex Mono', ui-monospace, monospace !important; font-size:0.9em;}
 .rc-pill {display:inline-block; padding:1px 10px; border-radius:999px; font-size:0.82rem; font-weight:600; white-space:nowrap;}
 .rc-sent {padding:2px 4px; border-radius:4px; line-height:2.0; box-decoration-break:clone; -webkit-box-decoration-break:clone;}
 .rc-sup {font-size:0.62rem; font-weight:700; letter-spacing:0.04em; margin-left:2px; color:#374151;}
 .rc-doc {font-size:1.02rem; color:#111827;}
 .rc-kv {margin:0 0 4px 0; font-size:0.92rem;}
-.rc-kv span.k {color:#6b7280;}
-.rc-card {border:1px solid #d1d5db; border-radius:10px; padding:14px 18px 6px; background:#fbfbfa; margin:6px 0 14px;}
-.rc-card .rc-card-head {display:flex; justify-content:space-between; font-size:0.78rem; letter-spacing:0.06em;
-  text-transform:uppercase; color:#6b7280; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin-bottom:10px;}
-.rc-grid {display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px 22px;}
-.rc-group h5 {font-size:0.86rem; margin:4px 0 6px; color:#111827;}
-.rc-mono {font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:0.85rem;}
-@media (max-width: 900px) {.rc-grid {grid-template-columns:repeat(2, minmax(0, 1fr));}}
+.rc-kv span.k {color:#4b5563;}
+.rc-brand {display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.rc-brand .n {font-size:20px; font-weight:700; letter-spacing:-0.01em;}
+.rc-tag {font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:#e5e7eb; color:#374151;}
+.rc-article {background:#fff; border:1px solid #d1d5db; border-radius:12px; padding:22px 24px; display:flex;
+  flex-direction:column; gap:10px; margin-bottom:16px;}
+.rc-eyebrow {display:flex; gap:10px; align-items:center; font-size:12px; color:#4b5563;}
+.rc-eyebrow span:first-child {font-weight:600; letter-spacing:0.06em; text-transform:uppercase;}
+.rc-title {margin:0 !important; padding:0 !important; font-size:26px !important; font-weight:700 !important; line-height:1.25 !important;}
+.rc-headline {padding:12px 16px; border-radius:10px; font-size:17px;}
+.rc-who {margin:0; font-size:14px; color:#374151; line-height:1.5;}
+.rc-passport {margin-top:8px; border:1px solid #c7ccd4; border-radius:10px; background:#fbfbf9; padding:18px 20px;}
+.rc-passport-head {display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  border-bottom:2px solid #111827; padding-bottom:8px; margin-bottom:14px;}
+.rc-passport-head .t {font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;}
+.rc-passport-head .s {font-size:12px; color:#4b5563;}
+.rc-passport-grid {display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px 24px;}
+.rc-pgroup {display:flex; flex-direction:column; gap:6px;}
+.rc-pgroup .g {font-size:12px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#1e3a8a;}
+.rc-prow {display:flex; flex-direction:column; font-size:14px; line-height:1.4;}
+.rc-prow .k {font-size:12px; color:#4b5563;}
+.rc-prow .v {word-break:break-word;}
+.rc-older {background:#fff; border:1px dashed #9ca3af; border-radius:12px; padding:14px 18px; font-size:14px;
+  color:#374151; margin-bottom:16px;}
+.rc-checks-head {display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:16px; margin-bottom:6px;}
+.rc-checks-head span {font-size:13px; color:#4b5563;}
+.rc-kvrow {display:flex; flex-wrap:wrap; gap:4px 16px; font-size:14px; line-height:1.5; margin-bottom:6px;}
+.rc-kvrow .k {width:170px; flex-shrink:0; color:#4b5563;}
+.rc-kvrow .v {flex:1 1 260px; min-width:0; word-break:break-word;}
+.rc-sent-card {border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; display:flex; flex-direction:column;
+  gap:6px; margin-bottom:8px; font-size:14px;}
+.rc-sent-card .why {font-size:13px; color:#4b5563;}
+.rc-rel {background:#fff; border:1px solid #d1d5db; border-radius:12px; padding:22px 24px; display:flex; flex-wrap:wrap;
+  gap:24px; align-items:center; margin-bottom:16px;}
+.rc-rel .l {flex:1 1 280px; display:flex; flex-direction:column; gap:6px; font-size:14px; color:#374151;}
+.rc-rel .e {font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#4b5563;}
+.rc-rel .note {font-size:13px; color:#4b5563;}
+.rc-rel .big {font-size:40px; font-weight:700; line-height:1.1; color:#111827;}
+.rc-kpi {border-radius:12px; padding:16px 18px; min-height:150px; display:flex; flex-direction:column; gap:6px;}
+.rc-kpi .l {font-size:14px; line-height:1.35;}
+.rc-kpi .v {font-size:34px; font-weight:700; line-height:1.1;}
+.rc-kpi .p {font-size:13px; line-height:1.4; opacity:0.9;}
+.rc-rel .r {flex:1 1 320px; font-size:14px; color:#374151; line-height:1.5; border-left:1px solid #e5e7eb; padding-left:20px;}
 </style>
 """
 
@@ -77,8 +117,7 @@ def get_rules():
     return get_policy().tier_rules
 
 
-GATE_COLOURS = {"ready": ("#d1f0dc", "#14532d", "Ready to file"), "attention": ("#fde8b8", "#7a4a00", "Needs attention"),
-                "blocked": ("#f8d0d0", "#7f1d1d", "Blocked")}
+GATE_COLOURS = {"ready": (*BLUE, "Ready to file"), "attention": (*ORANGE, "Needs review"), "blocked": (*SOLID, "Blocked")}
 TIERS = ["T0", "T1", "T2", "T3"]
 DOC_TYPE_HINTS = (("summary", "decision-letter"), ("briefing", "briefing"), ("agent-note", "case-note"), ("eligibility", "case-note"))
 
@@ -167,14 +206,6 @@ def tab_check(conn) -> None:
         return
     results, assessment = state["citations"], state["assessment"]
 
-    # summary row
-    csum = cit.summary(results)
-    esum = evidence.summary(assessment.verdicts)
-    cols = st.columns(8)
-    for col, (label, val) in zip(cols, [*(("Citations " + k.replace("_", " "), v) for k, v in csum.items()),
-                                        *((k.capitalize(), v) for k, v in esum.items())]):
-        col.metric(label, val)
-
     st.markdown(f"#### Filing gate: {esc(dtype.name)}", unsafe_allow_html=True)
     gate_banner(gatemod.evaluate(assessment, results, None, dtype, dtype.default_tier))
     st.caption(f"Bar set by the information manager in policy v{pol.version}. Change it in the Setup tab.")
@@ -257,10 +288,11 @@ def file_section(conn, doc, results, assessment, dtype: DocumentType) -> None:
         requested, returned, provider = real_model()
         event = AIEvent(
             id=f"EVT-{now:%Y%m%d%H%M%S}-{uuid.uuid4().hex[:4]}", app_id="agency-assistant", user=AUTHOR,
-            created=now, prompt="Summarise the hardship policy for case 2026/0412 and cite authorities",
+            created=now, prompt=f"Draft the {doc.title.split(',')[0].lower()}"
+                                + (f" for case {doc.case_id}" if doc.case_id else "") + " and cite the records relied on",
             output=doc.body, model_requested=requested, model_returned=returned, provider=provider,
             source_record_ids=linked, exported_to_document=doc.id, decision_flag=flag,
-            function="Debt waiver assessment")
+            function=_doc_function(doc, dtype))
         try:
             p = passport.build(event, tier=tier, assessment=assessment, citations=results, review=review,
                                conn=conn, rules=rules, document_type=dtype.id, policy=pol)
@@ -389,6 +421,8 @@ def tab_setup(conn) -> None:
         _save(conn, draft, by, "Policy v{v} saved.")
         st.rerun()
 
+    if not SHOW_ALL:   # minimal demo: the three questions and Save only
+        return
     # advanced: everything an information manager rarely changes
     with st.expander("Advanced"):
         st.markdown("**Exact thresholds per document type**")
@@ -456,129 +490,163 @@ def tab_setup(conn) -> None:
             st.rerun()
 
 
-# ---------- Records (passport-first) ----------
+# ---------- Records (laid out as Hasim's mockup: list left, passport and its checks right) ----------
 
-STATUS_MD = {"ok": ":green[**OK**]", "attention": ":orange[**Check**]", "problem": ":red[**Problem**]"}
 TIER_WORDS = {"T0": "T0, a transitory log", "T1": "T1, a retained output", "T2": "T2, informs a decision",
               "T3": "T3, an agent's action"}
 WEIGHT_WORDS = {"supported": "Supported", "weak": "Weak", "unsupported": "Unsupported", "contradicted": "Contradicted"}
 CITE_WORDS = {"found": "Found", "mismatch": "Details differ", "not_found": "Not found (possibly fabricated)",
               "not_checked": "For a person to confirm"}
+TONE = {"ok": BLUE, "attention": ORANGE, "problem": SOLID, "not_run": GREY}
+# the round mark at the start of each check row: a sign, never an emoji
+MARK_MD = {"ok": ":blue-background[**✓**]", "attention": ":orange-background[**!**]",
+           "problem": ":orange-background[**✕**]", "not_run": ":gray-background[**–**]"}
 
 
-def _headline(v, p) -> tuple[str, str]:
-    """(headline, colour) in plain words: what a records person needs to know first."""
-    c = {x.id: x for x in v.checks}
+def _local(dt):
+    """Stored times are UTC (naive, see models.naive_utc); show them in the viewer's local time."""
+    return (dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)).astimezone()
+
+
+def _when(dt) -> str:
+    return _local(dt).strftime("%d %b %Y")
+
+
+def _kept(v) -> str:
+    rt = next((c for c in v.checks if c.id == "retention"), None)
+    days = rt.details.get("retention_days") if rt else None
+    return "Disposed" if v.disposed else (f"Kept {days} days" if days else "Kept with the case file")
+
+
+def _row_status(v) -> tuple[str, str]:
+    """(word, tone) for a row in the records list."""
     if v.disposed:
-        return "Disposed: the content was destroyed under an approved authority; its hash is kept in the chain.", "gray"
-    if "since" in c and c["since"].status == "problem":
-        return "Changed since filing: " + c["since"].summary.removeprefix("Since filing: "), "red"
-    if not v.at_issue:
-        return f"Older record: summary only. {TIER_WORDS[v.tier].capitalize()}.", "gray"
-    ev = c["evidence"]
-    if v.gate == "ready":
-        line = ("every statement is supported by authoritative records" if ev.status == "ok"
-                else ev.summary[0].lower() + ev.summary[1:].rstrip("."))
-        return f"Ready to file: {line}.", "green"
-    if v.gate == "attention":
-        return f"Filed with items to check: {ev.summary[0].lower() + ev.summary[1:]}", "orange"
-    return f"Filed: {ev.summary}", "blue"
+        return "Disposed", "not_run"
+    if any(c.id == "since" and c.status == "problem" for c in v.checks):
+        return "Changed since filing", "problem"
+    return {"ready": ("Ready to file", "ok"), "attention": ("Needs review", "attention")}.get(v.gate, ("Filed", "not_run"))
 
 
-def _sentences(c) -> None:
-    """A check's detail in sentences and small tables; never raw booleans. Status is already in the row."""
-    d = c.details
-    if c.id == "citations" and d.get("items"):
-        st.dataframe(pd.DataFrame([{"Ref": f"[{i['n']}]", "Reference": i["reference"],
-                                    "Result": CITE_WORDS.get(i["status"], i["status"]), "Note": i["note"]}
-                                   for i in d["items"]]), hide_index=True, width='stretch')
-    elif c.id == "evidence" and d.get("items"):
-        st.dataframe(pd.DataFrame([{"Statement": i["text"], "Result": WEIGHT_WORDS[i["weight"]], "Why": i["reason"],
-                                    "Records": ", ".join(dict.fromkeys(l["record_id"] for l in i["links"])) or "none"}
-                                   for i in d["items"]]), hide_index=True, width='stretch')
-    elif c.id == "sources" and d.get("items"):
-        st.dataframe(pd.DataFrame([{"Record": s["record_id"], "Title": s["title"], "System": s["system"],
-                                    "At filing": "Counted as evidence" if s["counted"] else f"Did not count: {s['why_not']}"}
-                                   for s in d["items"]]), hide_index=True, width='stretch')
-    elif c.id == "gate":
-        for r in d.get("reasons", []):
-            st.markdown(f"- {esc(r)}")
-        st.caption(f"Judged against {d.get('policy_version')}.")
-    elif c.id == "review" and d:
-        st.markdown(f"{esc(d['reviewer'])} {d['decision'].replace('_', ' ')} it on {d['reviewed_at'][:10]}."
-                    + (f" Note: {esc(d['note'])}" if d.get("note") else ""))
-    elif c.id == "integrity":
-        st.markdown("The passport's content matches its hash, and it sits unbroken in the chain of all passports."
-                    if c.status == "ok" else esc(c.summary))
-        if st.toggle("Technical details", key=f"tech_{c.id}_{d.get('hash', '')[:8]}"):
-            st.code(f"{d['algorithm']} {d['hash']}\nprevious {d.get('prev_hash') or 'none (first)'}\n"
-                    f"checks   {d.get('checks_hash') or 'not stored (older record)'}\n{d.get('chain', '')}")
-    elif c.id == "retention":
-        days = d.get("retention_days")
-        st.markdown(f"{TIER_WORDS[d['tier']].capitalize()}. "
-                    + (f"Kept {days} days, then destroyed with a named person's approval. " if days else
-                       "Kept for as long as the business record it supports. ")
-                    + f"Disposal authority: {esc(d['authority'])}.")
-    elif c.id == "since":
-        for x in d.get("sources_changed", []):
-            st.markdown(f"- Source {esc(x['record_id'])} is now {esc(x['why'])}.")
-        st.markdown(f"Model {esc(d['model'])}: {'not registered' if d['model_status'] == 'not registered' else d['model_status']}. "
-                    + ("Queued for re-review." if d.get("queued") else "Not queued for review."))
-        st.caption("The one live check: it reads the records and the model register as they are now.")
+def _pill_md(word: str, tone: str) -> str:
+    colour = {"ok": "blue", "attention": "orange", "problem": "orange", "not_run": "gray"}[tone]
+    return f":{colour}-background[{word}]"
 
+
+def _pill_html(word: str, tone: str) -> str:
+    bg, fg = TONE[tone]
+    return (f'<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;'
+            f'background:{bg};color:{fg}">{esc(word)}</span>')
+
+
+def _kv_rows(rows: list[tuple[str, str, bool]]) -> str:
+    """Key-value lines inside an opened check; the bool marks monospace (ids and fingerprints)."""
+    return "".join(
+        f'<div class="rc-kvrow"><span class="k">{esc(k)}</span>'
+        f'<span class="v{" rc-mono" if mono else ""}">{esc(v)}</span></div>' for k, v, mono in rows)
 
 
 def _passport_card(conn, p, v, pol) -> str:
-    """The passport itself, as a document: six groups in plain words; hashes shortened, in monospace."""
-    mono = lambda h: f'<span class="rc-mono">{esc(short(h, 6))}</span>' if h else "none"
+    """The passport itself: six groups, plain labels, ids and fingerprints in monospace."""
     r, a, b, pr, rv, ig, pd_ = p.record, p.agent, p.business, p.process, p.review, p.integrity, p.paradata
-    dname = next((d.name for d in pol.document_types if d.id == b.document_type), b.document_type) if b.document_type else "not stated"
-    ev = ", ".join(f"{n} {w}" for w, n in pr.evidence_summary.items() if n) or "no check recorded"
-    ci = ", ".join(f"{n} {CITE_WORDS[k].lower()}" for k, n in pr.citation_summary.items() if n) or "none checked"
-    tools = "; ".join(t.name + (" (changed something)" if t.side_effect else "") for t in pr.tool_calls) or "none"
-    prompt = pr.prompt if len(pr.prompt) <= 160 else pr.prompt[:157] + "..."
+    ev = ", ".join(f"{n} {w}" for w, n in pr.evidence_summary.items() if n)
     groups = [
-        ("Record", [("Title", esc(r.title)), ("Created", esc(r.created.astimezone().strftime("%d %b %Y, %H:%M")
-                                                         if r.created.tzinfo else r.created.strftime("%d %b %Y, %H:%M"))),
-                    ("Made with AI", "Yes, in part" if r.ai_generated else "No"),
-                    ("Filed into", esc(r.final_document or "no document")), ("Content fingerprint", mono(r.content_hash))]),
-        ("Agent", [("Person", esc(a.person)), ("AI system", esc(a.ai_system)), ("Model asked for", esc(a.model_requested)),
-                   ("Model that answered", esc(a.model_returned)), ("Provider", esc(a.provider))]),
-        ("Business", [("Function", esc(b.function or "not stated")), ("Risk tier", esc(TIER_WORDS[b.tier])),
-                      ("Why this tier", esc(b.tier_reason)), ("Document type", esc(dname)),
-                      ("Filing gate", esc(GATE_COLOURS[b.gate][2]) if b.gate else "not recorded"),
-                      ("Keep for", esc(b.disposal))]),
-        ("Process", [("Prompt", esc(prompt)), ("Source records", esc(", ".join(pr.source_record_ids) or "none")),
-                     ("Statements", esc(ev)), ("References", esc(ci)), ("Agent actions", esc(tools))]),
-        ("Review", [("Reviewer", esc(rv.reviewer)), ("Decision", esc(rv.decision.replace("_", " ").capitalize())),
-                    ("Reviewed", esc(rv.reviewed_at.astimezone().strftime("%d %b %Y, %H:%M"))),
-                    ("Note", esc(rv.note or "none"))] if rv else [("Reviewer", "No review recorded")]),
-        ("Integrity and policy", [("Fingerprint", mono(ig.hash)), ("Previous in chain", mono(ig.prev_hash)),
-                                  ("Checks at filing", mono(pr.checks_hash) if pr.checks_hash else "not stored (older record)"),
-                                  ("Judged against", esc(pd_.policy_version)), ("Policy fingerprint", mono(pd_.policy_hash)),
-                                  ("AI use register", esc(pd_.use_register_id))]),
+        ("Record", [("Identifier", r.id, True), ("Title", r.title, False),
+                    ("AI-generated", "Yes, reviewed by a person" if rv else "Yes", False)]),
+        ("Agent", [("Person", a.person, False), ("AI model returned", a.model_returned, True), ("Provider", a.provider, False)]),
+        ("Business", [("Function", b.function or "not stated", False), ("Risk tier", TIER_WORDS[b.tier], False),
+                      ("Disposal", _kept(v) if b.tier == "T0" else "Follows the case file", False)]),
+        ("Process", [("Source records", ", ".join(pr.source_record_ids) or "none", True),
+                     ("Evidence at filing", ev or ("Counts only (older record)" if not v.at_issue else "no statements checked"),
+                      False)]),
+        ("Review", [("Reviewer", f"{rv.reviewer}, {rv.decision.replace('_', ' ')} {_when(rv.reviewed_at)}" if rv
+                     else ("None required at " + b.tier if b.tier in ("T0", "T1") else "Not reviewed"), False)]),
+        ("Integrity and policy", [("Hash", short(ig.hash, 4), True), ("Previous in chain", short(ig.prev_hash, 4) if ig.prev_hash else "–", True),
+                                  ("Policy", pd_.policy_version, False)]),
     ]
-    body = "".join(f'<div class="rc-group"><h5>{g}</h5>' + "".join(kv(k, val) for k, val in rows) + "</div>"
-                   for g, rows in groups)
-    return (f'<div class="rc-card"><div class="rc-card-head"><span>Record passport</span><span>{esc(r.id)}</span></div>'
-            f'<div class="rc-grid">{body}</div></div>')
+    body = "".join(
+        f'<div class="rc-pgroup"><span class="g">{esc(g)}</span>'
+        + "".join(f'<div class="rc-prow"><span class="k">{esc(k)}</span><span class="v{" rc-mono" if m else ""}">{esc(val)}</span></div>'
+                  for k, val, m in rows) + "</div>" for g, rows in groups)
+    return ('<div class="rc-passport"><div class="rc-passport-head"><span class="t">Passport</span>'
+            '<span class="s">The record package kept with this output</span></div>'
+            f'<div class="rc-passport-grid">{body}</div></div>')
 
 
-def _records_table(views, current: str) -> str | None:
-    """A compact table to pick from; returns the record id clicked, if any."""
-    df = pd.DataFrame([{"Record": ("> " if v.record_id == current else "") + v.title.split(" (")[0]
-                                  + f", {v.filed.strftime('%d %b')}",
-                        "Status": ("Disposed" if v.disposed else
-                                   "Changed since filing" if any(c.id == "since" and c.status == "problem" for c in v.checks)
-                                   else {"ready": "Ready", "attention": "To check"}.get(v.gate, "Older"))}
-                       for v in views])
-    ev = st.dataframe(df, hide_index=True, width='stretch', height=520, on_select="rerun",
-                      selection_mode="single-row", key="records_table")
-    rows = ev.selection.rows if ev and ev.selection else []
-    if rows and rows != st.session_state.get("records_table_seen"):
-        st.session_state["records_table_seen"] = rows
-        return views[rows[0]].record_id
-    return None
+def _check_rows(v, p) -> list:
+    """The checks people see, in the mockup's order. An older record folds what was not kept into one 'At filing' line."""
+    c = {x.id: x for x in v.checks}
+    if v.at_issue:
+        order = ["citations", "evidence", "sources", "gate", "review", "integrity", "retention", "since"]
+        return [c[i] for i in order if i in c]
+    ev = p.process.evidence_summary
+    n = sum(ev.values())
+    at = (f"{ev.get('supported', 0)} statements supported" if n else "Filed") + \
+         ("; filed with a named reviewer." if p.review else "; detailed checks were not kept for older records.")
+    from recordcheck.models import CheckSummary
+    at_filing = CheckSummary(id="at_filing", name="At filing", status="ok", summary=at,
+                             details={"sources": p.process.source_record_ids})
+    rows = [at_filing, c["integrity"], c["retention"]]
+    if "since" in c:
+        rows = ([c["since"]] + rows) if c["since"].status == "problem" else rows + [c["since"]]
+    return rows
+
+
+def _check_detail(conn, c, v, p, pol) -> None:
+    """What opens under a check: key-value lines, and sentence cards for the evidence."""
+    d = c.details
+    if c.id == "evidence" and d.get("items"):
+        recs = {r.id: r for r in db.get_records(conn)}
+        cards = []
+        for i in d["items"]:
+            ids = list(dict.fromkeys(l["record_id"] for l in i["links"]))
+            why = ("; ".join(f"{x} {recs[x].title}" if x in recs else x for x in ids) if i["weight"] == "supported" and ids
+                   else i["reason"])
+            tone = {"supported": "ok", "weak": "attention", "unsupported": "attention", "contradicted": "problem"}[i["weight"]]
+            cards.append(f'<div class="rc-sent-card"><div>{_pill_html(WEIGHT_WORDS[i["weight"]], tone)} '
+                         f'<span>{esc(i["text"])}</span></div><span class="why">{esc(why)}</span></div>')
+        st.markdown("".join(cards), unsafe_allow_html=True)
+        return
+    rows: list[tuple[str, str, bool]] = []
+    if c.id == "citations":
+        rows = [(f"[{i['n']}]", f"{CITE_WORDS.get(i['status'], i['status'])}. {i['note']}".strip(), False) for i in d.get("items", [])]
+    elif c.id == "sources":
+        items = d.get("items", [])
+        relied = [s["record_id"] for s in items if s["counted"]]
+        other = [f"{s['record_id']} ({s['why_not']})" for s in items if not s["counted"]]
+        rows = ([("Relied on", ", ".join(relied), True)] if relied else []) + ([("Did not count", "; ".join(other), False)] if other else [])
+    elif c.id == "gate":
+        dtype = next((x for x in pol.document_types if x.id == v.document_type), None)
+        if dtype:
+            lvl = policymod.level_of(dtype)
+            rows.append(("Bar", (policymod.LEVELS[lvl].name + ": " if lvl else "Custom: ") + policymod.describe(dtype), False))
+        rows += [("Reason", r, False) for r in d.get("reasons", []) if not r.startswith("Meets the bar")]
+        rows.append(("Policy", d.get("policy_version") or "", False))
+    elif c.id == "review" and d:
+        rows = [("Decision", f"{d['decision'].replace('_', ' ').capitalize()}, {d['reviewed_at'][:16].replace('T', ' ')}", False)]
+        if d.get("note"):
+            rows.append(("Note", d["note"], False))
+    elif c.id == "integrity":
+        rows = [("Chain", d.get("chain", ""), False), ("Technical detail", f"{d.get('algorithm')} {short(d.get('hash'), 4)}", True)]
+    elif c.id == "retention":
+        rows = [("Category", TIER_WORDS[d["tier"]], False), ("Disposal authority", d["authority"], False)]
+    elif c.id == "since":
+        rows = [("What changed", f"{x['record_id']} is now {x['why']}", False) for x in d.get("sources_changed", [])]
+        if d.get("model_status") not in (None, "not registered", "active", "current"):
+            rows.append(("AI model", f"{d['model']} marked {d['model_status']}", False))
+        rows.append(("Action", "Queued for review by the information manager" if d.get("queued") else "Not queued for review", False))
+    elif c.id == "at_filing":
+        rows = [("Sources then", ", ".join(d.get("sources", [])) or "none", True)]
+    if rows:
+        st.markdown(_kv_rows(rows), unsafe_allow_html=True)
+
+
+def _doc_function(doc, dtype) -> str:
+    """The business function a filed document performs, from the document itself (not a fixed demo string)."""
+    title = doc.title.split(",")[0]
+    for prefix in ("Briefing: ", "Case note drafted by"):
+        if title.startswith(prefix):
+            return "Policy briefing" if prefix.startswith("Briefing") else "Case note summary"
+    return title.removesuffix(" note").removesuffix(" summary") or dtype.name
 
 
 def page_records(conn) -> None:
@@ -590,51 +658,63 @@ def page_records(conn) -> None:
         return
     pol = get_policy()
     views = vw.view_all(conn, pol)
-    if st.button("Check a document", type="primary"):
-        st.session_state["checking"] = True
-        st.rerun()
     if st.session_state.get("issued_msg"):
         st.success(st.session_state.pop("issued_msg"))
-    if not views:
-        st.info("File a document to see its passport.")
-        return
     ids = [v.record_id for v in views]
     if st.session_state.get("open_next") in ids:
         st.session_state["records_open"] = st.session_state.pop("open_next")
-    if st.session_state.get("records_open") not in ids:
+    if views and st.session_state.get("records_open") not in ids:
         full = [v for v in views if v.at_issue and not v.disposed]
-        if not full:
-            st.info("File a document to see its passport with every check. Older records on the left carry summary counts only.")
         st.session_state["records_open"] = (full or views)[0].record_id
-    v = next(x for x in views if x.record_id == st.session_state["records_open"])
-    p = db.get_passport(conn, v.record_id)
+    by_id = {v.record_id: v for v in views}
 
-    left, right = st.columns([1.25, 2.5], gap="medium")
+    left, right = st.columns([1, 2.3], gap="large")
     with left:
-        st.markdown("#### Records")
-        st.caption("Newest first. Click a row to open it.")
-        clicked = _records_table(views, v.record_id)
-        if clicked and clicked != v.record_id:
-            st.session_state["records_open"] = clicked
-            st.rerun()
+        with st.container(border=True):
+            a, b = st.columns([1, 1.4], vertical_alignment="center")
+            a.markdown("##### Records")
+            if b.button("Check a document", type="primary", width="stretch"):
+                st.session_state["checking"] = True
+                st.rerun()
+            if not views:
+                st.caption("No records yet. Check a document and file it.")
+            else:
+                with st.container(height=720, border=False):
+                    st.radio("Open a record", ids, key="records_open", label_visibility="collapsed",
+                             format_func=lambda i: by_id[i].title.split(" (")[0]
+                             + (" :orange[(changed)]" if _row_status(by_id[i])[0] == "Changed since filing" else ""),
+                             captions=[f"{_pill_md(*_row_status(x))} · {_when(x.filed)} · {_kept(x)}" for x in views])
+    if not views:
+        with right:
+            st.info("File a document to see its passport.")
+        return
+    v = by_id[st.session_state["records_open"]]
+    p = db.get_passport(conn, v.record_id)
+    head, status = vw.headline(v)
+    word, _, rest = head.partition(": ")
+    bg, fg = TONE[status]
+    reviewed = f" · reviewed by {esc(v.reviewer)}" if v.reviewer else ""
+    dtype = next((d.name for d in pol.document_types if d.id == v.document_type), None) if v.document_type else None
+    who = (f"Filed by {esc(p.agent.person)} on {_local(v.filed).strftime('%d %b %Y, %H:%M')}"
+           f" · drafted with {esc(v.model_returned)}{reviewed}" + (f" · document type: {esc(dtype.lower())}" if dtype else ""))
     with right:
-        head, colour = _headline(v, p)
-        st.markdown(f"### :{colour}[{esc(head)}]")
-        st.markdown(f"{esc(v.title)}. Filed {(v.filed.astimezone() if v.filed.tzinfo else v.filed).strftime('%d %b %Y, %H:%M')} "
-                    f"by {esc(p.agent.person)} with {esc(p.agent.ai_system)}; "
-                    + (f"reviewed by {esc(v.reviewer)}." if v.reviewer else "no reviewer."))
-        if p is not None:
-            st.markdown(_passport_card(conn, p, v, pol), unsafe_allow_html=True)
-        st.markdown("#### Checks done on this record")
-        ran = [c for c in v.checks if c.status != "not_run"]
-        skipped = [c.name for c in v.checks if c.status == "not_run"]
-        for c in ran:
-            with st.expander(f"{STATUS_MD[c.status]} {c.name}: {c.summary}", expanded=c.status == "problem"):
-                _sentences(c)
-        if skipped:
-            st.caption(("Not recorded for this older record: " if not v.at_issue else "Not run for this document: ")
-                       + ", ".join(skipped) + ".")
-        if p and not v.disposed:
+        st.markdown(
+            f'<div class="rc-article"><div class="rc-eyebrow"><span>Record passport</span>'
+            f'<span class="rc-mono">{esc(v.record_id)}</span></div>'
+            f'<h1 class="rc-title">{esc(v.title)}</h1>'
+            f'<div class="rc-headline" style="background:{bg};color:{fg}" data-testid="headline">'
+            f'<b>{esc(word)}:</b> <span>{esc(rest)}</span></div>'
+            f'<p class="rc-who">{who}</p>{_passport_card(conn, p, v, pol)}</div>', unsafe_allow_html=True)
+        if not v.at_issue and not v.disposed:
+            st.markdown('<div class="rc-older">Older record: summary only. It was filed before detailed checks were kept '
+                        'with passports, so only the counts are shown.</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('<div class="rc-checks-head"><b>Checks done on this record</b>'
+                        '<span>Open any check for the detail</span></div>', unsafe_allow_html=True)
+            for c in _check_rows(v, p):
+                with st.expander(f"{MARK_MD[c.status]}  **{c.name}**  {c.summary}", expanded=c.status == "problem"):
+                    _check_detail(conn, c, v, p, pol)
+        if not v.disposed:
             st.download_button("Download as PDF", printout.passport_pdf(p, passport.verify_chain(conn)),
                                file_name=printout.filename(p), mime="application/pdf", key=f"rec_pdf_{v.record_id}")
 
@@ -653,10 +733,11 @@ def recall_table(items) -> None:
 
 def tab_recall(conn) -> None:
     reg = db.get_model_registry(conn)
-    st.markdown("#### Model registry")
-    st.dataframe(pd.DataFrame([{"Model": e.model_id, "Provider": e.provider, "Status": e.status,
-                                "Effective from": e.effective_from.isoformat() if e.effective_from else "",
-                                "Reason": e.reason} for e in reg]), hide_index=True, width='stretch')
+    if SHOW_ALL:
+        st.markdown("#### Model registry")
+        st.dataframe(pd.DataFrame([{"Model": e.model_id, "Provider": e.provider, "Status": e.status,
+                                    "Effective from": e.effective_from.isoformat() if e.effective_from else "",
+                                    "Reason": e.reason} for e in reg]), hide_index=True, width='stretch')
 
     ids = [e.model_id for e in reg]
     st.markdown("#### Mark a model")
@@ -699,6 +780,9 @@ def tab_recall(conn) -> None:
     if st.session_state.get("queued_msg"):
         st.success(st.session_state["queued_msg"])
 
+    if not SHOW_ALL:
+        st.divider()
+        source_recall(conn, compact=True)
     with st.expander("Audit trail (last 20)"):
         rows = conn.execute("SELECT at, actor, action, subject, detail FROM audit_log ORDER BY id DESC LIMIT 20").fetchall()
         st.dataframe(pd.DataFrame([dict(r) for r in rows]), hide_index=True, width='stretch')
@@ -765,6 +849,11 @@ def tab_sources(conn) -> None:
                     "<th align=left>Title</th><th align=left>Intended use</th><th align=left>Not for</th></tr></thead>"
                     f"<tbody>{rows}</tbody></table>", unsafe_allow_html=True)
 
+    source_recall(conn)
+
+
+def source_recall(conn, compact: bool = False) -> None:
+    """Mark a source superseded, and recall by source record. On the Sources tab; folded into Recall in the minimal demo."""
     records = db.get_records(conn)
     ids = [r.id for r in records]
     current = [r.id for r in records if r.status == "current"]
@@ -795,11 +884,15 @@ def tab_sources(conn) -> None:
     r = res.record
     st.caption(f"{r.title}. Status {r.status}" + (f", superseded by {r.superseded_by}" if r.superseded_by else "") + ".")
     n = res.counts
-    m = st.columns(4)
-    m[0].metric("Outputs affected", n["T1"] + n["T2"] + n["T3"])
-    m[1].metric("T2 decision-informing", n["T2"])
-    m[2].metric("T1", n["T1"])
-    m[3].metric("T3", n["T3"])
+    if compact:
+        st.caption(f"{n['T1'] + n['T2'] + n['T3']} outputs affected: {n['T2']} T2 (decision-informing), "
+                   f"{n['T1']} T1, {n['T3']} T3.")
+    else:
+        m = st.columns(4)
+        m[0].metric("Outputs affected", n["T1"] + n["T2"] + n["T3"])
+        m[1].metric("T2 decision-informing", n["T2"])
+        m[2].metric("T1", n["T1"])
+        m[3].metric("T3", n["T3"])
     if res.items:
         recall_table(res.items)
     else:
@@ -907,33 +1000,121 @@ def tab_register(conn) -> None:
     st.caption(f"Policy version: {rules.policy_version}")
 
 
+KPI_COLOURS = {"filed_approved": BLUE, "needs_review": ORANGE, "narrow_evidence": ORANGE}
+
+
+def _kpi_card(k) -> str:
+    bg, fg = KPI_COLOURS.get(k.id, GREY)
+    bold = ""
+    if k.id == "recall_suggested":
+        bg, fg = SOLID if k.count else GREY
+        bold = "font-weight:700;" if k.count else ""
+    return (f'<div class="rc-kpi" style="background:{bg}; color:{fg};"><div class="l" style="{bold}">{esc(k.label)}</div>'
+            f'<div class="v">{esc(k.display)}</div><div class="p">{esc(k.plain)}</div></div>')
+
+
+def tab_dashboard(conn) -> None:
+    rep = dashboard.report(conn, get_policy())
+    for col, k in zip(st.columns(4), rep.kpis):
+        col.markdown(_kpi_card(k), unsafe_allow_html=True)
+    for s in rep.model_signals:
+        if s.suggested:
+            st.markdown(f'<div class="rc-kpi" style="background:{SOLID[0]}; color:{SOLID[1]}; min-height:0; margin-top:10px;">'
+                        f'<b>{esc(s.plain)}</b></div>', unsafe_allow_html=True)
+            st.caption("Use the Recall tab to act on this signal.")
+    left, right = st.columns(2)
+    with left:
+        st.markdown("**Last 10 filed**")
+        if rep.recent:
+            st.dataframe(pd.DataFrame([{"Record": r.record_id, "Title": r.title, "Function": r.function, "Tier": r.tier,
+                                        "Status": r.status} for r in rep.recent]), hide_index=True, width="stretch")
+        else:
+            st.caption("None filed yet")
+    with right:
+        st.markdown("**Risk by business function**")
+        if rep.by_function:
+            st.dataframe(pd.DataFrame([{"Function": f.function, "Total": f.total, "Needs a person": f.needs_review,
+                                        "Narrow-evidence signals": f.narrow_evidence} for f in rep.by_function]),
+                         hide_index=True, width="stretch")
+        else:
+            st.caption("None yet")
+    a, b, c = st.columns(3)
+    with a:
+        st.markdown("**Latest statements supported by authoritative records**")
+        if rep.recent_supported:
+            for x in rep.recent_supported[:5]:
+                st.caption(f"{x.record_id}: {x.text} (from {', '.join(x.source_record_ids) or 'no record listed'})")
+        else:
+            st.caption("None issued with stored checks yet")
+    with b:
+        st.markdown("**AI-written vs human-written statements**")
+        if rep.authorship.ai or rep.authorship.human:
+            st.caption(rep.authorship.plain)
+        else:
+            st.caption("None issued with stored checks yet")
+    with c:
+        st.markdown("**Sources and disposal**")
+        st.caption(rep.rot.plain)
+        st.caption(rep.disposal_due.plain)
+    st.caption("Example data. Every figure comes from passports and records; narrow-evidence signals are rules to look at, "
+               "not findings.")
+
+
 # ---------- main ----------
 
+IM_AREAS = {
+    "Dashboard": "Across all retained AI-assisted records: filed, needing review, narrow evidence, recall.",
+    "Setup": "Pick a sector preset, how strict each document type is, and which systems count as evidence.",
+    "Sources": "Records flagged redundant, obsolete, trivial or draft. Mark a record superseded and see what relied on it.",
+    "Recall": "Find every record a faulty or withdrawn AI model produced, by risk, and queue it for review.",
+    "Disposal": "Short-term AI logs due for destruction, with holds while a recall is open.",
+    "Register": "The active policy, the AI apps registered, and what each tier keeps.",
+}
+IM_TABS = {"Dashboard": "tab_dashboard", "Setup": "tab_setup", "Sources": "tab_sources", "Recall": "tab_recall",
+           "Disposal": "tab_disposal", "Register": "tab_register"}
+
+LOGO = ('<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2" '
+        'stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Record Check"><path d="M6 3h9l3 3v15H6z"/>'
+        '<path d="M9 12l2 2 4-4"/></svg>')
+
+
+def _header() -> None:
+    a, b = st.columns([3, 1.4], vertical_alignment="center")
+    a.markdown(f'<div class="rc-brand">{LOGO}<span class="n">Record Check</span>'
+               '<span class="rc-tag">Example data: all cases, people and records are invented</span></div>',
+               unsafe_allow_html=True)
+    b.radio("Go to", ["Records", "Information manager"], key="place", horizontal=True, label_visibility="collapsed")
+
+
+def page_im(conn) -> None:
+    rel = sources.reliability(conn, get_policy())
+    drag = "".join(f"<div>{esc(d.record_id)} {esc(d.title)}: {esc(d.why)} ({d.outputs} output{'s' if d.outputs != 1 else ''})</div>"
+                   for d in rel.drag) or "<div>Every source these outputs cite still counts as evidence.</div>"
+    figure = f"{rel.sources_ok} of {rel.with_sources}" if rel.share is not None else "none yet"
+    st.markdown(f'<div class="rc-rel"><div class="l"><span class="e">AI search reliability</span>'
+                f'<span class="big">{figure}</span><span>retained AI outputs that cite records rest on current '
+                f'authoritative records</span><span class="note">These outputs cite records that are still current. '
+                f'It says nothing about unsupported statements: see Needs a person on the Dashboard.</span></div>'
+                f'<div class="r"><b>Pulling it down</b>{drag}</div></div>',
+                unsafe_allow_html=True)
+    names = list(IM_TABS) if SHOW_ALL else ["Dashboard", "Recall", "Setup"]
+    for name, tab in zip(names, st.tabs(names)):
+        with tab:
+            st.caption(IM_AREAS[name])
+            globals()[IM_TABS[name]](conn)
+
+
 def main() -> None:
-    st.set_page_config(page_title="Record Check", layout="wide")
+    st.set_page_config(page_title="Record Check", layout="wide", initial_sidebar_state="collapsed")
     st.markdown(CSS, unsafe_allow_html=True)
     conn = get_conn()
     with st.sidebar:
-        st.title("Record Check")
-        st.caption("Example data: invented case 2026/0412. All people, records and references are fictional.")
-        st.radio("Go to", ["Records", "Information manager"], key="place")
         st.markdown(f"Live lookups: **{'on' if online_on() else 'off'}**  \nLLM: **{'on' if llm.available() else 'off'}**")
     get_policy()
+    _header()
     if st.session_state.get("place") == "Information manager":
-        st.caption("Where the information manager sets the policy, watches the sources, recalls and disposes.")
-        t0, t6, t3, t5, t4 = st.tabs(["Setup", "Sources", "Recall", "Disposal", "Register"])
-        with t0:
-            tab_setup(conn)
-        with t6:
-            tab_sources(conn)
-        with t3:
-            tab_recall(conn)
-        with t5:
-            tab_disposal(conn)
-        with t4:
-            tab_register(conn)
+        page_im(conn)
     else:
         page_records(conn)
-
 
 main()

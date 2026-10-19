@@ -3,21 +3,23 @@ import type { components } from "@/lib/api";
 export type S = components["schemas"];
 export type Colours = [string, string];
 
-// Same palette as the Streamlit console (prototype/record-check/app/streamlit_app.py).
+// Colour rule (docs/decisions.md, 19 Oct): green = accepted / supported / ready, amber = needs a person,
+// red = problem / contradicted / not found, solid red = Blocked, grey = not run. Every status also carries
+// an icon (STATUS_MARKS), so it never relies on colour alone. Passport navy (#1e3a8a) is the brand, not a status.
+export const OK: Colours = ["#d1f0dc", "#14532d"];
+export const ATTN: Colours = ["#fde8b8", "#7a4a00"];
+export const BAD: Colours = ["#f8d0d0", "#7f1d1d"];
+export const BLOCKED: Colours = ["#b91c1c", "#ffffff"];
 export const GREY: Colours = ["#e5e7eb", "#374151"];
-export const CITE_COLOURS: Record<string, Colours> = {
-  found: ["#d1f0dc", "#14532d"], mismatch: ["#fde8b8", "#7a4a00"], not_found: ["#f8d0d0", "#7f1d1d"], not_checked: GREY,
-};
-export const WEIGHT_COLOURS: Record<string, Colours> = {
-  supported: ["#d1f0dc", "#14532d"], weak: ["#fde8b8", "#7a4a00"], unsupported: ["#f8d0d0", "#7f1d1d"], contradicted: ["#4b5563", "#ffffff"],
-};
+export const CITE_COLOURS: Record<string, Colours> = { found: OK, mismatch: ATTN, not_found: BAD, not_checked: ATTN };
+export const WEIGHT_COLOURS: Record<string, Colours> = { supported: OK, weak: ATTN, unsupported: BAD, contradicted: BAD };
 export const GATE_COLOURS: Record<string, [string, string, string]> = {
-  ready: ["#d1f0dc", "#14532d", "Ready to file"], attention: ["#fde8b8", "#7a4a00", "Needs attention"], blocked: ["#f8d0d0", "#7f1d1d", "Blocked"],
+  ready: [...OK, "Ready to file"], attention: [...ATTN, "Needs review"], blocked: [...BLOCKED, "Blocked"],
 };
-export const TIER_COLOURS: Record<string, Colours> = {
-  T0: GREY, T1: ["#d6e6fb", "#1e3a8a"], T2: ["#fde8b8", "#7a4a00"], T3: ["#f8d0d0", "#7f1d1d"],
-};
-export const DISPOSAL_COLOURS: Record<string, Colours> = { due: ["#fde8b8", "#7a4a00"], "on hold": GREY };
+export const TIER_COLOURS: Record<string, Colours> = { T0: GREY, T1: ["#d6e6fb", "#1e3a8a"], T2: ["#e0e7ff", "#3730a3"], T3: ["#ede9fe", "#4c1d95"] };  // tiers are a scale, not a status: keep them off green/red
+export const STATUS_COLOURS: Record<string, Colours> = { ok: OK, attention: ATTN, problem: BAD, not_run: GREY };
+export const STATUS_MARKS: Record<string, string> = { ok: "✓", attention: "!", problem: "✕", not_run: "–" };
+export const DISPOSAL_COLOURS: Record<string, Colours> = { due: ATTN, "on hold": GREY };
 export const TIERS = ["T0", "T1", "T2", "T3"] as const;
 export const ESCALATION_LABELS: Record<string, string> = {
   exported_to_document: "Output filed into a document", decision_flag: "Output informs a decision",

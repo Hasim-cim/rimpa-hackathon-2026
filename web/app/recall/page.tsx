@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { api, Pill, TIER_COLOURS, type S } from "@/lib/ui";
+import Link from "next/link";
+import { api, OK, Pill, TIER_COLOURS, type S } from "@/lib/ui";
+import Reliability from "../reliability";
 
 const BY = "Information manager";
 const input = { width: "100%", padding: 8, font: "inherit", border: "1px solid #9ca3af", borderRadius: 6 } as const;
-const ok = { background: "#d1f0dc", color: "#14532d", padding: "8px 12px", borderRadius: 6, marginTop: 12 } as const;
+const ok = { background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6, marginTop: 12 } as const;
 type Counts = Record<string, number>;
 
 function Tiles({ counts }: { counts: Counts }) {
@@ -22,7 +24,7 @@ function Items({ items, what }: { items: S["RecallItem"][]; what: string }) {
       <tbody>
         {items.map((i) => (
           <tr key={i.record_id}>
-            <td>{i.record_id}</td><td><Pill text={i.tier} colours={TIER_COLOURS[i.tier]} /></td><td>{i.function}</td>
+            <td><Link href={`/?id=${encodeURIComponent(i.record_id)}`}>{i.record_id}</Link></td><td><Pill text={i.tier} colours={TIER_COLOURS[i.tier]} /></td><td>{i.function}</td>
             <td>{i.created.slice(0, 10)}</td><td>{i.reviewer || "none"}</td><td>{i.queued ? "yes" : "no"}</td>
           </tr>
         ))}
@@ -48,6 +50,8 @@ export default function Recall() {
   const [supReason, setSupReason] = useState("Policy replaced by v5");
   const [srcRes, setSrcRes] = useState<S["SourceRecallResult"] | null>(null);
   const [srcError, setSrcError] = useState("");
+  const [srcQueued, setSrcQueued] = useState("");
+  const [relKey, setRelKey] = useState(0);
 
   const refreshAudit = useCallback(() => api<Record<string, string>[]>("audit?limit=20").then(setAudit).catch(() => {}), []);
   const loadModels = () => api<S["ModelRegistryEntry"][]>("models").then(setReg);
@@ -78,12 +82,23 @@ export default function Recall() {
   const callSource = useCallback(async (mark?: S["SupersedeMark"]) => {
     if (!recId) return;
     setSrcError("");
-    try { setSrcRes(await api<S["SourceRecallResult"]>("recall/record", { json: { record_id: recId, mark } })); }
+    try { setSrcRes(await api<S["SourceRecallResult"]>("recall/record", { json: { record_id: recId, mark } })); if (mark) setRelKey((k) => k + 1); }
     catch (e) { setSrcRes(null); setSrcError((e as Error).message); }
     refreshAudit();
   }, [recId, refreshAudit]);
 
-  useEffect(() => { callSource(); }, [callSource]);
+  useEffect(() => { setSrcQueued(""); callSource(); }, [callSource]);
+
+  const srcT2 = srcRes?.items.filter((i) => i.tier === "T2").map((i) => i.record_id) ?? [];
+  async function queueSource() {
+    if (!srcRes) return;
+    try {
+      const { queued } = await api<{ queued: number }>("recall/queue", {
+        json: { record_ids: srcT2, by: BY, reason: `Source ${srcRes.record_id} ${srcRes.record.status}: ${supReason || "no reason given"}` } });
+      await callSource();
+      setSrcQueued(`Queued ${queued} T2 records for re-review (${srcT2.length - queued} were already queued).`);
+    } catch (err) { setSrcError((err as Error).message); }
+  }
 
   const t2 = res?.items.filter((i) => i.tier === "T2").map((i) => i.record_id) ?? [];
   async function queue() {
@@ -99,11 +114,34 @@ export default function Recall() {
 
   return (
     <>
-      <h2>Model registry</h2>
-      <table>
-        <thead><tr><th>Model</th><th>Provider</th><th>Status</th><th>Effective from</th><th>Reason</th></tr></thead>
-        <tbody>{reg.map((e) => <tr key={e.model_id}><td>{e.model_id}</td><td>{e.provider}</td><td>{e.status}</td><td>{e.effective_from ?? ""}</td><td>{e.reason}</td></tr>)}</tbody>
-      </table>
+      <Reliability refresh={relKey} />
+      <h2 style={{ marginTop: 0 }}>Mark a source superseded</h2>
+      <p className="muted">A new version replaces a record (a reissued notice, a new policy). It stops counting as evidence at once, and recall lists every AI output that relied on it.</p>
+      <form onSubmit={(e) => { e.preventDefault(); callSource({ superseded_by: supBy || null, reason: supReason, by: BY }); }}>
+        <label htmlFor="rec">Source record</label>
+        <select id="rec" value={recId} onChange={(e) => setRecId(e.target.value)}>
+          {records.map((r) => <option key={r.id} value={r.id}>{r.id}  {r.title}</option>)}
+        </select>
+        <label htmlFor="sup">Superseded by (blank = withdrawn without a replacement)</label>
+        <select id="sup" value={supBy} onChange={(e) => setSupBy(e.target.value)}>
+          <option value="">(none)</option>
+          {records.filter((r) => r.id !== recId).map((r) => <option key={r.id} value={r.id}>{r.id}  {r.title}</option>)}
+        </select>
+        <label htmlFor="sreason">Reason</label>
+        <input id="sreason" value={supReason} onChange={(e) => setSupReason(e.target.value)} style={input} />
+        <button className="run" type="submit">Mark superseded</button>
+      </form>
+      {srcError && <p className="error" role="alert">{srcError}</p>}
+      {srcRes && (
+        <>
+          <h3>Recall by source record: {srcRes.record_id}</h3>
+          <p className="muted">{srcRes.record.title}. Status {srcRes.record.status}.</p>
+          <Tiles counts={srcRes.counts} />
+          <Items items={srcRes.items} what="relied on this record" />
+          <button className="run" onClick={queueSource} disabled={!srcT2.length}>Queue T2 records for re-review ({srcT2.length})</button>
+          {srcQueued && <p role="status" style={ok}>{srcQueued}</p>}
+        </>
+      )}
 
       <h2>Mark a model</h2>
       <form onSubmit={(e) => { e.preventDefault(); callModel({ status, effective_from: eff, reason, by: BY }); }}>
@@ -132,7 +170,15 @@ export default function Recall() {
         </>
       )}
 
-      <details style={{ marginTop: 24 }}>
+      <details className="card-d">
+        <summary>Model registry</summary>
+      <table>
+        <thead><tr><th>Model</th><th>Provider</th><th>Status</th><th>Effective from</th><th>Reason</th></tr></thead>
+        <tbody>{reg.map((e) => <tr key={e.model_id}><td>{e.model_id}</td><td>{e.provider}</td><td>{e.status}</td><td>{e.effective_from ?? ""}</td><td>{e.reason}</td></tr>)}</tbody>
+      </table>
+      </details>
+
+      <details className="card-d" style={{ marginTop: 24 }}>
         <summary>Audit trail (last 20)</summary>
         <table>
           <thead><tr><th>At</th><th>Actor</th><th>Action</th><th>Subject</th><th>Detail</th></tr></thead>
@@ -140,31 +186,6 @@ export default function Recall() {
         </table>
       </details>
 
-      <h2>Recall by source record</h2>
-      <p className="muted">When an authoritative record is superseded or withdrawn, find every retained AI output that relied on it.</p>
-      <form onSubmit={(e) => { e.preventDefault(); callSource({ superseded_by: supBy || null, reason: supReason, by: BY }); }}>
-        <label htmlFor="rec">Source record</label>
-        <select id="rec" value={recId} onChange={(e) => setRecId(e.target.value)}>
-          {records.map((r) => <option key={r.id} value={r.id}>{r.id}  {r.title}</option>)}
-        </select>
-        <label htmlFor="sup">Superseded by (blank = withdrawn without a replacement)</label>
-        <select id="sup" value={supBy} onChange={(e) => setSupBy(e.target.value)}>
-          <option value="">(none)</option>
-          {records.filter((r) => r.id !== recId).map((r) => <option key={r.id} value={r.id}>{r.id}  {r.title}</option>)}
-        </select>
-        <label htmlFor="sreason">Reason</label>
-        <input id="sreason" value={supReason} onChange={(e) => setSupReason(e.target.value)} style={input} />
-        <button className="run" type="submit">Mark superseded</button>
-      </form>
-      {srcError && <p className="error" role="alert">{srcError}</p>}
-      {srcRes && (
-        <>
-          <h3>Recall: {srcRes.record_id}</h3>
-          <p className="muted">{srcRes.record.title}. Status {srcRes.record.status}.</p>
-          <Tiles counts={srcRes.counts} />
-          <Items items={srcRes.items} what="relied on this record" />
-        </>
-      )}
     </>
   );
 }

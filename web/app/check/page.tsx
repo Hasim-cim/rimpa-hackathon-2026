@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, ApiError, CITE_COLOURS, GATE_COLOURS, GatePill, GREY, Pill, WEIGHT_COLOURS, type S } from "@/lib/ui";
+import { api, ApiError, OK, CITE_COLOURS, GATE_COLOURS, GatePill, GREY, Pill, WEIGHT_COLOURS, type S } from "@/lib/ui";
 
 const DEFAULT_DOC = "DOC-2026/0412-summary";
 const DOC_TYPE_HINTS = [["summary", "decision-letter"], ["briefing", "briefing"], ["agent-note", "case-note"], ["eligibility", "case-note"]];
@@ -163,7 +163,7 @@ export default function Check() {
             </>
           )}
 
-          {gate && doc && <FileAsRecord doc={doc} typeId={typeId} result={result} gate={gate.status} />}
+          {gate && doc && <FileAsRecord doc={doc} typeId={typeId} typeName={dtype?.name ?? typeId} result={result} gate={gate.status} />}
         </>
       )}
     </>
@@ -173,7 +173,15 @@ export default function Check() {
 const AUTHOR = "A. Caseworker";
 const MODEL = "northstar-8-2026-09-15";
 
-function FileAsRecord({ doc, typeId, result, gate }: { doc: S["Document"]; typeId: string; result: S["CheckResponse"]; gate: string }) {
+/** The business function a filed document performs, from the document itself (same rule as the console's _doc_function). */
+function docFunction(doc: S["Document"], typeName: string) {
+  const title = doc.title.split(",")[0];
+  if (title.startsWith("Briefing: ")) return "Policy briefing";
+  if (title.startsWith("Case note drafted by")) return "Case note summary";
+  return title.replace(/ note$/, "").replace(/ summary$/, "") || typeName;
+}
+
+function FileAsRecord({ doc, typeId, typeName, result, gate }: { doc: S["Document"]; typeId: string; typeName: string; result: S["CheckResponse"]; gate: string }) {
   const [reviewer, setReviewer] = useState("B. Team Leader");
   const [decision, setDecision] = useState<S["Review"]["decision"]>("approved");
   const [flag, setFlag] = useState(true);
@@ -182,14 +190,14 @@ function FileAsRecord({ doc, typeId, result, gate }: { doc: S["Document"]; typeI
 
   async function issue() {
     const now = new Date();
-    const iso = now.toISOString();
+    const iso = now.toISOString().replace("Z", "");   // naive UTC, like the seed data, until the engine handles aware datetimes
     const stamp = iso.replace(/[-:T]/g, "").slice(0, 14);
     const event: S["AIEvent"] = {
       id: `EVT-${stamp}-${Math.random().toString(16).slice(2, 6).padEnd(4, "0")}`, app_id: "agency-assistant", user: AUTHOR, created: iso,
-      prompt: "Summarise the hardship policy for case 2026/0412 and cite authorities", output: doc.body,
+      prompt: `Draft the ${doc.title.split(",")[0].toLowerCase()}${doc.case_id ? ` for case ${doc.case_id}` : ""} and cite the records relied on`, output: doc.body,
       model_requested: MODEL, model_returned: MODEL, provider: "Northstar AI (fictional vendor)",
       source_record_ids: result.relied_on ?? [],  // the server sets these again from the evidence
-      exported_to_document: doc.id, decision_flag: flag, function: "Debt waiver assessment",
+      exported_to_document: doc.id, decision_flag: flag, function: docFunction(doc, typeName),
     };
     const review = reviewer.trim() ? { reviewer: reviewer.trim(), decision, reviewed_at: iso } : null;
     try {
@@ -221,7 +229,7 @@ function FileAsRecord({ doc, typeId, result, gate }: { doc: S["Document"]; typeI
       {blocked && <p className="error" role="alert">Blocked by policy: fix the document or ask the information manager to change the bar.</p>}
       <button className="run" onClick={issue} disabled={blocked}>Issue passport</button>
       {msg && (msg.ok
-        ? <p role="status" style={{ background: "#d1f0dc", color: "#14532d", padding: "8px 12px", borderRadius: 6, marginTop: 12 }}>
+        ? <p role="status" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6, marginTop: 12 }}>
             {msg.text}. <a href={`/?id=${encodeURIComponent(msg.id!)}`}>Open it in Records</a>
           </p>
         : <p className="error" role="alert">{msg.text}</p>)}

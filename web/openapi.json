@@ -235,6 +235,46 @@
         }
       }
     },
+    "/passport/{record_id}/summary": {
+      "get": {
+        "summary": "Get Passport Summary",
+        "description": "Headline, status, the four checks and the policy line: what a person reads first.",
+        "operationId": "get_passport_summary_passport__record_id__summary_get",
+        "parameters": [
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/passport/{record_id}/view": {
       "get": {
         "summary": "Get Passport View",
@@ -419,6 +459,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReliabilityReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Get Dashboard",
+        "description": "Read-only information-manager dashboard: KPIs, model signals, recent passports, sources, disposal.",
+        "operationId": "get_dashboard_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardReport"
                 }
               }
             }
@@ -948,6 +1007,34 @@
         ],
         "title": "Assessment"
       },
+      "AuthorshipCounts": {
+        "properties": {
+          "ai": {
+            "type": "integer",
+            "title": "Ai"
+          },
+          "human": {
+            "type": "integer",
+            "title": "Human"
+          },
+          "passports_counted": {
+            "type": "integer",
+            "title": "Passports Counted"
+          },
+          "plain": {
+            "type": "string",
+            "title": "Plain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ai",
+          "human",
+          "passports_counted",
+          "plain"
+        ],
+        "title": "AuthorshipCounts"
+      },
       "ChainReport": {
         "properties": {
           "ok": {
@@ -1359,6 +1446,105 @@
         ],
         "title": "ClaimLink"
       },
+      "DashboardReport": {
+        "properties": {
+          "kpis": {
+            "items": {
+              "$ref": "#/components/schemas/KpiTile"
+            },
+            "type": "array",
+            "title": "Kpis"
+          },
+          "model_signals": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSignal"
+            },
+            "type": "array",
+            "title": "Model Signals"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/RecentPassport"
+            },
+            "type": "array",
+            "title": "Recent"
+          },
+          "recent_supported": {
+            "items": {
+              "$ref": "#/components/schemas/SupportedStatement"
+            },
+            "type": "array",
+            "title": "Recent Supported"
+          },
+          "authorship": {
+            "$ref": "#/components/schemas/AuthorshipCounts"
+          },
+          "rot": {
+            "$ref": "#/components/schemas/RotCounts"
+          },
+          "disposal_due": {
+            "$ref": "#/components/schemas/DisposalDue"
+          },
+          "by_function": {
+            "items": {
+              "$ref": "#/components/schemas/FunctionRow"
+            },
+            "type": "array",
+            "title": "By Function"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kpis",
+          "model_signals",
+          "recent",
+          "recent_supported",
+          "authorship",
+          "rot",
+          "disposal_due",
+          "by_function",
+          "generated_at",
+          "policy_version"
+        ],
+        "title": "DashboardReport"
+      },
+      "DisposalDue": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "held_by_recall": {
+            "type": "integer",
+            "title": "Held By Recall"
+          },
+          "authority": {
+            "type": "string",
+            "title": "Authority"
+          },
+          "plain": {
+            "type": "string",
+            "title": "Plain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "held_by_recall",
+          "authority",
+          "plain"
+        ],
+        "title": "DisposalDue"
+      },
       "DisposalEntry": {
         "properties": {
           "record_id": {
@@ -1635,6 +1821,44 @@
         ],
         "title": "FromPreset"
       },
+      "FunctionRow": {
+        "properties": {
+          "function": {
+            "type": "string",
+            "title": "Function"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "filed_approved": {
+            "type": "integer",
+            "title": "Filed Approved"
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review"
+          },
+          "narrow_evidence": {
+            "type": "integer",
+            "title": "Narrow Evidence"
+          },
+          "on_suggested_model": {
+            "type": "integer",
+            "title": "On Suggested Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "function",
+          "total",
+          "filed_approved",
+          "needs_review",
+          "narrow_evidence",
+          "on_suggested_model"
+        ],
+        "title": "FunctionRow"
+      },
       "GateReason": {
         "properties": {
           "status": {
@@ -1709,6 +1933,56 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "KpiTile": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percent"
+          },
+          "display": {
+            "type": "string",
+            "title": "Display"
+          },
+          "plain": {
+            "type": "string",
+            "title": "Plain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "count",
+          "total",
+          "percent",
+          "display",
+          "plain"
+        ],
+        "title": "KpiTile"
       },
       "Mark": {
         "properties": {
@@ -1798,6 +2072,66 @@
           "provider"
         ],
         "title": "ModelRegistryEntry"
+      },
+      "ModelSignal": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "withdrawn",
+              "faulty"
+            ],
+            "title": "Status",
+            "default": "active"
+          },
+          "passports": {
+            "type": "integer",
+            "title": "Passports"
+          },
+          "references_checked": {
+            "type": "integer",
+            "title": "References Checked"
+          },
+          "references_not_found": {
+            "type": "integer",
+            "title": "References Not Found"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "suggested": {
+            "type": "boolean",
+            "title": "Suggested"
+          },
+          "plain": {
+            "type": "string",
+            "title": "Plain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "passports",
+          "references_checked",
+          "references_not_found",
+          "rate",
+          "suggested",
+          "plain"
+        ],
+        "title": "ModelSignal"
       },
       "Passport": {
         "properties": {
@@ -2366,6 +2700,19 @@
               }
             ],
             "title": "Updated At"
+          },
+          "recall_signal_threshold": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Recall Signal Threshold",
+            "default": 0.3
+          },
+          "recall_signal_min_refs": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Recall Signal Min Refs",
+            "default": 10
           }
         },
         "type": "object",
@@ -2603,6 +2950,111 @@
         ],
         "title": "RecallResult"
       },
+      "RecentPassport": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "filed": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Filed"
+          },
+          "function": {
+            "type": "string",
+            "title": "Function"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "attention",
+                  "blocked"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "title",
+          "filed",
+          "function",
+          "tier",
+          "gate",
+          "status"
+        ],
+        "title": "RecentPassport"
+      },
+      "RecordSummary": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "headline": {
+            "type": "string",
+            "title": "Headline"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "attention",
+              "problem",
+              "not_run"
+            ],
+            "title": "Status"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/CheckSummary"
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "policy_line": {
+            "type": "string",
+            "title": "Policy Line"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "headline",
+          "status",
+          "checks",
+          "policy_line"
+        ],
+        "title": "RecordSummary",
+        "description": "What a person reads first: one headline, its status, the four grouped checks and the policy line.\nThe wording is made here, once, for every UI."
+      },
       "ReliabilityDrag": {
         "properties": {
           "record_id": {
@@ -2737,6 +3189,50 @@
           "reviewed_at"
         ],
         "title": "Review"
+      },
+      "RotCounts": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "eligible": {
+            "type": "integer",
+            "title": "Eligible"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "redundant",
+                "obsolete",
+                "trivial",
+                "draft"
+              ]
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "plain": {
+            "type": "string",
+            "title": "Plain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "eligible",
+          "overdue",
+          "counts",
+          "plain"
+        ],
+        "title": "RotCounts"
       },
       "SectorPreset": {
         "properties": {
@@ -3165,6 +3661,43 @@
           "by"
         ],
         "title": "SupersedeMark"
+      },
+      "SupportedStatement": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "filed": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Filed"
+          },
+          "source_record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Record Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "claim_id",
+          "text",
+          "filed",
+          "source_record_ids"
+        ],
+        "title": "SupportedStatement"
       },
       "TierRules": {
         "properties": {

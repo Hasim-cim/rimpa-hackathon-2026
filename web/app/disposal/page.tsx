@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { api, DISPOSAL_COLOURS, Pill, short, type S } from "@/lib/ui";
+import { api, OK, DISPOSAL_COLOURS, Pill, short, BAD, type S } from "@/lib/ui";
 
 const today = () => new Date().toLocaleDateString("en-CA");
 const day = (s: string) => s.slice(0, 10);
@@ -101,7 +101,7 @@ export default function Disposal() {
       {error && <p className="error" role="alert">{error}</p>}
       {result && (
         <div role="status">
-          <p style={result.ok ? { background: "#d1f0dc", color: "#14532d", padding: "8px 12px", borderRadius: 6 } : { background: "#f8d0d0", color: "#7f1d1d", padding: "8px 12px", borderRadius: 6 }}>{result.text}</p>
+          <p style={result.ok ? { background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6 } : { background: BAD[0], color: BAD[1], padding: "8px 12px", borderRadius: 6 }}>{result.text}</p>
           <p className="muted">{result.detail}</p>
         </div>
       )}

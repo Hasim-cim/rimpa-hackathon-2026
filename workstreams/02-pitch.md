@@ -8,6 +8,13 @@
 **Done:** skeleton with timings in `team/04 Pitch and Q&A prep.md`; lines worth having; things not to say.
 The product and demo exist (see 01 and 05). The idea book (`docs/idea-book/`) has the story per feature.
 
+**Name (Hasim, 19 Oct): Record Passport** (was Record Check) on every slide. The "Bias check" row: say it checks how broad and current the evidence is, one way bias gets in; never "unbiased", "bias-free" or "no bias found".
+
+**NAA in its own words (live page opened 19 Oct):** "The value and expected longevity of information determines
+the amount of metadata that must be kept about it" ([NAA Minimum Metadata Set](https://www.naa.gov.au/information-management/standards/australian-government-recordkeeping-metadata-standard/minimum-metadata-set)).
+That is our risk tiers. After M1 lands: "every passport carries the NAA Minimum Metadata Set's Core and Additional
+properties, plus the AI fields." Legislation: "repealed on 5 December 1999", never "replaced by".
+
 **New material, 19 Oct:** session 1's words plus verified stage lines (Queensland ROT quote, Microsoft over-trust
 figure, knee-surgery analogy wording, IAR Purpose field) in `research/session-1-outcomes-2026-10-19.md`, with a "Don't say" list.
 

@@ -97,6 +97,7 @@ The LLM may only *split text into claims*. It never decides a weight.
 def load_tier_rules(path=...) -> TierRules                       # data/seed/tier_rules.json
 def classify(event: AIEvent, rules: TierRules) -> Tier           # default tier of event.app_id, then escalations
 def build(event: AIEvent, *, tier: Tier, assessment: Assessment | None, citations, review: Review | None, conn, rules: TierRules | None = None, record_id: str | None = None, document_type=None, gate=None, policy=None) -> Passport
+    # Stores record.created as naive UTC (models.naive_utc): one time convention, whatever the caller sends.
     # Refuses (ValueError subclasses): TierBelowRules (tier lower than classify gives; raising is allowed),
     # SelfReview (reviewer is event.user), DuplicateRecord (record_id already in the chain), blank reviewer.
     # With a policy, runs gate.evaluate itself (document type, or with none the strictest default bar over what

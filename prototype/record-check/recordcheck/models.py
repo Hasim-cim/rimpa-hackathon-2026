@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+def naive_utc(dt: datetime) -> datetime:
+    """One time convention for records: naive UTC, as the seed stores them. An aware time (an ISO string ending in Z,
+    as the web sends) is converted to UTC and its offset dropped, so passports always sort and compare together."""
+    return dt.astimezone(timezone.utc).replace(tzinfo=None) if dt.tzinfo else dt
+
 
 Tier = Literal["T0", "T1", "T2", "T3"]
 Weight = Literal["supported", "weak", "unsupported", "contradicted"]
@@ -247,6 +253,10 @@ class Policy(BaseModel):
     version: str = "1"
     updated_by: str = ""
     updated_at: datetime | None = None
+    # dashboard signal for the information manager (never triggers a recall): flag a model once at least
+    # `recall_signal_min_refs` of its checked references are in and this share of them were not found
+    recall_signal_threshold: float = Field(0.30, ge=0, le=1)
+    recall_signal_min_refs: int = Field(10, ge=1)
 
 
 class SectorPreset(BaseModel):
@@ -314,6 +324,16 @@ class PassportView(BaseModel):
     at_issue: bool                           # full detail stored at issue; False = summary counts only (older passports)
     disposed: bool
     checks: list[CheckSummary]
+
+
+class RecordSummary(BaseModel):
+    """What a person reads first: one headline, its status, the four grouped checks and the policy line.
+    The wording is made here, once, for every UI."""
+    record_id: str
+    headline: str
+    status: CheckStatus
+    checks: list[CheckSummary]               # Evidence, References, Filing, Since filing (view.four_checks)
+    policy_line: str
 
 
 # ---------- disposal ----------
@@ -431,3 +451,88 @@ class LLMResult(BaseModel):
     model_returned: str
     input_tokens: int = 0
     output_tokens: int = 0
+
+
+# ---------- information-manager dashboard (read-only; see dashboard.py) ----------
+
+class KpiTile(BaseModel):
+    id: str                                  # filed_approved | needs_review | narrow_evidence | recall_suggested
+    label: str
+    count: int
+    total: int                               # what the count is out of (passports, or models for recall_suggested)
+    percent: float | None                    # 0-100; None when total is 0 ("none yet")
+    display: str                             # "12 of 40 (30%)" or "none yet"
+    plain: str                               # plain words saying what it counts
+
+
+class ModelSignal(BaseModel):
+    model_id: str
+    status: ModelStatus = "active"           # registry status
+    passports: int
+    references_checked: int                  # found + mismatch + not_found across its retained passports
+    references_not_found: int
+    rate: float | None                       # not_found / checked; None when nothing was checked
+    suggested: bool                          # rate >= threshold and checked >= min refs. A signal, never a recall
+    plain: str
+
+
+class RecentPassport(BaseModel):
+    record_id: str
+    title: str
+    filed: datetime
+    function: str
+    tier: Tier
+    gate: GateStatus | None
+    status: str                              # a status phrase in plain words
+
+
+class SupportedStatement(BaseModel):
+    record_id: str                           # the passport it sits on
+    claim_id: str
+    text: str
+    filed: datetime
+    source_record_ids: list[str]             # the authoritative records that support it
+
+
+class AuthorshipCounts(BaseModel):
+    ai: int
+    human: int
+    passports_counted: int                   # passports with the statement detail stored at issue
+    plain: str
+
+
+class RotCounts(BaseModel):
+    total: int
+    eligible: int
+    overdue: int
+    counts: dict[RotLabel, int]
+    plain: str
+
+
+class DisposalDue(BaseModel):
+    count: int
+    held_by_recall: int
+    authority: str
+    plain: str
+
+
+class FunctionRow(BaseModel):
+    function: str
+    total: int
+    filed_approved: int
+    needs_review: int
+    narrow_evidence: int
+    on_suggested_model: int                  # passports made by a model the recall signal flags
+
+
+class DashboardReport(BaseModel):
+    kpis: list[KpiTile]
+    model_signals: list[ModelSignal]
+    recent: list[RecentPassport]             # the last 10 filed
+    recent_supported: list[SupportedStatement]   # up to 10 latest statements supported by authoritative records
+    authorship: AuthorshipCounts
+    rot: RotCounts
+    disposal_due: DisposalDue
+    by_function: list[FunctionRow]
+    generated_at: datetime
+    policy_version: str

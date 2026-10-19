@@ -277,9 +277,9 @@
         "REC-2026/004805"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 2,
         "mismatch": 0,
-        "not_found": 0,
+        "not_found": 1,
         "not_checked": 0
       },
       "evidence_summary": {
@@ -292,7 +292,7 @@
     },
     "review": null,
     "integrity": {
-      "hash": "33ae40acd21d09f0ba861161bd28cadae2d3189bdad1001f4501bef569ded5ef",
+      "hash": "29d390d4e6e4c5eeb5eaf90575906c5193dc3594a0880ae9820d7ea2f20a7f7f",
       "prev_hash": "f981bba06b37ec820174530ad9939b66403ff0c084186e3a1a8bb54b0c9cd966",
       "algorithm": "sha256",
       "version": 1,
@@ -349,8 +349,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "008af6308ada3ef68654369d576f2097b559498d9c23c029502b53b7aa46d1b9",
-      "prev_hash": "33ae40acd21d09f0ba861161bd28cadae2d3189bdad1001f4501bef569ded5ef",
+      "hash": "a909fc1fb780bca4ed9d2964847f62471365bc16865db63cbaea2bfe340c0df4",
+      "prev_hash": "29d390d4e6e4c5eeb5eaf90575906c5193dc3594a0880ae9820d7ea2f20a7f7f",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -395,7 +395,7 @@
         "REC-2026/004809"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 3,
         "mismatch": 0,
         "not_found": 0,
         "not_checked": 0
@@ -410,8 +410,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "7c14767e89e75b265c8324bc90a1aed17deeadc149a4b701a31145fedbb9e508",
-      "prev_hash": "008af6308ada3ef68654369d576f2097b559498d9c23c029502b53b7aa46d1b9",
+      "hash": "788ebbab21355c328af0c2a806f4aadf7bfd585254091945ee3839f416a0d1c5",
+      "prev_hash": "a909fc1fb780bca4ed9d2964847f62471365bc16865db63cbaea2bfe340c0df4",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -467,8 +467,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "cc80b83f82dc3be7b35be0168daf086b209e298187753857be5edd283103c3de",
-      "prev_hash": "7c14767e89e75b265c8324bc90a1aed17deeadc149a4b701a31145fedbb9e508",
+      "hash": "1ecbd66b58ef75799488d7ccca0a58c46694830937e03ef09c87f5f1406816af",
+      "prev_hash": "788ebbab21355c328af0c2a806f4aadf7bfd585254091945ee3839f416a0d1c5",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -513,9 +513,9 @@
         "REC-2026/003540"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 1,
         "mismatch": 0,
-        "not_found": 0,
+        "not_found": 2,
         "not_checked": 0
       },
       "evidence_summary": {
@@ -528,8 +528,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "775426376d586025b73a3f85148035acc9f29f49f8135d81a531c742ff479d6f",
-      "prev_hash": "cc80b83f82dc3be7b35be0168daf086b209e298187753857be5edd283103c3de",
+      "hash": "cf060e3f88e59cf0c681c9419e9c704b44bd7b3573ec6f993b32faabaf08d61e",
+      "prev_hash": "1ecbd66b58ef75799488d7ccca0a58c46694830937e03ef09c87f5f1406816af",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -573,9 +573,9 @@
         "REC-2026/003540"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 2,
         "mismatch": 0,
-        "not_found": 0,
+        "not_found": 1,
         "not_checked": 0
       },
       "evidence_summary": {
@@ -588,8 +588,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "0d9ad65f08cb2c227ea842c1d63dd579100953412a3aa4144687a30088c69c6f",
-      "prev_hash": "775426376d586025b73a3f85148035acc9f29f49f8135d81a531c742ff479d6f",
+      "hash": "679ca3ae4e97592a2d774f55b3c08fb1da5d1437c602949cccdcf0443ab48b1d",
+      "prev_hash": "cf060e3f88e59cf0c681c9419e9c704b44bd7b3573ec6f993b32faabaf08d61e",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -633,7 +633,7 @@
         "REC-2026/004805"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 3,
         "mismatch": 0,
         "not_found": 0,
         "not_checked": 0
@@ -648,8 +648,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "88b3a83d61cdd2f35431bb411e6e10b16260380f2291da5ac3301d99338437a5",
-      "prev_hash": "0d9ad65f08cb2c227ea842c1d63dd579100953412a3aa4144687a30088c69c6f",
+      "hash": "293ac90993af653927e3f223961edf7c54e494cb3935faa5b61d4da48901a647",
+      "prev_hash": "679ca3ae4e97592a2d774f55b3c08fb1da5d1437c602949cccdcf0443ab48b1d",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -694,9 +694,9 @@
         "REC-2026/004790"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 2,
         "mismatch": 0,
-        "not_found": 0,
+        "not_found": 1,
         "not_checked": 0
       },
       "evidence_summary": {
@@ -709,8 +709,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "cf87d2d1a1cf5a6f1f34e4fccdfd3be05dcaa489e46334aca27d463b4332aa56",
-      "prev_hash": "88b3a83d61cdd2f35431bb411e6e10b16260380f2291da5ac3301d99338437a5",
+      "hash": "612a321e430b059d61eb191b43ce0615b264be75932e950a6838d83bdeec7eb0",
+      "prev_hash": "293ac90993af653927e3f223961edf7c54e494cb3935faa5b61d4da48901a647",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -775,8 +775,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "d297d1715bbe7f0d7f2cc05767fec67a9beac8c8a454f471b4b2650320d63e79",
-      "prev_hash": "cf87d2d1a1cf5a6f1f34e4fccdfd3be05dcaa489e46334aca27d463b4332aa56",
+      "hash": "8418ff841d03a9b88b3929161ff28dcca01b79d28a705ee4eaa39dc3cd2c3ec0",
+      "prev_hash": "612a321e430b059d61eb191b43ce0615b264be75932e950a6838d83bdeec7eb0",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -832,8 +832,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "64d43ee921273fe11a519b20ef2889f6c848fd7d85e86a6da77442e316fee47e",
-      "prev_hash": "d297d1715bbe7f0d7f2cc05767fec67a9beac8c8a454f471b4b2650320d63e79",
+      "hash": "338a0db5dae7a8fb7d84fe57e41f745209e4dce0493af23ea8d44943997e5e1a",
+      "prev_hash": "8418ff841d03a9b88b3929161ff28dcca01b79d28a705ee4eaa39dc3cd2c3ec0",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -877,7 +877,7 @@
         "REC-2026/004802"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 3,
         "mismatch": 0,
         "not_found": 0,
         "not_checked": 0
@@ -892,8 +892,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "273c358f5fc7208b549710cda423a45ec7ffe854a21bbc451b0003d50afaa3b2",
-      "prev_hash": "64d43ee921273fe11a519b20ef2889f6c848fd7d85e86a6da77442e316fee47e",
+      "hash": "66779a63fec6b9a526ee881c6354002389fec40b205d6fb77a9e641a7ae96832",
+      "prev_hash": "338a0db5dae7a8fb7d84fe57e41f745209e4dce0493af23ea8d44943997e5e1a",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -951,8 +951,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "433f1cba7ab5ecfdf8dc2d8f10461c5217d667148da44107c5d5c7899e296e68",
-      "prev_hash": "273c358f5fc7208b549710cda423a45ec7ffe854a21bbc451b0003d50afaa3b2",
+      "hash": "9d392a1d03f7c88db782eec84c25a44635682305838598d17d867b809edd268e",
+      "prev_hash": "66779a63fec6b9a526ee881c6354002389fec40b205d6fb77a9e641a7ae96832",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1027,8 +1027,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "72397d44d98f431db82e2bef4330f35abf94879b26ffdf8755fc2d058a469f27",
-      "prev_hash": "433f1cba7ab5ecfdf8dc2d8f10461c5217d667148da44107c5d5c7899e296e68",
+      "hash": "c35eced0f7e2878385960350c2a6019a20e98bf10dee431377566f17f57053ff",
+      "prev_hash": "9d392a1d03f7c88db782eec84c25a44635682305838598d17d867b809edd268e",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1087,8 +1087,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "eb64dda99b504043a66d538572927ef0fa9e89c052456c168b06953efc70bc58",
-      "prev_hash": "72397d44d98f431db82e2bef4330f35abf94879b26ffdf8755fc2d058a469f27",
+      "hash": "e604763f194380c3282267a1a00b61d57f4ee35855eccd380a7b758e1738eb88",
+      "prev_hash": "c35eced0f7e2878385960350c2a6019a20e98bf10dee431377566f17f57053ff",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1144,8 +1144,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "8bbc966ec6c96378e5782883098f2d9c7bfa2d3b60166ad9128cd6314969151b",
-      "prev_hash": "eb64dda99b504043a66d538572927ef0fa9e89c052456c168b06953efc70bc58",
+      "hash": "3dbf92d8d9074784440d3b17d9ab22f8f3c1e1cbe4e53d4bfc0f0e4e04a13efe",
+      "prev_hash": "e604763f194380c3282267a1a00b61d57f4ee35855eccd380a7b758e1738eb88",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1203,8 +1203,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "6d3b569efbdf8cf34be2c3ec92eb447a6604a03f41be32ad6e8f68b36f3bf058",
-      "prev_hash": "8bbc966ec6c96378e5782883098f2d9c7bfa2d3b60166ad9128cd6314969151b",
+      "hash": "e26a4f9a752b836cb63ae8ef49bcdda57ce40b7ebd83aa030e0ed0522aa6b183",
+      "prev_hash": "3dbf92d8d9074784440d3b17d9ab22f8f3c1e1cbe4e53d4bfc0f0e4e04a13efe",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1267,8 +1267,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "c31f2f67dee6a15350c68475364d85c0012e8533d02c93db24fc8c4c81a13b65",
-      "prev_hash": "6d3b569efbdf8cf34be2c3ec92eb447a6604a03f41be32ad6e8f68b36f3bf058",
+      "hash": "5921063d2a8e90e20e35ff667cd9073fb8ffb2c2942d15ef3dbf09f33931d4ed",
+      "prev_hash": "e26a4f9a752b836cb63ae8ef49bcdda57ce40b7ebd83aa030e0ed0522aa6b183",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1313,8 +1313,8 @@
         "REC-2026/004805"
       ],
       "citation_summary": {
-        "found": 0,
-        "mismatch": 0,
+        "found": 2,
+        "mismatch": 1,
         "not_found": 0,
         "not_checked": 0
       },
@@ -1328,8 +1328,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "6ebcd2cfbca97c7225f6fa1ae109aa88842da189490ccae49c30807448f5e9ed",
-      "prev_hash": "c31f2f67dee6a15350c68475364d85c0012e8533d02c93db24fc8c4c81a13b65",
+      "hash": "6d9d5f44d94addad9447f9158b87ab07bc712efb2402b34e63189f9e7ea54df2",
+      "prev_hash": "5921063d2a8e90e20e35ff667cd9073fb8ffb2c2942d15ef3dbf09f33931d4ed",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1394,8 +1394,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "e20ce27994be169a813b77c14d0434a9807d89259facbda6719e55bf226c1e5b",
-      "prev_hash": "6ebcd2cfbca97c7225f6fa1ae109aa88842da189490ccae49c30807448f5e9ed",
+      "hash": "bd19bb5909c5cfd1b27a75be1eef4c95722233b51b74cc84897840e174a7e85a",
+      "prev_hash": "6d9d5f44d94addad9447f9158b87ab07bc712efb2402b34e63189f9e7ea54df2",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1455,8 +1455,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "70cd0c8f3af798db7b0bddb49bd508ea287a4f4cd304ae40fc27afee79b58b06",
-      "prev_hash": "e20ce27994be169a813b77c14d0434a9807d89259facbda6719e55bf226c1e5b",
+      "hash": "224f17f0af7982bf1c09c26f043fdb9b7069e835e58ee72171a9106588e743bb",
+      "prev_hash": "bd19bb5909c5cfd1b27a75be1eef4c95722233b51b74cc84897840e174a7e85a",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1512,8 +1512,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "6f6b4009036af21515e2f542f9a7db63c218799e544c7e2ae666b5648ce31b2f",
-      "prev_hash": "70cd0c8f3af798db7b0bddb49bd508ea287a4f4cd304ae40fc27afee79b58b06",
+      "hash": "5e37e6b153577ed41c72f0908c24a2174dfed779b3f8d8c82bc0c5aa792880c9",
+      "prev_hash": "224f17f0af7982bf1c09c26f043fdb9b7069e835e58ee72171a9106588e743bb",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1569,8 +1569,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "e9f3e7a0bb644640b2accb936d67bd737002934c042c3ff590aeaed839bba4bd",
-      "prev_hash": "6f6b4009036af21515e2f542f9a7db63c218799e544c7e2ae666b5648ce31b2f",
+      "hash": "ede8ca7c06d2cda9782f3247cb30d9fcddd5f1df420b8700484236d1b0a59f4c",
+      "prev_hash": "5e37e6b153577ed41c72f0908c24a2174dfed779b3f8d8c82bc0c5aa792880c9",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1614,9 +1614,9 @@
         "REC-2026/004802"
       ],
       "citation_summary": {
-        "found": 0,
+        "found": 2,
         "mismatch": 0,
-        "not_found": 0,
+        "not_found": 1,
         "not_checked": 0
       },
       "evidence_summary": {
@@ -1629,8 +1629,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "a1c7a3dd97cd9e06b9abdc3a6ac94e6907341ddb01552e66fcf27db0fd12b420",
-      "prev_hash": "e9f3e7a0bb644640b2accb936d67bd737002934c042c3ff590aeaed839bba4bd",
+      "hash": "63772bb637895ef1ce6df498632be7a8534a0d28e3d79fb12c0bb0d288f680f5",
+      "prev_hash": "ede8ca7c06d2cda9782f3247cb30d9fcddd5f1df420b8700484236d1b0a59f4c",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1689,8 +1689,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "e16a75509fc095c75c127d890fa9f7bc0c32fe8992ab1fb8e5bc3afd2fe4c517",
-      "prev_hash": "a1c7a3dd97cd9e06b9abdc3a6ac94e6907341ddb01552e66fcf27db0fd12b420",
+      "hash": "9ff4cac595efd2738606dc71fafcb1e070c2b00c32f34cfebfef8525d8a94f88",
+      "prev_hash": "63772bb637895ef1ce6df498632be7a8534a0d28e3d79fb12c0bb0d288f680f5",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1749,8 +1749,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "ca89f2845347fee6158eed5180c351b768fba6626bdffb018ae244525ea2c7bb",
-      "prev_hash": "e16a75509fc095c75c127d890fa9f7bc0c32fe8992ab1fb8e5bc3afd2fe4c517",
+      "hash": "8387bc786011467417c7e703c1dee03764da5778205e4a1d1c6866b1180274d1",
+      "prev_hash": "9ff4cac595efd2738606dc71fafcb1e070c2b00c32f34cfebfef8525d8a94f88",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1810,8 +1810,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "f594e3c95beac33c614263eb1b871a7a26dc39f3bfdb481d4efc9d9e413834dc",
-      "prev_hash": "ca89f2845347fee6158eed5180c351b768fba6626bdffb018ae244525ea2c7bb",
+      "hash": "1d28a5e58884b571e125e1c08acfd34f1decb82a09794bc86195ce2ded6f0f96",
+      "prev_hash": "8387bc786011467417c7e703c1dee03764da5778205e4a1d1c6866b1180274d1",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1874,8 +1874,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "9c9750d078868445bc276c6ba447c8260c1b9b985c6ddae6feee00fc00203d08",
-      "prev_hash": "f594e3c95beac33c614263eb1b871a7a26dc39f3bfdb481d4efc9d9e413834dc",
+      "hash": "ac071fe249c8064c73c5a287e30460f0e287c6565a4e777d731a496778b74120",
+      "prev_hash": "1d28a5e58884b571e125e1c08acfd34f1decb82a09794bc86195ce2ded6f0f96",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -1949,8 +1949,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "feff18d75a5e2d4dc58c2bdc8789dc0b8d6454eebb2d2a38ed3b4c30a27a99f6",
-      "prev_hash": "9c9750d078868445bc276c6ba447c8260c1b9b985c6ddae6feee00fc00203d08",
+      "hash": "a920402802fd84518f34ef4d11c25cb3faacbed82eb7e5711e979fdfbe2b428a",
+      "prev_hash": "ac071fe249c8064c73c5a287e30460f0e287c6565a4e777d731a496778b74120",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2006,8 +2006,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "69eed877ac49c0f3511ca83dda78e339e4fb9a4e9bdd7f35c89ece51b482782a",
-      "prev_hash": "feff18d75a5e2d4dc58c2bdc8789dc0b8d6454eebb2d2a38ed3b4c30a27a99f6",
+      "hash": "2b953b2fa1f298ac2d940b973a1b744ce23d647b01fbf3c52399afc5b3296d70",
+      "prev_hash": "a920402802fd84518f34ef4d11c25cb3faacbed82eb7e5711e979fdfbe2b428a",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2063,8 +2063,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "fffcb3f189fce3949c8167c0d9d35e88632f9f0568464f4d6bf968c4c0f031c9",
-      "prev_hash": "69eed877ac49c0f3511ca83dda78e339e4fb9a4e9bdd7f35c89ece51b482782a",
+      "hash": "70be2d6ab3880ba272b13b77bdccbafaa5c1dce07bbb24baeda0dccd953f9434",
+      "prev_hash": "2b953b2fa1f298ac2d940b973a1b744ce23d647b01fbf3c52399afc5b3296d70",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2123,8 +2123,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "ce2c65cff14a640c6825cf0d8daefe36ee67bba4b2cd8434c5cbeccd76ebdca1",
-      "prev_hash": "fffcb3f189fce3949c8167c0d9d35e88632f9f0568464f4d6bf968c4c0f031c9",
+      "hash": "56341f07a10734ec020a53a9f892acad280d25eb4dd4b32c7d7735697ec0ac26",
+      "prev_hash": "70be2d6ab3880ba272b13b77bdccbafaa5c1dce07bbb24baeda0dccd953f9434",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2183,8 +2183,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "be8f5c4155e0d9b737fe276c6373365269df9d203cf9c5f369062c25ac6ba3ca",
-      "prev_hash": "ce2c65cff14a640c6825cf0d8daefe36ee67bba4b2cd8434c5cbeccd76ebdca1",
+      "hash": "88de2423d0da510b7a784dd7d54724f860984f81e70edeae4fdecf2ab2adc5db",
+      "prev_hash": "56341f07a10734ec020a53a9f892acad280d25eb4dd4b32c7d7735697ec0ac26",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2247,8 +2247,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "eed277e065a3fc3bc401ef57ef0c473c21aca25f3845d4d95d7102fee0dc96a8",
-      "prev_hash": "be8f5c4155e0d9b737fe276c6373365269df9d203cf9c5f369062c25ac6ba3ca",
+      "hash": "54127d9a8b2a7da64c34c1be9f50ffe5daca01058650b0a9fdb60196bf43e0b7",
+      "prev_hash": "88de2423d0da510b7a784dd7d54724f860984f81e70edeae4fdecf2ab2adc5db",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2304,8 +2304,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "fa12c4304d28171cc33dd6ad6a4dddf1cdb029e025321cb9f5d79d628a208f4a",
-      "prev_hash": "eed277e065a3fc3bc401ef57ef0c473c21aca25f3845d4d95d7102fee0dc96a8",
+      "hash": "247205f60be9003789d2be6b90fc621a83434b5b373cd92873e6e95db83e0b1d",
+      "prev_hash": "54127d9a8b2a7da64c34c1be9f50ffe5daca01058650b0a9fdb60196bf43e0b7",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2369,8 +2369,8 @@
       "note": "Checked against source records."
     },
     "integrity": {
-      "hash": "9130e3e5bc901e20db79c44f058c4c3a71e9c84c09dd112510e52483e9d46a62",
-      "prev_hash": "fa12c4304d28171cc33dd6ad6a4dddf1cdb029e025321cb9f5d79d628a208f4a",
+      "hash": "a5c02736c20b344d3d0c6c6c9e2394f91de1c6f6c13b15a3498aef324305e38e",
+      "prev_hash": "247205f60be9003789d2be6b90fc621a83434b5b373cd92873e6e95db83e0b1d",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null
@@ -2430,8 +2430,8 @@
     },
     "review": null,
     "integrity": {
-      "hash": "9c371a823fab3dbdf00723ffa787342021fd20a05a552c60b7fe39163cb86467",
-      "prev_hash": "9130e3e5bc901e20db79c44f058c4c3a71e9c84c09dd112510e52483e9d46a62",
+      "hash": "2355c522045792d5f699be0a3edd6e7959f0b838018cf01d6e3bc6610149c4af",
+      "prev_hash": "a5c02736c20b344d3d0c6c6c9e2394f91de1c6f6c13b15a3498aef324305e38e",
       "algorithm": "sha256",
       "version": 1,
       "corrects": null

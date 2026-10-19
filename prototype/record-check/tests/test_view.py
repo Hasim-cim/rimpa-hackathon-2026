@@ -154,3 +154,70 @@ def test_api_files_only_the_records_the_evidence_rests_on(tmp_path, monkeypatch)
     assert plain.json()["process"]["source_record_ids"] == ["REC-2025/008800", "REC-2026/004790"]
     main.conn.close()
 
+
+
+# ---------- summary: the headline and four checks every UI shows first ----------
+
+def test_summary_of_a_new_passport(env):
+    from recordcheck import view as vw
+    conn, pol = env
+    p, _, _ = _file(conn, pol)
+    s = vw.summary(conn, p.record.id, pol)
+    assert s.headline == "Ready to file: every statement is supported by authoritative records." and s.status == "ok"
+    assert [c.id for c in s.checks] == ["evidence", "references", "filing", "since"]
+    assert s.policy_line.startswith("Bar set by the information manager, policy v")
+    assert vw.summary(conn, "REC-9999/000001", pol) is None
+
+
+def test_summary_headlines_for_older_and_changed_records(env):
+    from recordcheck import view as vw
+    conn, pol = env
+    seed = next(p for p in db.get_passports(conn) if OLD_NOTICE in p.process.source_record_ids and p.business.tier == "T2")
+    s = vw.summary(conn, seed.record.id, pol)
+    assert s.headline == "Older record: summary only. T2, informs a decision." and s.status == "not_run"
+    recall.mark_superseded(conn, OLD_NOTICE, NEW_NOTICE, "reissued", by="IM")
+    s = vw.summary(conn, seed.record.id, pol)
+    assert s.headline.startswith("Changed since filing:") and OLD_NOTICE in s.headline and s.status == "problem"
+
+
+def test_api_summary_route_with_a_slash_in_the_id(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("RECORDCHECK_DB", str(tmp_path / "api.sqlite"))
+    monkeypatch.setenv("RECORDCHECK_POLICY", str(tmp_path / "policy.json"))
+    import api.main as main
+    main = importlib.reload(main)
+    client = TestClient(main.app)
+    r = client.get("/passport/REC-2026/002444/summary")
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert j["record_id"] == "REC-2026/002444" and len(j["checks"]) == 4 and j["headline"] and j["policy_line"]
+    assert client.get("/passport/REC-2026/002444").json()["record"]["id"] == "REC-2026/002444"   # JSON route intact
+    assert client.get("/passport/REC-9999/000001/summary").status_code == 404
+    main.conn.close()
+
+
+# ---------- one time convention (aware timestamps from the web beside naive seed passports) ----------
+
+def test_aware_timestamp_passport_files_and_recalls_beside_the_seed(env):
+    conn, pol = env
+    aware = AIEvent(id="EVT-AWARE", app_id="agency-assistant", user="A. Caseworker",
+                    created=datetime.fromisoformat("2026-10-19T03:00:00+11:00"), prompt="p", output="o",
+                    model_requested="northstar-7-2026-03-01", model_returned="northstar-7-2026-03-01", provider="x",
+                    decision_flag=True, source_record_ids=[OLD_NOTICE])
+    p = passport.build(aware, tier="T2", conn=conn, review=Review(reviewer="B. Team Leader", decision="approved",
+                                                                  reviewed_at=datetime.now(timezone.utc)))
+    assert p.record.created == datetime(2026, 10, 18, 16, 0) and p.record.created.tzinfo is None   # naive UTC
+    assert passport.verify_chain(conn).ok
+    by_record = recall.recall_by_record(conn, OLD_NOTICE)              # sorted by created: used to raise TypeError
+    assert by_record.items[0].record_id == p.record.id or p.record.id in [i.record_id for i in by_record.items]
+    assert p.record.id in [i.record_id for i in recall.recall(conn, "northstar-7-2026-03-01").items]
+
+
+def test_recall_tolerates_aware_times_already_stored(env):
+    conn, pol = env
+    seed = next(x for x in db.get_passports(conn) if OLD_NOTICE in x.process.source_record_ids and x.business.tier != "T0")
+    data = json.loads(conn.execute("SELECT payload FROM passports WHERE record_id=?", (seed.record.id,)).fetchone()["payload"])
+    data["record"]["created"] = data["record"]["created"] + "Z"        # as a pre-fix web filing would have stored it
+    conn.execute("UPDATE passports SET payload=? WHERE record_id=?", (json.dumps(data), seed.record.id))
+    assert recall.recall_by_record(conn, OLD_NOTICE).items                # sorts without raising

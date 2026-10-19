@@ -7,7 +7,7 @@ from datetime import date
 from typing import Literal
 
 from . import db
-from .models import Passport, RecallItem, RecallResult, SourceRecallResult, Tier
+from .models import Passport, RecallItem, RecallResult, SourceRecallResult, Tier, naive_utc
 
 TIER_RANK = {"T3": 3, "T2": 2, "T1": 1, "T0": 0}
 
@@ -33,13 +33,18 @@ def recall(conn: sqlite3.Connection, model_id: str) -> RecallResult:
     return RecallResult(model_id=model_id, entry=entry, counts=counts, items=items)
 
 
+def open_queue_ids(conn: sqlite3.Connection) -> set[str]:
+    """Record ids with an open entry in the review queue."""
+    return {r["record_id"] for r in conn.execute("SELECT record_id FROM review_queue WHERE status='open'")}
+
+
 def _items(conn: sqlite3.Connection, passports) -> tuple[list[RecallItem], dict[Tier, int]]:
     """Recall items, tier descending then date descending, with per-tier counts."""
-    queued = {r["record_id"] for r in conn.execute("SELECT record_id FROM review_queue WHERE status='open'")}
+    queued = open_queue_ids(conn)
     items = [RecallItem(record_id=p.record.id, tier=p.business.tier, function=p.business.function,
                         created=p.record.created, reviewer=p.review.reviewer if p.review else None,
                         queued=p.record.id in queued) for p in passports]
-    items.sort(key=lambda i: i.created, reverse=True)
+    items.sort(key=lambda i: naive_utc(i.created), reverse=True)   # older DBs hold some aware times
     items.sort(key=lambda i: TIER_RANK[i.tier], reverse=True)
     counts: dict[Tier, int] = {"T0": 0, "T1": 0, "T2": 0, "T3": 0}
     for i in items:

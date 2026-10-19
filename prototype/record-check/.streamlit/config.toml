@@ -1,0 +1,6 @@
+# The console's blue, so buttons, radios and tab underlines follow the colour rule (no red or green).
+[theme]
+primaryColor = "#1e3a8a"
+backgroundColor = "#f4f5f7"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#111827"
