@@ -135,6 +135,41 @@ def records() -> list[SourceRecord]:
         return db.get_records(conn)
 
 
+class LevelOut(BaseModel):
+    id: str                                  # strict | standard | light
+    name: str
+    use_for: str
+    summary: str                             # the bar in one plain sentence (policy.describe)
+    checks: list[str]
+    quality: dict
+
+
+class TypeLevel(BaseModel):
+    id: str
+    name: str
+    level: str                               # strict | standard | light | custom
+    summary: str
+
+
+class LevelsResponse(BaseModel):
+    levels: list[LevelOut]
+    document_types: list[TypeLevel]
+
+
+@app.get("/policy/levels", response_model=LevelsResponse)
+def policy_levels() -> LevelsResponse:
+    """The strictness picker: the three named bars, and which one each document type is at now ('custom' = none)."""
+    from recordcheck.models import DocumentType
+    pol = policymod.load()
+    levels = [LevelOut(id=lv.id, name=lv.name, use_for=lv.use_for, checks=list(lv.checks),
+                       quality=lv.quality.model_dump(),
+                       summary=policymod.describe(DocumentType(id=lv.id, name=lv.name, checks=lv.checks, quality=lv.quality)))
+              for lv in policymod.LEVELS.values()]
+    types = [TypeLevel(id=d.id, name=d.name, level=policymod.level_of(d) or "custom", summary=policymod.describe(d))
+             for d in pol.document_types]
+    return LevelsResponse(levels=levels, document_types=types)
+
+
 @app.get("/policy", response_model=Policy)
 def get_policy() -> Policy:
     return policymod.load()

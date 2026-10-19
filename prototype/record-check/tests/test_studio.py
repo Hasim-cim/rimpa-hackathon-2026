@@ -132,3 +132,12 @@ def test_naa_guidance_is_flagged_for_a_person_never_called_fabricated(client, mo
     assert gate["status"] != "ready"
     assert not any("not found" in x["text"] for x in gate["reasons"])          # never "possibly fabricated"
     assert any("could not be checked automatically" in x["text"] for x in gate["reasons"])
+
+
+def test_api_policy_levels_for_the_web_picker(client):
+    j = client.get("/policy/levels").json()
+    assert [lv["id"] for lv in j["levels"]] == ["strict", "standard", "light"]
+    assert all(lv["summary"] and lv["use_for"] for lv in j["levels"])
+    by_id = {t["id"]: t["level"] for t in j["document_types"]}
+    assert by_id["decision-letter"] == "strict" and by_id["briefing"] == "standard" and by_id["case-note"] == "light"
+    assert by_id["correspondence"] == "custom" and by_id["ministerial-brief"] == "standard"   # added in the fixture
