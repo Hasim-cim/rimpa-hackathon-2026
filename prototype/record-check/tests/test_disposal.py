@@ -79,3 +79,18 @@ def test_disposal_scrubs_the_underlying_ai_event(tmp_path, monkeypatch):
     ev = db.get_event(conn, event_id)
     assert ev.prompt == "[destroyed]" and ev.output == "[destroyed]" and ev.user == "[destroyed]"
     assert ev.model_returned  # kept: the register still needs to know which model it was
+
+
+def test_every_due_row_says_why(conn):
+    from datetime import date
+    from recordcheck import recall
+    items = disposal.due_for_disposal(conn, as_of=date(2026, 10, 17))
+    first = items[0]
+    late = (date(2026, 10, 17) - first.due).days
+    assert first.reason == f"T0 log, {late} day{'s' if late != 1 else ''} past retention" and not first.on_hold
+    on_day = disposal.due_for_disposal(conn, as_of=first.due)
+    assert next(i for i in on_day if i.record_id == first.record_id).reason == "T0 log, due today"
+    recall.mark_model(conn, first.model_returned, "faulty", date(2026, 3, 1), "bad dates", "IM")
+    held = next(i for i in disposal.due_for_disposal(conn, as_of=date(2026, 10, 17)) if i.record_id == first.record_id)
+    assert held.on_hold and held.reason == f"Held: model {first.model_returned} under recall"
+    assert held.hold_reason == disposal.HOLD_REASON                                 # kept for compatibility

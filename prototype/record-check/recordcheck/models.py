@@ -348,6 +348,7 @@ class DisposalItem(BaseModel):
     due: date                                # created + retention_days[tier]
     on_hold: bool = False                    # model under recall (faulty/withdrawn) → cannot be destroyed
     hold_reason: str = ""
+    reason: str = ""                         # every row: "T0 log, 12 days past retention" or "Held: model … under recall"
 
 
 class DisposalEntry(BaseModel):

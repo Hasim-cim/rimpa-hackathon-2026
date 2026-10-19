@@ -37,9 +37,12 @@ def due_for_disposal(conn: sqlite3.Connection, *, as_of: date | None = None,
         if due > as_of:
             continue
         on_hold = r["model_returned"] in held
+        late = (as_of - due).days
+        reason = (f"Held: model {r['model_returned']} under recall" if on_hold else
+                  f"{r['tier']} log, " + ("due today" if late == 0 else f"{late} day{'s' if late != 1 else ''} past retention"))
         items.append(DisposalItem(record_id=r["record_id"], tier=r["tier"], app_id=r["app_id"],
                                   model_returned=r["model_returned"], created=created, due=due,
-                                  on_hold=on_hold, hold_reason=HOLD_REASON if on_hold else ""))
+                                  on_hold=on_hold, hold_reason=HOLD_REASON if on_hold else "", reason=reason))
     items.sort(key=lambda i: (i.due, i.record_id))
     return items
 
