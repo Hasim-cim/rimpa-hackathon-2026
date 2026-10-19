@@ -581,6 +581,29 @@
         }
       }
     },
+    "/records/index": {
+      "get": {
+        "summary": "Records Index",
+        "description": "The Records list for filters and search, newest first: one row per passport with its status.",
+        "operationId": "records_index_records_index_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecordIndexRow"
+                  },
+                  "type": "array",
+                  "title": "Response Records Index Records Index Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/passports": {
       "get": {
         "summary": "Passports",
@@ -3520,6 +3543,110 @@
           "status"
         ],
         "title": "RecentPassport"
+      },
+      "RecordIndexRow": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "function": {
+            "type": "string",
+            "title": "Function"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "attention",
+                  "blocked"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "filed",
+              "needs_person",
+              "changed",
+              "disposed",
+              "log_only"
+            ],
+            "title": "Status"
+          },
+          "status_label": {
+            "type": "string",
+            "title": "Status Label"
+          },
+          "changed_since": {
+            "type": "boolean",
+            "title": "Changed Since"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "title",
+          "case_id",
+          "tier",
+          "function",
+          "created",
+          "gate",
+          "status",
+          "status_label",
+          "changed_since",
+          "document_type"
+        ],
+        "title": "RecordIndexRow",
+        "description": "One row of the Records list, for filters and search; statuses decided by the same rules as /view and /dashboard."
       },
       "RecordSummary": {
         "properties": {

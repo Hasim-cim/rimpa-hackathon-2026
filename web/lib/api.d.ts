@@ -330,6 +330,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/records/index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Records Index
+         * @description The Records list for filters and search, newest first: one row per passport with its status.
+         */
+        get: operations["records_index_records_index_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/passports": {
         parameters: {
             query?: never;
@@ -1497,6 +1517,43 @@ export interface components {
             status: string;
         };
         /**
+         * RecordIndexRow
+         * @description One row of the Records list, for filters and search; statuses decided by the same rules as /view and /dashboard.
+         */
+        RecordIndexRow: {
+            /** Record Id */
+            record_id: string;
+            /** Title */
+            title: string;
+            /** Case Id */
+            case_id: string | null;
+            /**
+             * Tier
+             * @enum {string}
+             */
+            tier: "T0" | "T1" | "T2" | "T3";
+            /** Function */
+            function: string;
+            /**
+             * Created
+             * Format: date-time
+             */
+            created: string;
+            /** Gate */
+            gate: ("ready" | "attention" | "blocked") | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "filed" | "needs_person" | "changed" | "disposed" | "log_only";
+            /** Status Label */
+            status_label: string;
+            /** Changed Since */
+            changed_since: boolean;
+            /** Document Type */
+            document_type: string | null;
+        };
+        /**
          * RecordSummary
          * @description What a person reads first: one headline, its status, the four grouped checks and the policy line.
          *     The wording is made here, once, for every UI.
@@ -2385,6 +2442,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChainReport"];
+                };
+            };
+        };
+    };
+    records_index_records_index_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordIndexRow"][];
                 };
             };
         };
