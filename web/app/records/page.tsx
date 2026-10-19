@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { api, CITE_COLOURS, GATE_COLOURS, GREY, Pill, STATUS_COLOURS, STATUS_MARKS, WEIGHT_COLOURS, type S } from "@/lib/ui";
+import { api, ATTN, CITE_COLOURS, GATE_COLOURS, GREY, OK, Pill, STATUS_COLOURS, STATUS_MARKS, WEIGHT_COLOURS, type S } from "@/lib/ui";
 import PageHead from "../page-head";
 
 const SUMMARY_ONLY = "Filed before checks were stored with the passport: summary counts only.";
@@ -64,6 +64,30 @@ function Detail({ check }: { check: S["CheckSummary"] }) {
             <tbody>{items.map((s, i) => (
               <tr key={i}><td>{s.record_id}</td><td>{s.title}</td><td>{s.system}</td><td>{s.status}</td>
                 <td>{s.counted ? "Yes" : `No: ${s.why_not}`}</td></tr>
+            ))}</tbody>
+          </table>
+        )}</>;
+    }
+    case "bias": {
+      // How broad and how current the evidence is. Never claims the output is unbiased (docs/decisions.md, 19 Oct).
+      const src = (d.sources ?? []) as Item[];
+      const systems = (d.systems ?? []) as string[];
+      const stmts = (d.statements ?? []) as { claim_id: string; text: string; sources: string[]; narrow: boolean }[];
+      return <>{d.method ? <p className="muted">What this checks: {String(d.method)}.</p> : null}{note}
+        {d.suggestion ? <p><b>Suggestion.</b> {String(d.suggestion)}</p> : null}
+        {systems.length > 0 && <KV k="Systems relied on">{systems.join(", ")}</KV>}
+        {stmts.map((st) => (
+          <div className="sentence" key={st.claim_id}>
+            <div className="top"><Pill text={st.narrow ? "! Narrow" : "✓ Broad"} colours={st.narrow ? ATTN : OK} /><span>{st.text}</span></div>
+            <span className="why">Rests on {st.sources.length ? st.sources.join(", ") : "no record"}</span>
+          </div>
+        ))}
+        {src.length > 0 && (
+          <table>
+            <thead><tr><th>Record</th><th>Title</th><th>System</th><th>Status</th><th>Counts</th></tr></thead>
+            <tbody>{src.map((s, i) => (
+              <tr key={i}><td>{s.record_id}</td><td>{s.title}</td><td>{s.system}</td><td>{s.status}</td>
+                <td>{s.counts ? "Yes" : `No${s.why ? `: ${s.why}` : ""}`}</td></tr>
             ))}</tbody>
           </table>
         )}</>;

@@ -20,6 +20,13 @@ function Tile({ k }: { k: S["KpiTile"] }) {
   );
 }
 
+// B2 additions (optional until the engine ships them; each panel renders only when its field is present).
+type Week = { week_start: string; filed: number; approved: number };
+type GateRow = { document_type: string; name: string; ready: number; attention: number; blocked: number; not_recorded: number };
+type ModelRow = { model_id: string; provider: string; status: string; filed: number; in_recall_queue: number };
+type B2 = { filed_by_week?: Week[]; gate_by_type?: GateRow[]; by_model?: ModelRow[];
+  bias?: { ok: number; attention: number; not_run: number; label?: string }; queue?: { open: number; closed: number } };
+
 export default function Dashboard() {
   const [rep, setRep] = useState<S["DashboardReport"] | null>(null);
   const [error, setError] = useState("");
@@ -28,6 +35,8 @@ export default function Dashboard() {
   if (error) return <p className="error" role="alert">{error}</p>;
   if (!rep) return <p className="muted">Loading...</p>;
   const flagged = rep.model_signals.filter((s) => s.suggested);
+  const b2 = rep as S["DashboardReport"] & B2;
+  const maxWeek = Math.max(1, ...(b2.filed_by_week ?? []).map((w) => w.filed));  // bar scale only, not a figure
 
   return (
     <>
@@ -41,6 +50,68 @@ export default function Dashboard() {
       ))}
       {flagged.length > 0 && <p className="muted">Use <Link href="/recall">Recall</Link> to act on this signal.</p>}
 
+
+      {(b2.bias || b2.queue || b2.filed_by_week?.length) ? (
+        <div className="cards">
+          {b2.bias && (
+            <div className="panel">
+              <h3>Bias check</h3>
+              <p className="muted">{b2.bias.label ?? "How broad and how current the evidence is behind each filed output."}</p>
+              <div className="counts">
+                <div><b>{b2.bias.ok}</b><Pill text="✓ Broad evidence" colours={OK} /></div>
+                <div><b>{b2.bias.attention}</b><Pill text="! Narrow evidence" colours={ATTN} /></div>
+                <div><b>{b2.bias.not_run}</b><Pill text="– Not run" colours={GREY} /></div>
+              </div>
+            </div>
+          )}
+          {b2.queue && (
+            <div className="panel">
+              <h3>Review queue</h3>
+              <div className="counts"><div><b>{b2.queue.open}</b>Open</div><div><b>{b2.queue.closed}</b>Closed</div></div>
+              <p className="muted"><Link href="/recall">Open Recall</Link> to queue or review.</p>
+            </div>
+          )}
+          {b2.filed_by_week?.length ? (
+            <div className="panel">
+              <h3>Filed per week</h3>
+              {b2.filed_by_week.map((w) => (
+                <div key={w.week_start} className="bar-row">
+                  <span className="muted">{w.week_start}</span>
+                  <span className="bar" style={{ width: `${(w.filed / maxWeek) * 100}%` }} aria-hidden="true" />
+                  <span>{w.filed} filed, {w.approved} approved</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {(b2.gate_by_type?.length || b2.by_model?.length) ? (
+        <div className="cards">
+          {b2.gate_by_type?.length ? (
+            <div className="panel">
+              <h3>Filing gate by document type</h3>
+              <table>
+                <thead><tr><th>Document type</th><th>Ready</th><th>Needs review</th><th>Blocked</th><th>Not recorded</th></tr></thead>
+                <tbody>{b2.gate_by_type.map((g) => (
+                  <tr key={g.document_type}><td>{g.name}</td><td>{g.ready}</td><td>{g.attention}</td><td>{g.blocked}</td><td>{g.not_recorded}</td></tr>
+                ))}</tbody>
+              </table>
+            </div>
+          ) : null}
+          {b2.by_model?.length ? (
+            <div className="panel">
+              <h3>By model</h3>
+              <table>
+                <thead><tr><th>Model</th><th>Provider</th><th>Status</th><th>Filed</th><th>In recall queue</th></tr></thead>
+                <tbody>{b2.by_model.map((m) => (
+                  <tr key={m.model_id}><td>{m.model_id}</td><td>{m.provider}</td><td>{m.status}</td><td>{m.filed}</td><td>{m.in_recall_queue}</td></tr>
+                ))}</tbody>
+              </table>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <div className="cards">
         <div className="panel">
           <h3>Last 10 filed</h3>
