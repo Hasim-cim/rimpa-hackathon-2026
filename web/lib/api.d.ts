@@ -72,6 +72,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/policy/levels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Policy Levels
+         * @description The strictness picker: the three named bars, and which one each document type is at now ('custom' = none).
+         */
+        get: operations["policy_levels_policy_levels_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/policy": {
         parameters: {
             query?: never;
@@ -948,6 +968,30 @@ export interface components {
              */
             not_counted_label: string;
         };
+        /** LevelOut */
+        LevelOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Use For */
+            use_for: string;
+            /** Summary */
+            summary: string;
+            /** Checks */
+            checks: string[];
+            /** Quality */
+            quality: {
+                [key: string]: unknown;
+            };
+        };
+        /** LevelsResponse */
+        LevelsResponse: {
+            /** Levels */
+            levels: components["schemas"]["LevelOut"][];
+            /** Document Types */
+            document_types: components["schemas"]["TypeLevel"][];
+        };
         /** Mark */
         Mark: {
             /**
@@ -1664,6 +1708,17 @@ export interface components {
              */
             summary: string;
         };
+        /** TypeLevel */
+        TypeLevel: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Level */
+            level: string;
+            /** Summary */
+            summary: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1803,6 +1858,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceRecord"][];
+                };
+            };
+        };
+    };
+    policy_levels_policy_levels_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LevelsResponse"];
                 };
             };
         };

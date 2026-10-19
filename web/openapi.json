@@ -107,6 +107,25 @@
         }
       }
     },
+    "/policy/levels": {
+      "get": {
+        "summary": "Policy Levels",
+        "description": "The strictness picker: the three named bars, and which one each document type is at now ('custom' = none).",
+        "operationId": "policy_levels_policy_levels_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LevelsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/policy": {
       "get": {
         "summary": "Get Policy",
@@ -2121,6 +2140,72 @@
         ],
         "title": "KpiTile"
       },
+      "LevelOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "use_for": {
+            "type": "string",
+            "title": "Use For"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "checks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "quality": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Quality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "use_for",
+          "summary",
+          "checks",
+          "quality"
+        ],
+        "title": "LevelOut"
+      },
+      "LevelsResponse": {
+        "properties": {
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/LevelOut"
+            },
+            "type": "array",
+            "title": "Levels"
+          },
+          "document_types": {
+            "items": {
+              "$ref": "#/components/schemas/TypeLevel"
+            },
+            "type": "array",
+            "title": "Document Types"
+          }
+        },
+        "type": "object",
+        "required": [
+          "levels",
+          "document_types"
+        ],
+        "title": "LevelsResponse"
+      },
       "Mark": {
         "properties": {
           "status": {
@@ -3998,6 +4083,34 @@
           "name"
         ],
         "title": "ToolCall"
+      },
+      "TypeLevel": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "level",
+          "summary"
+        ],
+        "title": "TypeLevel"
       },
       "ValidationError": {
         "properties": {

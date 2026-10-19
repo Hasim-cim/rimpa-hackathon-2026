@@ -44,12 +44,17 @@ export default function Setup() {
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [levels, setLevels] = useState<S["LevelsResponse"] | null>(null);
+  const [picked, setPicked] = useState<Record<string, string>>({});  // strictness chosen in this draft, by type id
 
   function load(p: Policy) {
     setSaved(p); setDraft(structuredClone(p)); setOrg(p.organisation); setGuidance((p.guidance ?? []).join("\n"));
   }
 
+  const loadLevels = () => api<S["LevelsResponse"]>("policy/levels").then((l) => { setLevels(l); setPicked({}); }).catch(() => {});
+
   useEffect(() => {
+    loadLevels();
     Promise.all([api<Policy>("policy"), api<S["SectorPreset"][]>("presets"), api<S["SourceRecord"][]>("records")])
       .then(([p, ps, recs]) => {
         load(p); setPresets(ps);
@@ -66,6 +71,14 @@ export default function Setup() {
   const editBar = (id: string, fn: (q: S["QualityBar"]) => void) => editType(id, (t) => { t.quality = { ...BAR_DEFAULT, ...t.quality }; fn(t.quality); });
   const presetName = (id: string) => presets.find((p) => p.id === id)?.name ?? id;
   const tr = draft.tier_rules;
+  const levelOf = (id: string) => picked[id] ?? levels?.document_types.find((x) => x.id === id)?.level ?? "standard";
+  const levelDef = (id: string) => levels?.levels.find((l) => l.id === id);
+  function setLevel(typeId: string, id: string) {
+    const lv = levelDef(id);
+    if (!lv) return;
+    editType(typeId, (t) => { t.quality = lv.quality as S["QualityBar"]; t.checks = lv.checks as DocType["checks"]; });
+    setPicked((c) => ({ ...c, [typeId]: id }));
+  }
 
   async function run(job: () => Promise<void>) {
     setBusy(true); setError(""); setMsg("");
@@ -74,7 +87,7 @@ export default function Setup() {
   const who = by.trim() || DEFAULT_BY;
   const fromPreset = (id: string, name: string, after: (p: Policy) => string) => run(async () => {
     const p = await api<Policy>("policy/preset", { json: { preset_id: id, organisation: name, by: who } });
-    load(p); setReplaceOk(false); setResetOk(false); setMsg(after(p));
+    load(p); setReplaceOk(false); setResetOk(false); setMsg(after(p)); await loadLevels();
   });
 
   const suggest = () => run(async () => {
@@ -87,14 +100,16 @@ export default function Setup() {
     body.organisation = org.trim() || body.organisation;
     body.guidance = guidance.split("\n").map((x) => x.trim()).filter(Boolean);
     const p = await api<Policy>("policy", { method: "PUT", json: { policy: body, by: who } });
-    load(p); setMsg(`Policy v${p.version} saved`);
+    load(p); setMsg(`Policy v${p.version} saved`); await loadLevels();
   });
 
   function addType() {
     const id = newName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     if (!id) return setAddWarn("Give the document type a name.");
     if (draft!.document_types.some((x) => x.id === id)) return setAddWarn(`A type with id ${id} already exists.`);
-    edit((d) => { d.document_types.push({ id, name: newName.trim(), default_tier: newTier, description: "", checks: ["citations", "evidence"], quality: { ...BAR_DEFAULT } }); });
+    const std = levelDef("standard");
+    edit((d) => { d.document_types.push({ id, name: newName.trim(), default_tier: newTier, description: "", checks: (std?.checks ?? ["citations", "evidence"]) as DocType["checks"], quality: (std?.quality as S["QualityBar"] | undefined) ?? { ...BAR_DEFAULT } }); });
+    setPicked((c) => ({ ...c, [id]: "standard" }));
     setNewName(""); setNewTier("T1"); setAddWarn("");
   }
 
@@ -126,17 +141,30 @@ export default function Setup() {
       </button>
 
       <h2>2. Your document types</h2>
-      <p className="muted">Pick the default tier for each type. Exact limits for what blocks filing are under Advanced.</p>
-      {draft.document_types.map((t) => (
-        <div key={t.id} style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "8px 0" }}>
-          <b style={{ flex: "1 1 200px" }}>{t.name}</b>
-          <select aria-label={`Default tier for ${t.name}`} style={{ width: 220 }} value={t.default_tier} onChange={(e) => editType(t.id, (x) => { x.default_tier = e.target.value as Tier; })}>
-            {TIERS.map((x) => <option key={x} value={x}>{x}</option>)}
-          </select>
-          <button style={btn} disabled={draft.document_types.length <= 1}
-            onClick={() => edit((d) => { d.document_types = d.document_types.filter((x) => x.id !== t.id); })}>Remove</button>
-        </div>
-      ))}
+      <p className="muted">Pick how strict each type is, and its default tier. Exact limits for what blocks filing are under Advanced.</p>
+      {draft.document_types.map((t) => {
+        const cur = levelOf(t.id);
+        const lv = levelDef(cur);
+        const summary = lv?.summary ?? levels?.document_types.find((x) => x.id === t.id)?.summary;
+        return (
+          <div key={t.id} style={{ border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "8px 0" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <b style={{ flex: "1 1 200px" }}>{t.name}</b>
+              <select aria-label={`Strictness for ${t.name}`} style={{ width: 180 }} value={cur} onChange={(e) => setLevel(t.id, e.target.value)} disabled={!levels}>
+                {levels?.levels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                {cur === "custom" && <option value="custom" disabled>Custom</option>}
+              </select>
+              <select aria-label={`Default tier for ${t.name}`} style={{ width: 120 }} value={t.default_tier} onChange={(e) => editType(t.id, (x) => { x.default_tier = e.target.value as Tier; })}>
+                {TIERS.map((x) => <option key={x} value={x}>{x}</option>)}
+              </select>
+              <button style={btn} disabled={draft.document_types.length <= 1}
+                onClick={() => edit((d) => { d.document_types = d.document_types.filter((x) => x.id !== t.id); })}>Remove</button>
+            </div>
+            {summary && <p style={{ margin: "6px 0 0" }}>{summary}</p>}
+            {lv && <p className="muted" style={{ margin: "2px 0 0" }}>{lv.use_for}</p>}
+          </div>
+        );
+      })}
       <form onSubmit={(e) => { e.preventDefault(); addType(); }} style={{ border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", padding: "8px 14px", margin: "12px 0" }}>
         <b>Add a document type</b>
         <div style={row}>
@@ -160,7 +188,6 @@ export default function Setup() {
       <button className="run" onClick={save} disabled={busy}>Save policy</button>
       {error && <p className="error" role="alert">{error}</p>}
       {msg && <p role="status" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6 }}>{msg}</p>}
-@@7@@
       {SHOW_ALL && (
         <details className="card-d" style={{ marginTop: 24 }}>
           <summary>Advanced</summary>
