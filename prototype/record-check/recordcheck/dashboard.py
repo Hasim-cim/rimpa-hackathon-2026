@@ -74,16 +74,10 @@ def _rests_on(ids: list[str], recs: dict[str, SourceRecord], policy: Policy, doc
 
 
 def _narrow_evidence(p: Passport, checks, recs: dict[str, SourceRecord], policy: Policy) -> bool:
-    doc_type = p.business.document_type
-    if checks is not None and checks.assessment is not None:
-        for v in checks.assessment.verdicts:
-            claim = next((c for c in checks.assessment.claims if c.id == v.claim_id), None)
-            if claim is not None and claim.author != "ai":
-                continue
-            if _rests_on([l.record_id for l in v.links], recs, policy, doc_type):
-                return True
-        return False
-    return breadth.rests_on(p.process.source_record_ids, recs, policy, doc_type, strict=True)   # declared sources
+    """Narrow evidence: exactly the passport's Bias check at attention (view._bias, rule in breadth.py), every statement
+    judged whoever wrote it, so the tile, the bias series and the passport never disagree."""
+    from . import view
+    return view._bias_status(p, checks, recs, policy) == "attention"
 
 
 def _status(p: Passport, queued: set[str]) -> str:
@@ -226,14 +220,14 @@ def report(conn: sqlite3.Connection, policy: Policy) -> DashboardReport:
     by_function = [FunctionRow(function=f, total=r[0], filed_approved=r[1], needs_review=r[2], narrow_evidence=r[3],
                                on_suggested_model=r[4]) for f, r in sorted(rows.items())]
 
-    extra = _series(conn, passports, checks, approved, queued, policy)
+    extra = _series(conn, passports, checks, approved, queued, policy, recs)
     return DashboardReport(kpis=kpis, model_signals=signals, recent=recent, recent_supported=statements,
                            authorship=authorship, rot=rot, disposal_due=disposal_due, by_function=by_function,
                            generated_at=datetime.now(timezone.utc), policy_version=policy.version, **extra)
 
 
 def _series(conn, passports: list[Passport], checks: dict, approved: list[bool], queued: set[str],
-            policy: Policy) -> dict:
+            policy: Policy, recs: dict) -> dict:
     """Series for charts, counted here so the web does no maths. Plain labels."""
     from datetime import date, timedelta
     from . import view
@@ -264,7 +258,7 @@ def _series(conn, passports: list[Passport], checks: dict, approved: list[bool],
                        for m in models]
     bias = {"ok": 0, "attention": 0, "not_run": 0}
     for p in passports:
-        bias[view._bias(conn, p, checks.get(p.record.id), policy).status] += 1
+        bias[view._bias_status(p, checks.get(p.record.id), recs, policy)] += 1
     out["bias"] = BiasCounts(**bias, label="Bias check: how broad and how current each passport's evidence is "
                                            "(ok: two or more current authoritative sources across two or more systems)")
     rows = conn.execute("SELECT status, COUNT(*) AS n FROM review_queue GROUP BY status").fetchall()

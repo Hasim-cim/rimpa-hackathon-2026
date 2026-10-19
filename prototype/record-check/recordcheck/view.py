@@ -93,12 +93,17 @@ def _sources(p: Passport, ch: PassportChecks | None) -> CheckSummary:
                         details={"items": [s.model_dump() for s in ch.sources]})
 
 
-def _bias(conn, p: Passport, ch: PassportChecks | None, policy: Policy | None) -> CheckSummary:
+def _bias_status(p: Passport, ch: PassportChecks | None, recs: dict, policy: Policy | None) -> str:
+    """The Bias check's status alone, from records already loaded (the dashboard counts it for every passport)."""
+    return _bias(None, p, ch, policy, recs).status
+
+
+def _bias(conn, p: Passport, ch: PassportChecks | None, policy: Policy | None, recs: dict | None = None) -> CheckSummary:
     """Bias check: how broad and how current the evidence is. OK when every statement (whoever wrote it) rests on two or more
     current authoritative sources across two or more systems; attention when any rests on one source, one system, or a
     record that cannot count. Same rule as the dashboard's narrow-evidence signal (breadth.py). Never says 'unbiased'."""
     from . import breadth
-    recs = {r.id: r for r in db.get_records(conn)}
+    recs = recs if recs is not None else {r.id: r for r in db.get_records(conn)}
     dt = p.business.document_type
     statements: list[dict] = []
     if ch is not None and ch.assessment is not None:

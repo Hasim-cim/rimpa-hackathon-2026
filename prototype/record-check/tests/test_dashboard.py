@@ -208,3 +208,4 @@ def test_series_follow_filing_queueing_and_recall(conn, pol):
     assert (case_note.name, case_note.ready) == ("Case note", 1)
     assert next(m for m in rep.by_model if m.model_id == "m-new").status == "not registered"
     assert rep.filed_by_week[-1].filed >= 1 and rep.queue.open == 1
+    assert rep.bias.attention == _kpi(rep, "narrow_evidence").count == 8   # the human-written note counts in both
