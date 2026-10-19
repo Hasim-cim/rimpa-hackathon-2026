@@ -237,3 +237,14 @@ def test_overdue_changes_no_verdict_and_shows_in_reliability(conn):
     assert (o.record_id, o.outputs) == (FILE_NOTE, 10) and "2026-09-30" in o.why
     assert sources.reliability(conn, as_of=date(2026, 9, 1)).overdue == []
 
+
+
+def test_g1_pairs_each_amount_with_its_own_field_in_a_two_amount_sentence(conn):
+    """The deployer's smoke test (19 Oct): '$4,860' was compared with rent_weekly because the sentence also says rent."""
+    text = "Weekly rent of $380 leaves limited capacity to repay the $4,860 debt."
+    assert _verdict(conn, text, "2026/0412").weight == "supported"                 # before: both amounts on file
+    recall.mark_superseded(conn, OLD_NOTICE, NEW_NOTICE, "Amount recalculated", "I. Manager")
+    v = _verdict(conn, text, "2026/0412")
+    assert v.weight == "contradicted"
+    assert v.reason == f"The claim says $4,860, but {NEW_NOTICE} records debt_amount = 3,890."   # the debt field, not rent
+    assert "rent_weekly" not in v.reason

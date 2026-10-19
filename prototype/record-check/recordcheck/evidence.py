@@ -187,6 +187,27 @@ def _topic_fields(text: str, rec: SourceRecord) -> list[str]:
     return [k for k in rec.fields if k in named]
 
 
+def _field_for_amount(text: str, amt: int, rec: SourceRecord) -> str | None:
+    """The record field this amount is about: the topic word nearest to the amount in the sentence ("$380 rent" →
+    rent_weekly; "the $4,860 debt" → debt_amount). None when no topic word in the sentence names one of its fields."""
+    spans = [m.span() for m in _MONEY.finditer(text)
+             if int(round(float(m.group(1).replace(",", "")))) == amt]
+    if not spans:
+        return None
+    best: tuple[int, str] | None = None
+    for m in re.finditer(r"[a-z_]+", text.lower()):
+        w = m.group(0)
+        fields = {FIELD_TOPICS[w]} if w in FIELD_TOPICS else set()
+        fields |= {k for k in rec.fields if w in k.split("_") and w not in ("amount", "weekly", "id")}
+        fields &= set(rec.fields)
+        if not fields:
+            continue
+        dist = min(abs(m.start() - s) if m.start() >= e else abs(s - m.end()) for s, e in spans)
+        if best is None or dist < best[0]:
+            best = (dist, sorted(fields)[0])
+    return best[1] if best else None
+
+
 def facts_check(claim: Claim, good: list[SourceRecord], other: list[SourceRecord]) -> tuple[str, str] | None:
     """(weight, reason) when a number, count or date in the sentence is not in a current authoritative record it links
     to; None when every fact is backed (or the sentence states none). Contradicted only on a clear field clash."""
@@ -196,10 +217,11 @@ def facts_check(claim: Claim, good: list[SourceRecord], other: list[SourceRecord
         if any(amt in _record_amounts(r) for r in good):
             continue
         for r in good:
-            for k in _topic_fields(text, r):
-                v = r.fields.get(k)
-                if isinstance(v, (int, float)) and not isinstance(v, bool) and int(round(v)) != amt:
-                    return "contradicted", f"The claim says ${amt:,}, but {r.id} records {k} = {int(round(v)):,}."
+            k = _field_for_amount(text, amt, r)       # pair the amount with the field it is about, not any field named
+            v = r.fields.get(k) if k else None
+            if (isinstance(v, (int, float)) and not isinstance(v, bool) and int(round(v)) != amt
+                    and int(round(v)) not in _amounts(text)):   # a field matched by another amount here is not a clash
+                return "contradicted", f"The claim says ${amt:,}, but {r.id} records {k} = {int(round(v)):,}."
         held = [r for r in other if amt in _record_amounts(r)]
         if held:
             return "weak", (f"${amt:,} rests only on records that cannot count as evidence: "
