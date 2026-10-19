@@ -131,9 +131,10 @@ def lookup(c: Citation, *, online: bool, conn=None) -> CitationResult:
         return judge(c, name, fx, "fixture")
     key = f"frl:{name.casefold()}"
     if conn is not None:
-        row = conn.execute("SELECT payload FROM citation_cache WHERE key=?", (key,)).fetchone()
-        if row:
-            return judge(c, name, json.loads(row["payload"]), "frl")
+        row = conn.execute("SELECT payload, fetched_at FROM citation_cache WHERE key=?", (key,)).fetchone()
+        if row:   # an earlier live answer: stamped with when it was fetched
+            return judge(c, name, json.loads(row["payload"]), "frl").model_copy(
+                update={"checked_at": datetime.fromisoformat(row["fetched_at"])})
     if not online:
         return CitationResult(citation=c, status="not_checked", source="none",
                               note="Not in the offline register cache and online lookup is off; a person should confirm.")
@@ -146,4 +147,4 @@ def lookup(c: Citation, *, online: bool, conn=None) -> CitationResult:
         db.upsert(conn, "citation_cache", "key",
                   dict(key=key, payload=json.dumps(answer), fetched_at=datetime.now(timezone.utc).isoformat()))
         conn.commit()
-    return judge(c, name, answer, "frl")
+    return judge(c, name, answer, "frl").model_copy(update={"checked_at": datetime.now(timezone.utc)})

@@ -299,12 +299,25 @@ def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection 
             break
         if best is None or (res.score or 0) > (best.score or 0):
             best = res
+    if best is not None:
+        best = best.model_copy(update={"checked_at": datetime.now(timezone.utc)})   # a live answer, stamped
     if best is None or (errors and best.status == "not_found"):
         return CitationResult(citation=c, status="not_checked", source="none",
                               note="Lookup failed (" + ", ".join(errors) + "). Flagged for a person to confirm.")
     if conn is not None:
         _cache_put(conn, key, best)
     return best
+
+
+def provenance(r: CitationResult) -> str:
+    """Where and when a result came from, for every row: 'Crossref, live, 19 Oct 14:20' or 'offline copy'."""
+    names = {"crossref": "Crossref", "openalex": "OpenAlex", "frl": "Federal Register of Legislation",
+             "fixture": "offline copy", "none": "not looked up"}
+    where = names.get(r.source, r.source)
+    if r.checked_at is None:
+        return where if r.source in ("fixture", "none") else f"{where}, cached"
+    t = r.checked_at if r.checked_at.tzinfo else r.checked_at.replace(tzinfo=timezone.utc)
+    return f"{where}, live, {t.astimezone().strftime('%d %b %H:%M')}"
 
 
 def recheck(results: list[CitationResult], *, conn: sqlite3.Connection | None = None) -> list[CitationResult]:

@@ -137,3 +137,15 @@ def test_stage_labels_follow_the_register_result():
     assert cit.match_stage(other)[1] == "listed with another status; a person confirms"
     assert cit.match_stage(none)[1] == "no Commonwealth Act of this name; a person confirms"
 
+
+
+def test_every_result_says_where_and_when_it_was_checked(conn, monkeypatch):
+    offline = cit.lookup(ref("Social Security Act 1991 (Cth)"), online=False)
+    assert offline.checked_at is None and cit.provenance(offline) == "offline copy"
+    monkeypatch.setattr(frl.httpx, "get", _register([[{"id": "C2004A00538", "name": "Public Service Act 1999",
+                                                       "status": "InForce", "year": 1999}]], []))
+    monkeypatch.setattr(frl, "_load_fixtures", lambda: {})
+    live = cit.lookup(ref("Public Service Act 1999 (Cth)"), online=True, conn=conn)
+    assert live.checked_at is not None and cit.provenance(live).startswith("Federal Register of Legislation, live, ")
+    cached = cit.lookup(ref("Public Service Act 1999 (Cth)"), online=False, conn=conn)
+    assert cached.checked_at is not None and ", live, " in cit.provenance(cached)   # stamped with the original fetch

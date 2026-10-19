@@ -100,6 +100,7 @@ class CitationResult(BaseModel):
     matched_venue: str | None = None
     score: float | None = None
     note: str = ""
+    checked_at: datetime | None = None       # when a live lookup answered (UTC); None = offline copy or not looked up
 
 
 # ---------- AI events and passports ----------
