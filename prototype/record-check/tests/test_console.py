@@ -271,11 +271,11 @@ def test_stage_path_v2_passport_first(at_all, db_path):
     # 4. one headline, then its checks: no "Not run" rows
     assert any("<b>Ready to file:</b>" in m.value and "every statement is supported by authoritative records" in m.value
                for m in at.markdown)
-    assert row(at, "Evidence").startswith(":blue") and "4 of 4 statements supported by authoritative records" in row(at, "Evidence")
-    assert row(at, "Sources").startswith(":blue") and "All 4 sources" in row(at, "Sources")
-    assert row(at, "Filing gate").startswith(":blue") and "Ready to file" in row(at, "Filing gate")
+    assert row(at, "Evidence").startswith(":green") and "4 of 4 statements supported by authoritative records" in row(at, "Evidence")
+    assert row(at, "Sources").startswith(":green") and "All 4 sources" in row(at, "Sources")
+    assert row(at, "Filing gate").startswith(":green") and "Ready to file" in row(at, "Filing gate")
     assert "Approved by B. Team Leader, not the author" in row(at, "Review")
-    assert row(at, "Since filing").startswith(":blue") and "Nothing has changed since filing" in row(at, "Since filing")
+    assert row(at, "Since filing").startswith(":green") and "Nothing has changed since filing" in row(at, "Since filing")
     assert row(at, "Citations").startswith(":gray")          # the note has no references
 
     # 5. Information manager -> Sources: tile 30 of 30 -> supersede the debt notice -> 17 of 30
@@ -298,7 +298,7 @@ def test_stage_path_v2_passport_first(at_all, db_path):
     at.run()
     assert not at.exception
     since = row(at, "Since filing")
-    assert since.startswith(":orange-background") and "REC-2026/004790" in since and "REC-2026/004912" in since
+    assert since.startswith(":red-background") and "REC-2026/004790" in since and "REC-2026/004912" in since
     assert any("Changed since filing" in m.value for m in at.markdown)
 
 

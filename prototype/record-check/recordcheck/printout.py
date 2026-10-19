@@ -32,7 +32,7 @@ class _Doc(FPDF):
         self.set_y(-12)
         self.set_font("Helvetica", "I", 7)
         self.set_text_color(110)
-        self.cell(0, 5, _t("Record Check prototype. Example data: every case, person and record is invented."),
+        self.cell(0, 5, _t("Record Passport (Record Check prototype). Example data: every case, person and record is invented."),
                   align="C")
 
 
@@ -44,7 +44,7 @@ def passport_pdf(p: Passport, chain: ChainReport | None = None) -> bytes:
     width = pdf.w - pdf.l_margin - pdf.r_margin
 
     pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 8, _t("Record passport"), new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 8, _t("Record Passport"), new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(80)
     pdf.multi_cell(0, 5, _t(f"{p.record.title}  |  {p.record.id}"), new_x="LMARGIN", new_y="NEXT")

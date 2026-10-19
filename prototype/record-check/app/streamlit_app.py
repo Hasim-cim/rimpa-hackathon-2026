@@ -1,4 +1,4 @@
-"""Record Check console. Run: uv run streamlit run app/streamlit_app.py"""
+"""Record Passport console (the Record Check engine). Run: uv run streamlit run app/streamlit_app.py"""
 
 from __future__ import annotations
 
@@ -28,15 +28,18 @@ FALLBACK_MODEL = "northstar-8-2026-09-15"
 FALLBACK_PROVIDER = "Northstar AI (fictional vendor)"
 
 # status colours: blue = supported / in order, orange = needs a person, solid orange = blocked or changed, grey = not run
-BLUE, ORANGE, SOLID, GREY = ("#d6e6fb", "#1e3a8a"), ("#fde8b8", "#7a4a00"), ("#c2410c", "#ffffff"), ("#e5e7eb", "#374151")
-CITE_COLOURS = {"found": BLUE, "mismatch": ORANGE, "not_found": SOLID, "not_checked": ORANGE}
-WEIGHT_COLOURS = {"supported": BLUE, "weak": ORANGE, "unsupported": ORANGE, "contradicted": SOLID}
+# statuses (U2, mirrors web/lib/ui.tsx): green = supported, ready, in order; amber = needs a person; red = blocked,
+# contradicted, not found (solid red for Blocked); grey = not run. Blue is neutral (tiers), never a status.
+BLUE, ORANGE, GREY = ("#d6e6fb", "#1e3a8a"), ("#fde8b8", "#7a4a00"), ("#e5e7eb", "#374151")
+GREEN, RED, SOLID = ("#d1f0dc", "#14532d"), ("#f8d0d0", "#7f1d1d"), ("#b91c1c", "#ffffff")
+CITE_COLOURS = {"found": GREEN, "mismatch": ORANGE, "not_found": RED, "not_checked": ORANGE}
+WEIGHT_COLOURS = {"supported": GREEN, "weak": ORANGE, "unsupported": ORANGE, "contradicted": RED}
 DISPOSAL_COLOURS = {"due": ORANGE, "on hold": GREY}
-ROT_COLOURS = {"redundant": BLUE, "obsolete": ORANGE, "trivial": GREY, "draft": SOLID}
+ROT_COLOURS = {"redundant": ORANGE, "obsolete": ORANGE, "trivial": GREY, "draft": RED}
 ROT_NAMES = {"redundant": "Redundant", "obsolete": "Obsolete", "trivial": "Trivial", "draft": "Draft"}
 OVERDUE_COLOURS = {"overdue": ("#ede9fe", "#4c1d95")}   # not ROT: an overdue record still counts as evidence
 DEMO_OLD, DEMO_NEW = "REC-2026/004790", "REC-2026/004912"   # debt notice and its reissue (example data)
-TIER_COLOURS = {"T0": GREY, "T1": BLUE, "T2": ORANGE, "T3": SOLID}
+TIER_COLOURS = {"T0": GREY, "T1": BLUE, "T2": BLUE, "T3": BLUE}   # a tier is not good or bad: neutral
 
 CSS = """
 <style>
@@ -117,7 +120,7 @@ def get_rules():
     return get_policy().tier_rules
 
 
-GATE_COLOURS = {"ready": (*BLUE, "Ready to file"), "attention": (*ORANGE, "Needs review"), "blocked": (*SOLID, "Blocked")}
+GATE_COLOURS = {"ready": (*GREEN, "Ready to file"), "attention": (*ORANGE, "Needs review"), "blocked": (*SOLID, "Blocked")}
 TIERS = ["T0", "T1", "T2", "T3"]
 DOC_TYPE_HINTS = (("summary", "decision-letter"), ("briefing", "briefing"), ("agent-note", "case-note"), ("eligibility", "case-note"))
 
@@ -497,10 +500,10 @@ TIER_WORDS = {"T0": "T0, a transitory log", "T1": "T1, a retained output", "T2":
 WEIGHT_WORDS = {"supported": "Supported", "weak": "Weak", "unsupported": "Unsupported", "contradicted": "Contradicted"}
 CITE_WORDS = {"found": "Found", "mismatch": "Details differ", "not_found": "Not found (possibly fabricated)",
               "not_checked": "For a person to confirm"}
-TONE = {"ok": BLUE, "attention": ORANGE, "problem": SOLID, "not_run": GREY}
+TONE = {"ok": GREEN, "attention": ORANGE, "problem": RED, "not_run": GREY}
 # the round mark at the start of each check row: a sign, never an emoji
-MARK_MD = {"ok": ":blue-background[**✓**]", "attention": ":orange-background[**!**]",
-           "problem": ":orange-background[**✕**]", "not_run": ":gray-background[**–**]"}
+MARK_MD = {"ok": ":green-background[**✓**]", "attention": ":orange-background[**!**]",
+           "problem": ":red-background[**✕**]", "not_run": ":gray-background[**–**]"}
 
 
 def _local(dt):
@@ -528,7 +531,7 @@ def _row_status(v) -> tuple[str, str]:
 
 
 def _pill_md(word: str, tone: str) -> str:
-    colour = {"ok": "blue", "attention": "orange", "problem": "orange", "not_run": "gray"}[tone]
+    colour = {"ok": "green", "attention": "orange", "problem": "red", "not_run": "gray"}[tone]
     return f":{colour}-background[{word}]"
 
 
@@ -706,7 +709,7 @@ def page_records(conn) -> None:
            f" · drafted with {esc(v.model_returned)}{reviewed}" + (f" · document type: {esc(dtype.lower())}" if dtype else ""))
     with right:
         st.markdown(
-            f'<div class="rc-article"><div class="rc-eyebrow"><span>Record passport</span>'
+            f'<div class="rc-article"><div class="rc-eyebrow"><span>Record Passport</span>'
             f'<span class="rc-mono">{esc(v.record_id)}</span></div>'
             f'<h1 class="rc-title">{esc(v.title)}</h1>'
             f'<div class="rc-headline" style="background:{bg};color:{fg}" data-testid="headline">'
@@ -1007,7 +1010,7 @@ def tab_register(conn) -> None:
     st.caption(f"Policy version: {rules.policy_version}")
 
 
-KPI_COLOURS = {"filed_approved": BLUE, "needs_review": ORANGE, "narrow_evidence": ORANGE}
+KPI_COLOURS = {"filed_approved": GREEN, "needs_review": ORANGE, "narrow_evidence": ORANGE}
 
 
 def _kpi_card(k) -> str:
@@ -1080,14 +1083,17 @@ IM_AREAS = {
 IM_TABS = {"Dashboard": "tab_dashboard", "Setup": "tab_setup", "Sources": "tab_sources", "Recall": "tab_recall",
            "Disposal": "tab_disposal", "Register": "tab_register"}
 
-LOGO = ('<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2" '
-        'stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Record Check"><path d="M6 3h9l3 3v15H6z"/>'
-        '<path d="M9 12l2 2 4-4"/></svg>')
+LOGO = ('<svg width="28" height="28" viewBox="0 0 32 32" fill="none" role="img" aria-label="Record Passport">'
+        '<rect x="6" y="3" width="20" height="26" rx="3" stroke="#1e3a8a" stroke-width="2.2"/>'
+        '<path d="M10 3v26" stroke="#1e3a8a" stroke-width="2.2"/>'
+        '<circle cx="18" cy="13" r="5" stroke="#1e3a8a" stroke-width="2"/>'
+        '<path d="M15.6 13.2l1.7 1.7 3.2-3.4" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        '<path d="M14 22h8M14 25h5" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round"/></svg>')
 
 
 def _header() -> None:
     a, b = st.columns([3, 1.4], vertical_alignment="center")
-    a.markdown(f'<div class="rc-brand">{LOGO}<span class="n">Record Check</span>'
+    a.markdown(f'<div class="rc-brand">{LOGO}<span class="n">Record Passport</span>'
                '<span class="rc-tag">Example data: all cases, people and records are invented</span></div>',
                unsafe_allow_html=True)
     b.radio("Go to", ["Records", "Information manager"], key="place", horizontal=True, label_visibility="collapsed")
@@ -1112,7 +1118,7 @@ def page_im(conn) -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="Record Check", layout="wide", initial_sidebar_state="collapsed")
+    st.set_page_config(page_title="Record Passport", layout="wide", initial_sidebar_state="collapsed")
     st.markdown(CSS, unsafe_allow_html=True)
     conn = get_conn()
     with st.sidebar:
