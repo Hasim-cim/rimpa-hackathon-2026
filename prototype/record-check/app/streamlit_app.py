@@ -576,7 +576,7 @@ def _check_rows(v, p) -> list:
     """The checks people see, in the mockup's order. An older record folds what was not kept into one 'At filing' line."""
     c = {x.id: x for x in v.checks}
     if v.at_issue:
-        order = ["citations", "evidence", "sources", "gate", "review", "integrity", "retention", "since"]
+        order = ["citations", "evidence", "sources", "bias", "gate", "review", "integrity", "retention", "since"]
         return [c[i] for i in order if i in c]
     ev = p.process.evidence_summary
     n = sum(ev.values())
@@ -585,7 +585,7 @@ def _check_rows(v, p) -> list:
     from recordcheck.models import CheckSummary
     at_filing = CheckSummary(id="at_filing", name="At filing", status="ok", summary=at,
                              details={"sources": p.process.source_record_ids})
-    rows = [at_filing, c["integrity"], c["retention"]]
+    rows = [at_filing] + ([c["bias"]] if "bias" in c and c["bias"].status != "not_run" else []) + [c["integrity"], c["retention"]]
     if "since" in c:
         rows = ([c["since"]] + rows) if c["since"].status == "problem" else rows + [c["since"]]
     return rows
@@ -634,6 +634,13 @@ def _check_detail(conn, c, v, p, pol) -> None:
         if d.get("model_status") not in (None, "not registered", "active", "current"):
             rows.append(("AI model", f"{d['model']} marked {d['model_status']}", False))
         rows.append(("Action", "Queued for review by the information manager" if d.get("queued") else "Not queued for review", False))
+    elif c.id == "bias":
+        rows = [("Sources", f"{s_['record_id']} {s_['title']} ({s_['system']}): {s_['why']}", False) for s_ in d.get("sources", [])]
+        rows += [("Narrow statement", f"{s_['text'] or 'This record'}: {s_['why']}", False)
+                 for s_ in d.get("statements", []) if s_.get("narrow")]
+        if d.get("suggestion"):
+            rows.append(("Suggestion", d["suggestion"], False))
+        rows.append(("What this checks", d.get("method", ""), False))
     elif c.id == "at_filing":
         rows = [("Sources then", ", ".join(d.get("sources", [])) or "none", True)]
     if rows:

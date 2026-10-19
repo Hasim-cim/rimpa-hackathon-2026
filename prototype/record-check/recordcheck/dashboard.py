@@ -11,7 +11,7 @@ import sqlite3
 from collections import defaultdict
 from datetime import datetime, timezone
 
-from . import db, disposal, recall, sources
+from . import breadth, db, disposal, recall, sources
 from .evidence import is_evidence
 from .models import (AuthorshipCounts, DashboardReport, DisposalDue, FunctionRow, KpiTile, ModelSignal, Passport,
                      Policy, RecentPassport, RotCounts, SourceRecord, SupportedStatement)
@@ -65,20 +65,12 @@ def _attention(p: Passport, queued: set[str]) -> list[str]:
 
 
 def _weak_reason(rec: SourceRecord | None, policy: Policy, doc_type: str | None) -> bool:
-    if rec is None:
-        return True                                   # a source that is not in the records system
-    return (not authoritative(policy, rec) or rec.status in ("draft", "superseded")
-            or bool(doc_type and doc_type in rec.not_for))
+    return breadth.weak_reason(rec, policy, doc_type) is not None
 
 
 def _rests_on(ids: list[str], recs: dict[str, SourceRecord], policy: Policy, doc_type: str | None) -> bool:
-    """Fixed rules for a narrow-evidence signal on one statement (or one passport, for older ones): it rests on a single
-    record, or on records from a single system, or on a weak, draft, superseded or wrong-use record."""
-    ids = list(dict.fromkeys(ids))
-    if not ids:
-        return False
-    systems = {recs[i].system for i in ids if i in recs}
-    return len(ids) == 1 or len(systems) <= 1 or any(_weak_reason(recs.get(i), policy, doc_type) for i in ids)
+    """Narrow evidence on one statement (or one older passport); the rule lives in breadth.py, shared with the passport."""
+    return breadth.rests_on(ids, recs, policy, doc_type)
 
 
 def _narrow_evidence(p: Passport, checks, recs: dict[str, SourceRecord], policy: Policy) -> bool:
@@ -91,7 +83,7 @@ def _narrow_evidence(p: Passport, checks, recs: dict[str, SourceRecord], policy:
             if _rests_on([l.record_id for l in v.links], recs, policy, doc_type):
                 return True
         return False
-    return _rests_on(p.process.source_record_ids, recs, policy, doc_type)
+    return breadth.rests_on(p.process.source_record_ids, recs, policy, doc_type, strict=True)   # declared sources
 
 
 def _status(p: Passport, queued: set[str]) -> str:

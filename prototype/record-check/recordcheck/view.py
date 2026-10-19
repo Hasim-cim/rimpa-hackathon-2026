@@ -93,6 +93,73 @@ def _sources(p: Passport, ch: PassportChecks | None) -> CheckSummary:
                         details={"items": [s.model_dump() for s in ch.sources]})
 
 
+def _bias(conn, p: Passport, ch: PassportChecks | None, policy: Policy | None) -> CheckSummary:
+    """Bias check: how broad and how current the evidence is. OK when every statement (whoever wrote it) rests on two or more
+    current authoritative sources across two or more systems; attention when any rests on one source, one system, or a
+    record that cannot count. Same rule as the dashboard's narrow-evidence signal (breadth.py). Never says 'unbiased'."""
+    from . import breadth
+    recs = {r.id: r for r in db.get_records(conn)}
+    dt = p.business.document_type
+    statements: list[dict] = []
+    if ch is not None and ch.assessment is not None:
+        text = {c.id: c for c in ch.assessment.claims}
+        for v in ch.assessment.verdicts:
+            claim = text.get(v.claim_id)
+            ids = list(dict.fromkeys(l.record_id for l in v.links))
+            if not ids:
+                continue
+            statements.append({"claim_id": v.claim_id, "text": claim.text if claim else "", "sources": ids,
+                               "author": claim.author if claim else "ai",
+                               "narrow": breadth.narrow(ids, recs, policy, dt)})
+        # the records each statement rests on: those that count, or (if none does) the ones it has
+        def _rests(ids):
+            ok = [i for i in ids if breadth.weak_reason(recs.get(i), policy, dt) is None]
+            return ok or ids
+        for s_ in statements:
+            s_["sources"] = _rests(s_["sources"])
+        ids_all = list(dict.fromkeys(i for s_ in statements for i in s_["sources"]))
+    else:
+        ids_all = list(dict.fromkeys(p.process.source_record_ids))
+        why = breadth.narrow(ids_all, recs, policy, dt, strict=True)   # declared sources of an older passport
+        if ids_all:
+            statements.append({"claim_id": None, "text": "", "sources": ids_all, "narrow": why})
+    if not ids_all:
+        return CheckSummary(id="bias", name="Bias check", status="not_run",
+                            summary="No statement rests on a source record, so breadth was not judged.",
+                            details={"method": breadth.METHOD})
+    sources = []
+    for i in ids_all:
+        r = recs.get(i)
+        why = breadth.weak_reason(r, policy, dt)
+        sources.append({"record_id": i, "title": r.title if r else "(not in the records system)",
+                        "system": r.system if r else "", "status": r.status if r else "missing",
+                        "counts": why is None, "why": why or "current, authoritative"})
+    systems = sorted({s_["system"] for s_ in sources if s_["system"]})
+    narrow_ones = [s_ for s_ in statements if s_["narrow"]]
+    details = {"sources": sources, "systems": systems, "method": breadth.METHOD,
+               "statements": [{**s_, "narrow": bool(s_["narrow"]), "why": s_["narrow"] or ""} for s_ in statements]}
+    if not narrow_ones:
+        counted = [s_ for s_ in sources if s_["counts"]]
+        return CheckSummary(id="bias", name="Bias check", status="ok", details=details,
+                            summary=f"Rests on {_n(len(counted), 'current authoritative source')} across "
+                                    f"{_n(len(systems), 'system')}.")
+    first = narrow_ones[0]["narrow"]
+    if ch is not None and ch.assessment is not None and len(statements) > 1:
+        line = f"Narrow evidence: {len(narrow_ones)} of {len(statements)} statements; the first {first}"
+    else:
+        line = f"Narrow evidence: {first}"
+    if len(systems) == 1 and "one system" not in line:
+        line += f"; all sources are from one system ({systems[0]})"
+    if len(systems) == 1:
+        details["suggestion"] = (f"Every source is in {systems[0]}. A second, independent system would broaden the "
+                                 "evidence.")
+    elif any(not s_["counts"] for s_ in sources):
+        details["suggestion"] = "Replace the records that cannot count with current authoritative ones."
+    else:
+        details["suggestion"] = "A second source for each statement would broaden the evidence."
+    return CheckSummary(id="bias", name="Bias check", status="attention", summary=line + ".", details=details)
+
+
 def _gate(p: Passport, ch: PassportChecks | None, policy: Policy | None) -> CheckSummary:
     b, pd = p.business, p.paradata
     meta = {"policy_version": pd.policy_version, "policy_hash": pd.policy_hash, "document_type": b.document_type}
@@ -191,7 +258,7 @@ def view(conn, record_id: str, policy: Policy | None = None) -> PassportView | N
     p = Passport.model_validate_json(row["payload"])
     disposed_at = row["disposed_at"]
     ch, intact = (None, True) if disposed_at else _stored(conn, p)
-    checks = [_citations(p, ch), _evidence(p, ch), _sources(p, ch), _gate(p, ch, policy), _review(p),
+    checks = [_citations(p, ch), _evidence(p, ch), _sources(p, ch), _bias(conn, p, ch, policy), _gate(p, ch, policy), _review(p),
               _integrity(conn, p, intact, bool(disposed_at)), _retention(p, policy, disposed_at)]
     if not disposed_at:
         checks.append(_since(conn, p, ch, policy))

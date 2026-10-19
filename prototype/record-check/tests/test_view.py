@@ -51,7 +51,7 @@ def test_view_of_a_new_passport_is_what_was_checked_at_issue(env):
     v = passport.view(conn, p.record.id, pol)
     assert v.at_issue and v.gate == "ready" and v.reviewer == "B. Team Leader"
     c = checks(v)
-    assert [x.id for x in v.checks] == ["citations", "evidence", "sources", "gate", "review", "integrity",
+    assert [x.id for x in v.checks] == ["citations", "evidence", "sources", "bias", "gate", "review", "integrity",
                                         "retention", "since"]
     items = c["evidence"].details["items"]
     assert [(i["claim_id"], i["weight"], i["reason"]) for i in items] == [(x.claim_id, x.weight, x.reason)
@@ -124,7 +124,7 @@ def test_api_view(tmp_path, monkeypatch):
     client = TestClient(main.app)
     rid = db.get_passports(main.conn)[0].record.id
     r = client.get(f"/passport/{rid}/view")
-    assert r.status_code == 200 and r.json()["record_id"] == rid and len(r.json()["checks"]) == 8
+    assert r.status_code == 200 and r.json()["record_id"] == rid and len(r.json()["checks"]) == 9
     assert client.get(f"/passport/{rid}").json()["record"]["id"] == rid
     assert client.get("/passport/REC-9999/1/view").status_code == 404
     main.conn.close()
@@ -221,3 +221,51 @@ def test_recall_tolerates_aware_times_already_stored(env):
     data["record"]["created"] = data["record"]["created"] + "Z"        # as a pre-fix web filing would have stored it
     conn.execute("UPDATE passports SET payload=? WHERE record_id=?", (json.dumps(data), seed.record.id))
     assert recall.recall_by_record(conn, OLD_NOTICE).items                # sorts without raising
+
+
+# ---------- Bias check (B1): how broad and how current the evidence is ----------
+
+def test_bias_check_on_the_hero_passport_reads_narrow_evidence_and_says_why(env):
+    conn, pol = env
+    p, _, _ = _file(conn, pol, dtype="case-note")
+    b = checks(passport.view(conn, p.record.id, pol))["bias"]
+    assert b.status == "attention" and b.summary.startswith("Narrow evidence: 4 of 4 statements; the first rests on one source")
+    assert "all sources are from one system (Case management system)" in b.summary
+    assert b.details["systems"] == ["Case management system"] and all(s["counts"] for s in b.details["sources"])
+    assert b.details["method"].startswith("How broad and how current")
+    assert "A second, independent system would broaden the evidence" in b.details["suggestion"]
+    assert "independent" not in b.summary                                     # never in the status line
+    v = passport.view(conn, p.record.id, pol)
+    from recordcheck import view as vw
+    assert vw.headline(v)[0].startswith("Ready to file")                      # the Bias check never changes the gate
+
+
+def test_bias_check_ok_when_sources_span_two_systems(env):
+    from recordcheck import view as vw
+    conn, pol = env
+    seed = next(x for x in db.get_passports(conn) if len(x.process.source_record_ids) >= 2
+                and len({db.get_record(conn, i).system for i in x.process.source_record_ids if db.get_record(conn, i)}) >= 2)
+    b = checks(passport.view(conn, seed.record.id, pol))["bias"]
+    assert b.status == "ok" and b.summary.startswith("Rests on ") and "across 2 systems" in b.summary or "systems" in b.summary
+
+
+def test_bias_check_turns_narrow_when_a_source_is_superseded(env):
+    conn, pol = env
+    seed = next(x for x in db.get_passports(conn) if OLD_NOTICE in x.process.source_record_ids and x.business.tier != "T0")
+    recall.mark_superseded(conn, OLD_NOTICE, NEW_NOTICE, "reissued", by="IM")
+    b = checks(passport.view(conn, seed.record.id, pol))["bias"]
+    assert b.status == "attention" and f"{OLD_NOTICE}: superseded by {NEW_NOTICE}" in b.summary
+
+
+def test_bias_wording_never_claims_an_absence_of_bias(env):
+    import re
+    conn, pol = env
+    for x in db.get_passports(conn)[:20]:
+        b = checks(passport.view(conn, x.record.id, pol))["bias"]
+        assert not re.search(r"unbiased|bias-free|no bias|independent", b.summary + b.details.get("method", ""), re.I)
+
+
+def test_dashboard_and_passport_use_the_same_rule(env):
+    from recordcheck import breadth, dashboard
+    assert dashboard._rests_on.__doc__ and dashboard.breadth is breadth
+

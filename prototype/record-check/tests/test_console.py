@@ -18,8 +18,9 @@ SUMMARY = "DOC-2026/0412-summary"
 ELIGIBILITY = "DOC-2026/0587-eligibility"
 IM_TABS = ["Dashboard", "Setup", "Sources", "Recall", "Disposal", "Register"]     # RECORDCHECK_SHOW_ALL=1
 IM_TABS_DEFAULT = ["Dashboard", "Recall", "Setup"]
-FULL_CHECKS = ["Citations", "Evidence", "Sources", "Filing gate", "Review", "Integrity", "Retention", "Since filing"]
-OLDER_CHECKS = ["At filing", "Integrity", "Retention", "Since filing"]
+FULL_CHECKS = ["Citations", "Evidence", "Sources", "Bias check", "Filing gate", "Review", "Integrity", "Retention",
+               "Since filing"]
+OLDER_CHECKS = ["At filing", "Bias check", "Integrity", "Retention", "Since filing"]
 
 
 @pytest.fixture
