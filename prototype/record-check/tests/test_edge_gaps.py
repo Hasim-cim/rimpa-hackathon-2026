@@ -82,13 +82,6 @@ def _crossref_item(**extra):
     return item
 
 
-@pytest.mark.xfail(strict=True, reason="EC-CIT-15 a real title cited under the wrong authors still returns found")
-def test_gap_cit_author_mismatch_is_not_found_status(monkeypatch):
-    monkeypatch.setattr(cit.httpx, "get", lambda *a, **k: _Resp(_crossref_item(author=[{"family": "Zed", "given": "Q"}])))
-    (c,) = cit.extract_references("[1] Nobody, A. (2020). A wholly unknown title here. Some Journal.")
-    assert cit.lookup(c, online=True).status == "mismatch"
-
-
 # ---------- evidence ----------
 
 @pytest.mark.xfail(strict=True, reason="EC-EVI-12 two current records disagree on a field; the claim is supported and the conflict is not surfaced")

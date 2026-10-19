@@ -8,9 +8,9 @@
 
 | Status | Count |
 |---|---|
-| ✅ tested | 143 |
+| ✅ tested | 144 |
 | 🟡 by design, untested | 0 |
-| ❌ gap | 12 |
+| ❌ gap | 11 |
 | ⛔ out of scope by design | 5 |
 
 ## Citations (`recordcheck/citations.py`)
@@ -31,7 +31,7 @@
 | EC-CIT-12 | Two references share the number [1], one `not_found` and one `found` | Flag the clash, or let the worst status win. Today the last one wins, so the `not_found` is hidden and the claim reads weak | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_duplicate_reference_numbers` |
 | EC-CIT-13 | A claim cites [9] but the references list has no [9] | The verdict should say reference [9] has no entry, so the author fixes it. Today `weigh` ignores it silently | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_claim_cites_reference_that_does_not_exist` |
 | EC-CIT-14 | A real paper that has since been retracted | Not plain `found`: `mismatch`, and the note names the notice and date ("Retracted on 2021-12-15 (notice 10.1177/17588359211061903)"); expressions of concern and withdrawals the same. Read from the Crossref record's `updated-by`, or `works?filter=updates:<DOI>` for fixture and OpenAlex matches; cached offline notices; a failed lookup never changes the result | ✅ tested | `tests/test_retractions.py::test_end_to_end_crossref_search_hit_that_was_retracted` |
-| EC-CIT-15 | A real title cited under the wrong authors | `mismatch`. Today only title, year and venue are compared, so it returns `found` | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_author_mismatch_is_not_found_status` |
+| EC-CIT-15 | A real title cited under the wrong authors | `mismatch` when the index lists authors and none of the cited surnames is among them; the note names both ("the index lists Zed as authors, not Nobody, A."). One matching author is enough; particles ("van der Berg") match; no authors on either side changes nothing. Crossref and OpenAlex results; offline fixtures carry no authors | ✅ tested | `tests/test_authors.py::test_wrong_authors_is_mismatch_and_names_both` |
 | EC-CIT-16 | A real paper cited for something it does not say | Out of scope: we check that the reference exists, not what the paper argues. Pitch answer: "Record Check tests whether a reference is real and whether a statement is supported by the organisation's own records; a claim that leans only on an outside paper reads weak and needs a person to confirm it is appropriate authority." | ⛔ out of scope by design | See EC-EVI-25 for the weak verdict |
 | EC-CIT-17 | The same reference looked up twice, second time offline | The cached result is reused with the new citation attached | ✅ tested | `tests/test_citations.py::test_online_judging_and_cache` |
 | EC-CIT-18 | A reference to government guidance or a web page (NAA's AI guidance page; a DTA policy), with live lookups on and no index hit | `not_checked`, note "Government guidance or a web page is outside Crossref and OpenAlex. Flagged for a person to confirm." Never `not_found`: before 19 Oct it read "possibly fabricated" and blocked filing. A DOI link is still looked up | ✅ tested | `tests/test_studio.py::test_naa_guidance_is_flagged_for_a_person_never_called_fabricated` |
