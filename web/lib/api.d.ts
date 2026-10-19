@@ -631,7 +631,7 @@ export interface components {
              * @default none
              * @enum {string}
              */
-            source: "fixture" | "crossref" | "openalex" | "none";
+            source: "fixture" | "crossref" | "openalex" | "frl" | "none";
             /** Doi */
             doi?: string | null;
             /** Matched Title */
@@ -647,6 +647,8 @@ export interface components {
              * @default
              */
             note: string;
+            /** Checked At */
+            checked_at?: string | null;
         };
         /** Claim */
         Claim: {
