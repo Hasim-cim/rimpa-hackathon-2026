@@ -143,7 +143,10 @@ def test_evi_two_current_records_disagree_on_occupants_is_contradicted():
 
 def test_evi_money_matching_no_record_is_unsupported_not_contradicted():
     r = rec("R", fields={"case_id": "C1", "debt_amount": 4860}, content="Debt record.")
-    v = weigh("The debt is $5,000.", [r], "C1")
+    v = weigh("The debt is $5,000.", [r], "C1")       # G1: "debt" names debt_amount, so this is a clear field clash
+    assert v.weight == "contradicted" and "debt_amount = 4,860" in v.reason
+    other = rec("O", fields={"case_id": "C1", "debt_amount": 4860}, content="Debt record.")
+    v = weigh("The fee is $5,000.", [other], "C1")      # no field on that topic: still unsupported, no link
     assert v.weight == "unsupported" and v.links == []
 
 
@@ -167,7 +170,7 @@ def test_evi_author_does_not_change_the_weight():
     assert (a.weight, a.reason) == (h.weight, h.reason) == ("supported", a.reason)
     bad_ai = weigh("The debt is $1.", [r], author="ai")
     bad_h = weigh("The debt is $1.", [r], author="human")
-    assert bad_ai.weight == bad_h.weight == "unsupported"
+    assert bad_ai.weight == bad_h.weight == "contradicted" and bad_ai.reason == bad_h.reason
 
 
 def test_evi_supported_claim_citing_not_found_reference_keeps_support_with_fix_note():
@@ -620,3 +623,33 @@ def test_evi_negated_alone_is_read_as_not_alone(env):
     v = weigh("The applicant is not living alone.", [one], case="C1")
     assert v.weight == "contradicted" and "does not live alone" in v.reason
 
+
+# ---------- facts must match, not just words (G1, gaps closed 19 Oct) ----------
+
+def test_evi_wrong_amount_in_a_sentence_linked_by_wording_is_contradicted():
+    v = weigh("The applicant's weekly earnings were $900 from Example Logistics Pty Ltd.", seed_records(), case="2026/0412")
+    assert v.weight != "supported"
+
+
+def test_evi_wrong_date_range_is_not_supported():
+    v = weigh("The applicant earned income from 1 June 2026 to 31 December 2026.", seed_records(), case="2026/0412")
+    assert v.weight != "supported"
+
+
+def test_evi_a_wrong_value_for_another_field_is_contradicted():
+    r = rec("R", fields={"case_id": "C1", "rent_weekly": 380}, content="Housing record.")
+    v = weigh("The weekly rent is $500.", [r], case="C1")
+    assert v.weight == "contradicted"
+
+
+def test_evi_household_size_must_match_occupants():
+    v = weigh("The household is five adults.", seed_records(), case="2026/0412")
+    assert v.weight != "supported"
+
+
+def test_src_fact_from_a_superseded_record_is_no_longer_supported(conn):
+    from recordcheck import recall
+    recall.mark_superseded(conn, "REC-2026/004790", "REC-2026/004912", "Amount recalculated", "I. Manager")
+    a = evidence.assess(db.get_document(conn, "DOC-2026/0412-summary"), conn, use_llm=False)
+    v = next(v for c, v in zip(a.claims, a.verdicts) if "$4,860" in c.text)
+    assert v.weight != "supported"

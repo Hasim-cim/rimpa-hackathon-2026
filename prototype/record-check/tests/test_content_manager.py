@@ -47,8 +47,8 @@ def test_the_engine_weighs_claims_against_content_manager_records(source):
     assert weigh("The applicant lives alone.").weight == "contradicted"       # CM tenancy record: two occupants
     draft = weigh("Draft version 5 for consultation proposes decisions within 14 days.")
     assert draft.weight == "weak" and "a draft" in draft.reason               # declared rule: not finalised = draft
-    # "within 28 days of a complete application" still reads supported: it shares wording with version 4 (21 days).
-    # That is gap EC-EVI-14 (numbers in a sentence linked by wording), which G1 closes; not an adapter issue.
+    old = weigh("Decisions should be made within 28 days of a complete application.")
+    assert old.weight == "contradicted" and "CM-26/0101 says 21 days" in old.reason   # G1: the current version says 21
 
 
 def test_sink_writes_a_create_record_request_and_the_passport_to_the_outbox(tmp_path, monkeypatch):

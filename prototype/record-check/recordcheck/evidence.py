@@ -124,10 +124,111 @@ def link_claim(claim: Claim, records: list[SourceRecord], case_id: str | None = 
         phrase = _shared_phrase(claim_toks, _tokens(rec.content))
         if phrase:
             add("keyphrase", f"shared phrase '{phrase}' appears in {rec.id}")
+        if amounts and not hit and rcase is not None:   # "$500 rent" and a case record holding rent_weekly (G1)
+            topical = [k for k in _topic_fields(claim.text, rec)
+                       if isinstance(rec.fields.get(k), (int, float)) and not isinstance(rec.fields.get(k), bool)]
+            if topical:
+                add("topic+field", f"claim gives an amount for {topical[0]}, which {rec.id} records")
         if _HOUSEHOLD.search(claim.text) and "occupants" in rec.fields:
             add("household", f"claim describes the household; {rec.id} records occupants = {rec.fields['occupants']}")
     return links
 
+
+
+# ---------- facts must match, not just words (G1) ----------
+# A sentence linked to a record by wording is only supported if its numbers, counts and dates are in a current
+# authoritative record too. Deterministic: dollar amounts, "N days/weeks/months/years", "N adults/people/occupants",
+# and dates written in full ("1 June 2026"). Month-only phrases ("June to August 2026") are not compared.
+
+_MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "may", "june", "july", "august",
+                                       "september", "october", "november", "december"], 1)}
+_FULL_DATE = re.compile(r"\b(\d{1,2})\s+(" + "|".join(_MONTHS) + r")\s+(\d{4})\b", re.I)
+_ISO_DATE = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
+_QUANTITY = re.compile(r"\b(\d+)\s+(day|week|month|year)s?\b", re.I)
+_NUMBER_WORDS = {w: i for i, w in enumerate(["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                                             "nine", "ten"])}
+_HEADCOUNT = re.compile(r"\b(\d+|" + "|".join(_NUMBER_WORDS) + r")\s+(adults?|people|persons?|occupants?)\b", re.I)
+# topic words in a sentence -> the record fields that hold that fact (field names themselves also count)
+FIELD_TOPICS = {"earnings": "amount_weekly", "wage": "amount_weekly", "wages": "amount_weekly",
+                "income": "amount_weekly", "pay": "amount_weekly", "rent": "rent_weekly", "debt": "debt_amount",
+                "utilities": "utilities_weekly", "occupants": "occupants", "household": "occupants"}
+
+
+def _dates(text: str) -> set[str]:
+    out = {f"{int(y):04d}-{_MONTHS[m.lower()]:02d}-{int(d):02d}" for d, m, y in _FULL_DATE.findall(text)}
+    out |= {f"{y}-{m}-{d}" for y, m, d in _ISO_DATE.findall(text)}
+    return out
+
+
+def _record_dates(rec: SourceRecord) -> set[str]:
+    return _dates(rec.content) | {str(v)[:10] for v in rec.fields.values() if isinstance(v, str) and _ISO_DATE.fullmatch(str(v)[:10])}
+
+
+def _record_amounts(rec: SourceRecord) -> set[int]:
+    return _amounts(rec.content) | {v for v in _numeric_fields(rec).values()}
+
+
+def _quantities(text: str) -> set[tuple[int, str]]:
+    return {(int(n), u.lower()) for n, u in _QUANTITY.findall(text)}
+
+
+def _headcount(text: str) -> int | None:
+    m = _HEADCOUNT.search(text)
+    if not m:
+        return None
+    n = m.group(1).lower()
+    return int(n) if n.isdigit() else _NUMBER_WORDS[n]
+
+
+def _topic_fields(text: str, rec: SourceRecord) -> list[str]:
+    words = set(re.findall(r"[a-z]+", text.lower()))
+    named = {FIELD_TOPICS[w] for w in words if w in FIELD_TOPICS}
+    named |= {k for k in rec.fields if any(part in words for part in k.split("_") if part not in ("amount", "weekly", "id"))}
+    return [k for k in rec.fields if k in named]
+
+
+def facts_check(claim: Claim, good: list[SourceRecord], other: list[SourceRecord]) -> tuple[str, str] | None:
+    """(weight, reason) when a number, count or date in the sentence is not in a current authoritative record it links
+    to; None when every fact is backed (or the sentence states none). Contradicted only on a clear field clash."""
+    text = claim.text
+    # dollar amounts
+    for amt in sorted(_amounts(text)):
+        if any(amt in _record_amounts(r) for r in good):
+            continue
+        for r in good:
+            for k in _topic_fields(text, r):
+                v = r.fields.get(k)
+                if isinstance(v, (int, float)) and not isinstance(v, bool) and int(round(v)) != amt:
+                    return "contradicted", f"The claim says ${amt:,}, but {r.id} records {k} = {int(round(v)):,}."
+        held = [r for r in other if amt in _record_amounts(r)]
+        if held:
+            return "weak", (f"${amt:,} rests only on records that cannot count as evidence: "
+                            + ", ".join(f"{r.id} ({why_not_evidence(r)})" for r in held) + ".")
+        if good:
+            return "unsupported", f"${amt:,} is not in any current authoritative record it links to ({', '.join(r.id for r in good)})."
+    # quantities with a unit: "28 days" against "21 days"
+    for n, unit in sorted(_quantities(text)):
+        held_units = [(r, q) for r in good for q in _quantities(r.content) if q[1] == unit]
+        if held_units and not any(q[0] == n for _, q in held_units):
+            r, q = held_units[0]
+            return "contradicted", f"The claim says {n} {unit}s, but {r.id} says {q[0]} {unit}s."
+    # head counts: "five adults" against occupants
+    count = _headcount(text)
+    if count is not None:
+        for r in good:
+            occ = r.fields.get("occupants")
+            if isinstance(occ, (int, float)) and not isinstance(occ, bool) and int(occ) != count:
+                return "contradicted", f"The claim says {count}, but {r.id} records occupants = {int(occ)}."
+    # dates written in full
+    claimed = _dates(text)
+    if claimed and good:
+        held_dates = set().union(*(_record_dates(r) for r in good))
+        if held_dates:
+            gone = sorted(claimed - held_dates)
+            if gone:
+                shown = ", ".join(gone)
+                return "unsupported", f"{shown} is not in any current authoritative record it links to ({', '.join(r.id for r in good)})."
+    return None
 
 # ---------- weighing ----------
 
@@ -159,6 +260,12 @@ def weigh(claim: Claim, links: list[ClaimLink], records, citations: Iterable[Cit
             if negated and occ == 1:
                 return verdict("contradicted",
                                f"The claim says the applicant does not live alone, but {rid} records 1 occupant.")
+
+    # facts must match, not just words: numbers, counts and dates in a current authoritative record (G1)
+    if linked:
+        clash = facts_check(claim, [recs[r] for r in good], [recs[r] for r in linked if r not in good])
+        if clash:
+            return verdict(*clash)
 
     missing = [n for n in claim.citation_refs if n in cits and cits[n].status == "not_found"]
     ns = ", ".join(f"[{n}]" for n in missing)

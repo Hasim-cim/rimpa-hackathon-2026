@@ -92,31 +92,6 @@ def test_gap_evi_conflicting_current_records_are_surfaced():
     assert "conflict" in v.reason.lower() or "disagree" in v.reason.lower()
 
 
-@pytest.mark.xfail(strict=True, reason="EC-EVI-14 a wrong amount is supported when the surrounding words match a record")
-def test_gap_evi_wrong_amount_with_matching_phrase_is_supported():
-    v = weigh("The applicant's weekly earnings were $900 from Example Logistics Pty Ltd.", seed_records(), case="2026/0412")
-    assert v.weight != "supported"
-
-
-@pytest.mark.xfail(strict=True, reason="EC-EVI-16 dates and date ranges are never compared with record dates (ARCHITECTURE promises it)")
-def test_gap_evi_wrong_date_range_is_supported():
-    v = weigh("The applicant earned income from 1 June 2026 to 31 December 2026.", seed_records(), case="2026/0412")
-    assert v.weight != "supported"
-
-
-@pytest.mark.xfail(strict=True, reason="EC-EVI-18 contradiction rules cover only occupants; a wrong rent is merely unsupported")
-def test_gap_evi_only_occupants_can_contradict():
-    r = rec("R", fields={"case_id": "C1", "rent_weekly": 380}, content="Housing record.")
-    v = weigh("The weekly rent is $500.", [r], case="C1")
-    assert v.weight == "contradicted"
-
-
-@pytest.mark.xfail(strict=True, reason="EC-EVI-19 any sentence containing 'household' is supported by an occupants record, whatever it says")
-def test_gap_evi_household_word_links_any_household_claim():
-    v = weigh("The household is five adults.", seed_records(), case="2026/0412")
-    assert v.weight != "supported"
-
-
 @pytest.mark.xfail(strict=True, reason="EC-EVI-28 sentence splitting breaks on abbreviations such as 'Dr.'")
 def test_gap_evi_abbreviation_splits_a_sentence():
     doc = Document(id="D", title="t", body="Dr. Smith assessed the case. The rent is $380.50 a week.")
@@ -142,10 +117,3 @@ def test_gap_pas_tail_truncation_is_undetected(conn):
 
 # ---------- source recall ----------
 
-@pytest.mark.xfail(strict=True, reason="EC-SRC-10 any current link supports the whole claim, hiding the superseded fact")
-def test_gap_src_fact_from_superseded_record_hidden_by_other_links(conn):
-    from recordcheck import recall
-    recall.mark_superseded(conn, "REC-2026/004790", "REC-2026/004912", "Amount recalculated", "I. Manager")
-    a = evidence.assess(db.get_document(conn, "DOC-2026/0412-summary"), conn, use_llm=False)
-    v = next(v for c, v in zip(a.claims, a.verdicts) if "$4,860" in c.text)
-    assert v.weight != "supported"

@@ -90,6 +90,13 @@ def relied_on(assessment, conn, policy=None, document_type=None) -> list[str]
     # linked records that count as evidence: what a filed output's source_record_ids should be
     # server side: keep the caller's claims, recompute every link and weight. ValueError if verdicts ≠ claims.
 ```
+**Facts must match, not just words (G1, `evidence.facts_check`).** A sentence linked to a record is supported only if its
+dollar amounts, "N days/weeks/months/years", head counts ("five adults") and dates written in full are in a current
+authoritative record it links to. A clear field clash (a topic word such as rent, debt or earnings and a different value
+in that field, `FIELD_TOPICS`) is `contradicted`, naming the field; an amount held only by a superseded, draft or
+non-authoritative record is `weak`; otherwise `unsupported`. A sentence giving an amount for a topic also links to the
+same-case record holding that field (rule `topic+field`). Month-only phrases are not compared.
+
 The LLM may only *split text into claims*. It never decides a weight.
 
 ### passport.py

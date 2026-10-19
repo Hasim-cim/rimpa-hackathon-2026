@@ -71,7 +71,8 @@ def test_superseding_a_source_weakens_claims_at_once(conn):
     assert _verdict(conn, text, "2026/0412").weight == "supported"
     recall.mark_superseded(conn, OLD_NOTICE, NEW_NOTICE, "Amount recalculated", "I. Manager")
     v = _verdict(conn, text, "2026/0412")
-    assert v.weight == "weak" and f"{OLD_NOTICE} (superseded by {NEW_NOTICE})" in v.reason
+    # G1: the reissued notice is current and holds the corrected amount, so the old figure is now contradicted
+    assert v.weight == "contradicted" and f"{NEW_NOTICE} records debt_amount = 3,890" in v.reason
     assert conn.execute("SELECT COUNT(*) FROM audit_log WHERE action='record.marked_superseded' AND actor='I. Manager'"
                         ).fetchone()[0] == 1
 
