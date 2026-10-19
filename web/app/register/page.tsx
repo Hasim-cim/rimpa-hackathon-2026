@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, ESCALATION_LABELS, GREY, Pill, TIERS, type S } from "@/lib/ui";
+import PageHead from "../page-head";
 
 const yn = (b: boolean) => (b ? "yes" : "no");
 
@@ -24,7 +25,8 @@ export default function Register() {
 
   return (
     <>
-      <h2 style={{ marginTop: 16 }}>Active policy</h2>
+      <PageHead title="Register">The active policy, authoritative records, registered AI apps and retention rules, in one place for audit.</PageHead>
+      <h2 style={{ marginTop: 0 }}>Active policy</h2>
       <p><b>{pol.organisation}</b> | {pol.sector_name} | version {pol.version} | updated by {pol.updated_by}
         {pol.updated_at ? ` at ${pol.updated_at.replace("T", " ").slice(0, 16)} UTC` : ""}</p>
       <p>Guidance this policy cites: {pol.guidance?.length ? pol.guidance.join("; ") : "none"}</p>

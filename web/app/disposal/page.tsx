@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api, OK, DISPOSAL_COLOURS, Pill, short, BAD, type S } from "@/lib/ui";
+import PageHead from "../page-head";
 
 const today = () => new Date().toLocaleDateString("en-CA");
 const day = (s: string) => s.slice(0, 10);
@@ -59,6 +60,7 @@ export default function Disposal() {
 
   return (
     <>
+      <PageHead title="Disposal">Records and log entries due for destruction under the retention rules, with approval kept on the record.</PageHead>
       <p>T0 log entries are kept 90 days, then destroyed with approval. T1 to T3 follow their business record.</p>
       <p className="muted">Disposal authority: {authority}</p>
       <label htmlFor="asof">As of</label>

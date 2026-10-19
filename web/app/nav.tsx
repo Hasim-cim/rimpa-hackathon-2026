@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // One top bar (Hasim, 19 Oct): every important page in one click, the IM pages after a divider, the rest under More.
-const MAIN = [["/", "Records"], ["/check", "Check a document"]];
+const MAIN = [["/records", "Records"], ["/check", "Check a document"]];
 const MANAGER = [["/dashboard", "Dashboard"], ["/recall", "Recall"], ["/setup", "Setup"]];
 const MORE = [["/disposal", "Disposal"], ["/register", "Register"]];
 

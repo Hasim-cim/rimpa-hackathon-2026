@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, ApiError, OK, CITE_COLOURS, GATE_COLOURS, GatePill, GREY, Pill, WEIGHT_COLOURS, type S } from "@/lib/ui";
+import PageHead from "../page-head";
 
 const DEFAULT_DOC = "DOC-2026/0412-summary";
 const DOC_TYPE_HINTS = [["summary", "decision-letter"], ["briefing", "briefing"], ["agent-note", "case-note"], ["eligibility", "case-note"]];
@@ -66,7 +67,7 @@ export default function Check() {
 
   return (
     <>
-
+      <PageHead title="Check a document">Run the checks on a draft before it is filed.</PageHead>
       <label htmlFor="doc">Document</label>
       <select id="doc" value={docId} onChange={(e) => pickDoc(e.target.value)}>
         {docs.map((d) => <option key={d.id} value={d.id}>{d.id}  {d.title}</option>)}
@@ -230,7 +231,7 @@ function FileAsRecord({ doc, typeId, typeName, result, gate }: { doc: S["Documen
       <button className="run" onClick={issue} disabled={blocked}>Issue passport</button>
       {msg && (msg.ok
         ? <p role="status" style={{ background: OK[0], color: OK[1], padding: "8px 12px", borderRadius: 6, marginTop: 12 }}>
-            {msg.text}. <a href={`/?id=${encodeURIComponent(msg.id!)}`}>Open it in Records</a>
+            {msg.text}. <a href={`/records?id=${encodeURIComponent(msg.id!)}`}>Open it in Records</a>
           </p>
         : <p className="error" role="alert">{msg.text}</p>)}
     </>

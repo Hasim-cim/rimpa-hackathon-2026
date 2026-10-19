@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import Link from "next/link";
 import Logo from "./logo";
 import Nav from "./nav";
 import "./globals.css";
@@ -16,8 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header>
           <div className="bar">
             <div className="brand">
-              <Logo />
-              <span className="name">Record Passport</span>
+              <Link href="/" className="home" aria-label="Record Passport home">
+                <Logo />
+                <span className="name">Record Passport</span>
+              </Link>
               <span className="marker">Example data: all cases, people and records are invented</span>
             </div>
             <Nav />

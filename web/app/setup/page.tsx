@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, ApiError, OK, ESCALATION_LABELS, TIERS, type S } from "@/lib/ui";
+import PageHead from "../page-head";
 
 type Policy = S["Policy"];
 type DocType = S["DocumentType"];
@@ -108,7 +109,8 @@ export default function Setup() {
 
   return (
     <>
-      <p className="muted">The information manager sets what good looks like once. The checks and the filing gate read this policy. An AI model may suggest a starting profile, but never sets a threshold, tier or gate.</p>
+      <PageHead title="Setup">The rules the information manager sets: document types, quality bars, and which systems count as evidence.</PageHead>
+      <p className="muted">The checks and the filing gate read this policy. An AI model may suggest a starting profile, but never sets a threshold, tier or gate.</p>
 
       <h2>1. Start from your sector</h2>
       <label htmlFor="org">Organisation name</label>

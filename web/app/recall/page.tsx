@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, OK, Pill, TIER_COLOURS, type S } from "@/lib/ui";
 import Reliability from "../reliability";
+import PageHead from "../page-head";
 
 const BY = "Information manager";
 const input = { width: "100%", padding: 8, font: "inherit", border: "1px solid #9ca3af", borderRadius: 6 } as const;
@@ -24,7 +25,7 @@ function Items({ items, what }: { items: S["RecallItem"][]; what: string }) {
       <tbody>
         {items.map((i) => (
           <tr key={i.record_id}>
-            <td><Link href={`/?id=${encodeURIComponent(i.record_id)}`}>{i.record_id}</Link></td><td><Pill text={i.tier} colours={TIER_COLOURS[i.tier]} /></td><td>{i.function}</td>
+            <td><Link href={`/records?id=${encodeURIComponent(i.record_id)}`}>{i.record_id}</Link></td><td><Pill text={i.tier} colours={TIER_COLOURS[i.tier]} /></td><td>{i.function}</td>
             <td>{i.created.slice(0, 10)}</td><td>{i.reviewer || "none"}</td><td>{i.queued ? "yes" : "no"}</td>
           </tr>
         ))}
@@ -114,6 +115,7 @@ export default function Recall() {
 
   return (
     <>
+      <PageHead title="Recall">When a source or a model changes, find and queue everything that relied on it.</PageHead>
       <Reliability refresh={relKey} />
       <h2 style={{ marginTop: 0 }}>Mark a source superseded</h2>
       <p className="muted">A new version replaces a record (a reissued notice, a new policy). It stops counting as evidence at once, and recall lists every AI output that relied on it.</p>

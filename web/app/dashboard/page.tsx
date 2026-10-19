@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Reliability from "../reliability";
 import { api, ATTN, GREY, OK, BAD, Pill, TIER_COLOURS, type Colours, type S } from "@/lib/ui";
+import PageHead from "../page-head";
 
 // Every figure and sentence comes from GET /api/dashboard; nothing is computed here.
 const KPI_COLOURS: Record<string, Colours> = { filed_approved: OK, needs_review: ATTN, narrow_evidence: ATTN };
@@ -30,6 +31,7 @@ export default function Dashboard() {
 
   return (
     <>
+      <PageHead title="Dashboard">How much of what was filed rests on current authoritative records, and what needs a person.</PageHead>
       <Reliability />
       <div className="kpis">{rep.kpis.map((k) => <Tile key={k.id} k={k} />)}</div>
       {flagged.map((s) => (
@@ -47,7 +49,7 @@ export default function Dashboard() {
               <thead><tr><th>Record</th><th>Title</th><th>Function</th><th>Tier</th><th>Status</th></tr></thead>
               <tbody>{rep.recent.map((r) => (
                 <tr key={r.record_id}>
-                  <td><Link href={`/?id=${encodeURIComponent(r.record_id)}`}>{r.record_id}</Link></td>
+                  <td><Link href={`/records?id=${encodeURIComponent(r.record_id)}`}>{r.record_id}</Link></td>
                   <td>{r.title}</td><td>{r.function}</td><td><Pill text={r.tier} colours={TIER_COLOURS[r.tier]} /></td><td>{r.status}</td>
                 </tr>
               ))}</tbody>
