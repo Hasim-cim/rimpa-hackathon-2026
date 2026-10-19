@@ -34,7 +34,7 @@ def test_document_verdicts(conn, doc_id):
 def test_briefing_citations(conn):
     doc = db.get_document(conn, "DOC-2026/briefing-waivers")
     cits = citations.check_document(doc.references, conn=conn)
-    assert [c.status for c in cits] == ["not_checked", "not_found", "found", "not_found"]
+    assert [c.status for c in cits] == ["found", "not_found", "found", "not_found"]   # [1] the Act, on the register
 
 
 def test_summary_reference_3_is_mismatch_only_because_of_how_it_was_cited(conn):

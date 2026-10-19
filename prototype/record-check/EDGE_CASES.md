@@ -8,9 +8,9 @@
 
 | Status | Count |
 |---|---|
-| ✅ tested | 143 |
+| ✅ tested | 153 |
 | 🟡 by design, untested | 0 |
-| ❌ gap | 13 |
+| ❌ gap | 11 |
 | ⛔ out of scope by design | 5 |
 
 ## Citations (`recordcheck/citations.py`)
@@ -30,11 +30,16 @@
 | EC-CIT-11 | Reference with no parsable year or title (URL-only, "no year given") | Title is empty, so nothing is searched: `not_checked`, never `not_found` | ✅ tested | `tests/test_edge_cases.py::test_cit_reference_without_year_not_checked` |
 | EC-CIT-12 | Two references share the number [1], one `not_found` and one `found` | Flag the clash, or let the worst status win. Today the last one wins, so the `not_found` is hidden and the claim reads weak | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_duplicate_reference_numbers` |
 | EC-CIT-13 | A claim cites [9] but the references list has no [9] | The verdict should say reference [9] has no entry, so the author fixes it. Today `weigh` ignores it silently | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_claim_cites_reference_that_does_not_exist` |
-| EC-CIT-14 | A real paper that has since been retracted | Not plain `found`; the note should say it was retracted. Today it returns `found` because retraction metadata is never read (💭 Crossref carries update and retraction metadata; not opened this session) | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_retracted_paper_is_not_plain_found` |
-| EC-CIT-15 | A real title cited under the wrong authors | `mismatch`. Today only title, year and venue are compared, so it returns `found` | ❌ gap | `tests/test_edge_gaps.py::test_gap_cit_author_mismatch_is_not_found_status` |
+| EC-CIT-14 | A real paper that has since been retracted | Not plain `found`: `mismatch`, and the note names the notice and date ("Retracted on 2021-12-15 (notice 10.1177/17588359211061903)"); expressions of concern and withdrawals the same. Read from the Crossref record's `updated-by`, or `works?filter=updates:<DOI>` for fixture and OpenAlex matches; cached offline notices; a failed lookup never changes the result | ✅ tested | `tests/test_retractions.py::test_end_to_end_crossref_search_hit_that_was_retracted` |
+| EC-CIT-15 | A real title cited under the wrong authors | `mismatch` when the index lists authors and none of the cited surnames is among them; the note names both ("the index lists Zed as authors, not Nobody, A."). One matching author is enough; particles ("van der Berg") match; no authors on either side changes nothing. Crossref and OpenAlex results; offline fixtures carry no authors | ✅ tested | `tests/test_authors.py::test_wrong_authors_is_mismatch_and_names_both` |
 | EC-CIT-16 | A real paper cited for something it does not say | Out of scope: we check that the reference exists, not what the paper argues. Pitch answer: "Record Check tests whether a reference is real and whether a statement is supported by the organisation's own records; a claim that leans only on an outside paper reads weak and needs a person to confirm it is appropriate authority." | ⛔ out of scope by design | See EC-EVI-25 for the weak verdict |
 | EC-CIT-17 | The same reference looked up twice, second time offline | The cached result is reused with the new citation attached | ✅ tested | `tests/test_citations.py::test_online_judging_and_cache` |
 | EC-CIT-18 | A reference to government guidance or a web page (NAA's AI guidance page; a DTA policy), with live lookups on and no index hit | `not_checked`, note "Government guidance or a web page is outside Crossref and OpenAlex. Flagged for a person to confirm." Never `not_found`: before 19 Oct it read "possibly fabricated" and blocked filing. A DOI link is still looked up | ✅ tested | `tests/test_studio.py::test_naa_guidance_is_flagged_for_a_person_never_called_fabricated` |
+| EC-CIT-19 | A Commonwealth Act cited with a section ("Social Security Act 1991 (Cth) s 1237AAD") | `found` on the Federal Register of Legislation by exact name, the register id in the note; the section is for a person to confirm. Offline from captured register answers; live behind `RECORDCHECK_ONLINE` | ✅ tested | `tests/test_frl.py::test_offline_fixtures_cover_the_demo_and_never_say_fabricated` |
+| EC-CIT-20 | A repealed or renamed Act (Public Service Act 1922; Social Security Act 1947) | `mismatch`: "repealed on 5 December 1999 by the …" exactly as the register states (never "replaced by"); a former name shows both names | ✅ tested | `tests/test_frl.py::test_offline_fixtures_cover_the_demo_and_never_say_fabricated` |
+| EC-CIT-21 | An Act with no register match (invented, misnamed, wrong year) or state law | `not_checked`, "No Commonwealth Act of this name…; a person should confirm"; never "possibly fabricated". State Acts are never sent to the Commonwealth register | ✅ tested | `tests/test_frl.py::test_live_no_match_is_not_checked_never_fabricated` |
+| EC-CIT-22 | The register times out, rate-limits (429) or errors | `not_checked` ("did not respond"), not cached, retried next time; an 8 s timeout; per-name cache for answers | ✅ tested | `tests/test_frl.py::test_timeout_or_rate_limit_reads_not_checked_and_is_not_cached` |
+| EC-CIT-23 | Where and when a citation result came from | `checked_at` on live answers; `citations.provenance()` reads "Crossref, live, 19 Oct 14:20", "offline copy" or "…, cached"; a cached answer keeps the time of its original fetch | ✅ tested | `tests/test_frl.py::test_every_result_says_where_and_when_it_was_checked` |
 
 ## Evidence: linking and weighing (`recordcheck/evidence.py`)
 
@@ -155,6 +160,9 @@
 | EC-SRC-15 | `/check` and `/passport` with a document type | Both apply the intended use the same way: `/passport` re-weighs the claims for the type it files under | ✅ tested | `tests/test_sources.py::test_api_check_and_passport_agree_on_intended_use` |
 | EC-SRC-16 | A current record past its review date (invented: file note REC-2026/004809, due 2026-09-30) | Source health flags it "overdue for review since …" (not a ROT label); it still counts as evidence, so no verdict changes; not overdue on or before the due date | ✅ tested | `tests/test_sources.py::test_overdue_record_is_flagged_but_still_counts` |
 | EC-SRC-17 | Reliability when a relied-on source is overdue | The share is unchanged; a separate "overdue for review" list names the record and the outputs relying on it (10 in the seed) | ✅ tested | `tests/test_sources.py::test_overdue_changes_no_verdict_and_shows_in_reliability` |
+| EC-SRC-18 | Records read through the connector contract | `RecordSource` and `PassportSink`; the seed database is the first adapter of both; the sink gives a receipt and an audit entry | ✅ tested | `tests/test_connectors.py::test_seed_db_is_a_passport_sink_with_a_receipt_and_an_audit_entry` |
+| EC-SRC-19 | Content Manager-shaped records (contract test, `"shape": "assumed"`) | Mapped by declared rules (named superseded field; not finalised = draft); a different declared rule changes the mapping; the engine weighs claims against them. Never described as "integrated with Content Manager" | ✅ tested | `tests/test_content_manager.py::test_read_mapper_follows_the_declared_rules` |
+| EC-SRC-20 | A passport filed back to Content Manager | A Create Record request plus the passport JSON as the attached electronic file in a local outbox, with a request log marked not sent; no network | ✅ tested | `tests/test_content_manager.py::test_sink_writes_a_create_record_request_and_the_passport_to_the_outbox` |
 
 ## Disposal (`recordcheck/disposal.py`)
 

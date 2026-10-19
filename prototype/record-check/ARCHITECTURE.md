@@ -137,6 +137,20 @@ Eight checks in order: citations, evidence, sources, gate, review, integrity, re
 `passport.build` at issue (citations, assessment, gate result, source snapshot) and hashed into
 `process.checks_hash`; older passports have none and show summary counts only. Disposal deletes the stored checks.
 
+### frl.py, connectors.py, content_manager.py (merged 19 Oct)
+```python
+frl.lookup(c, *, online, conn=None) -> CitationResult   # Acts on the Federal Register of Legislation; fixtures, cache, live
+citations.provenance(r) -> str                          # "Crossref, live, 19 Oct 14:20" / "offline copy" / "…, cached"
+class RecordSource(Protocol): list_records(); get_record(id)        # where authoritative records live
+class PassportSink(Protocol): file(passport) -> FiledReceipt         # where a filed passport goes back to
+SeedDbSource, SeedDbSink                                 # the prototype database: the first adapter of both
+content_manager.ContentManagerSource / ContentManagerSink   # contract test on assumed-shape fixtures; outbox, no network
+```
+Legislation: exact Act name; in force → found, repealed → mismatch (register-stated date and Act), no match → not_checked,
+never "possibly fabricated". Retractions (Crossref `updated-by` or `filter=updates:<DOI>`) and wrong authors → mismatch.
+`CitationResult.checked_at` stamps live answers. The engine does not yet read records through `RecordSource`
+(`evidence.assess` still reads the database); wiring it is the next connector step.
+
 ### recall.py
 ```python
 def mark_model(conn, model_id: str, status: Literal["withdrawn","faulty"], effective_from: date, reason: str, by: str) -> None

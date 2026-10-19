@@ -1,4 +1,4 @@
-"""Reference extraction and lookup: fixture cache -> Crossref -> OpenAlex.
+"""Reference extraction and lookup: fixture cache -> Crossref -> OpenAlex; Acts -> Federal Register of Legislation.
 
 Offline by default. Online lookups run only when ``online`` is True, or when it is None and the
 RECORDCHECK_ONLINE env var is "true"/"1". Network failures never raise; they return ``not_checked``.
@@ -15,7 +15,7 @@ from typing import Any
 
 import httpx
 
-from . import db
+from . import db, frl
 from .db import SEED_DIR
 from .models import Citation, CitationResult, CitationStatus
 
@@ -135,13 +135,14 @@ def _crossref(c: Citation) -> list[tuple[str | None, int | None, str | None, str
     q = " ".join(x for x in (c.title, c.authors) if x)
     r = httpx.get("https://api.crossref.org/works", timeout=TIMEOUT, params={
         "query.bibliographic": q, "rows": 5, "mailto": MAILTO,
-        "select": "DOI,title,author,issued,container-title"})
+        "select": "DOI,title,author,issued,container-title,updated-by"})
     r.raise_for_status()
     out = []
     for it in r.json().get("message", {}).get("items", []):
         parts = (it.get("issued") or {}).get("date-parts") or [[None]]
         out.append(((it.get("title") or [None])[0], (parts[0] or [None])[0],
-                    (it.get("container-title") or [None])[0], it.get("DOI")))
+                    (it.get("container-title") or [None])[0], it.get("DOI"), it.get("updated-by") or [],
+                    [a.get("family") for a in it.get("author") or [] if a.get("family")]))
     return out
 
 
@@ -155,17 +156,106 @@ def _openalex(c: Citation) -> list[tuple[str | None, int | None, str | None, str
     for it in r.json().get("results", []):
         src = ((it.get("primary_location") or {}).get("source") or {}).get("display_name")
         doi = (it.get("doi") or "").removeprefix("https://doi.org/") or None
-        out.append((it.get("title"), it.get("publication_year"), src, doi))
+        names = [((a.get("author") or {}).get("display_name") or "").split()[-1:] for a in it.get("authorships") or []]
+        out.append((it.get("title"), it.get("publication_year"), src, doi, None,   # None: ask Crossref about updates
+                    [n[0] for n in names if n]))
     return out
 
 
 def _best(c: Citation, cands: list[tuple[Any, ...]], source: str) -> CitationResult:
-    results = [_judge(c, *cand, source) for cand in cands if cand[0]]
+    results = [_with_updates(_authors_match(_judge(c, *cand[:4], source), cand[5] if len(cand) > 5 else None),
+                             cand[4] if len(cand) > 4 else None, True)
+               for cand in cands if cand[0]]
     rank = {"found": 2, "mismatch": 1, "not_found": 0}
     if not results:
         return CitationResult(citation=c, status="not_found", source=source, score=0.0,  # type: ignore[arg-type]
                               note="No results returned. Possibly fabricated. A person must confirm or remove it.")
     return max(results, key=lambda r: (rank[r.status], r.score or 0.0))
+
+
+# ---------- authors (EC-CIT-15) ----------
+
+def cited_surnames(authors: str | None) -> list[str]:
+    """'Okafor, L. & Brennan, S.' -> ['okafor', 'brennan']. Surnames before the comma of each author."""
+    if not authors:
+        return []
+    parts = re.split(r"\s*(?:&|\band\b|;)\s*", authors)
+    out = []
+    for part in parts:
+        name = part.split(",")[0].strip()
+        if name and not re.fullmatch(r"(?:[A-Z]\.\s*)+", name):
+            out.append(name.split()[-1].casefold())
+    return out
+
+
+def _authors_match(r: CitationResult, found_authors: list[str] | None) -> CitationResult:
+    """A title found under different authors is not plain 'found': when the index lists authors and none of the cited
+    surnames is among them, the result reads mismatch and names both."""
+    cited = cited_surnames(r.citation.authors)
+    if r.status not in ("found", "mismatch") or not cited or not found_authors:
+        return r
+    listed = {a.casefold() for a in found_authors}
+    if any(c == l or l.endswith(" " + c) for c in cited for l in listed):   # 'berg' matches 'van der Berg'
+        return r
+    shown = ", ".join(found_authors[:3]) + (" et al." if len(found_authors) > 3 else "")
+    note = f"Title found, but the index lists {shown} as authors, not {r.citation.authors}."
+    return r.model_copy(update={"status": "mismatch",
+                                "note": note if r.status == "found" else r.note + " " + note})
+
+
+# ---------- retractions and expressions of concern (Crossref update notices) ----------
+
+UPDATES_FILE = SEED_DIR / "crossref_updates.json"
+_UPDATE_WORDS = {"retraction": "Retracted", "withdrawal": "Withdrawn", "removal": "Removed",
+                 "expression_of_concern": "Expression of concern"}
+
+
+def _update_fixtures() -> dict[str, list[dict[str, Any]]]:
+    if not UPDATES_FILE.exists():
+        return {}
+    with open(UPDATES_FILE, encoding="utf-8") as f:
+        return {k.lower(): v for k, v in json.load(f).items() if not k.startswith("_")}
+
+
+def _notices_for(doi: str, online: bool) -> list[dict[str, Any]] | None:
+    """Update notices for a DOI: offline fixtures, else (online) Crossref works?filter=updates:<doi>.
+    Each {type, DOI (the notice), date}. None = could not ask."""
+    fx = _update_fixtures().get(doi.lower())
+    if fx is not None:
+        return fx
+    if not online:
+        return None
+    try:
+        r = httpx.get("https://api.crossref.org/works", timeout=TIMEOUT, params={
+            "filter": f"updates:{doi}", "rows": 5, "mailto": MAILTO, "select": "DOI,update-to"})
+        r.raise_for_status()
+    except Exception:  # never raise; an unanswered question about a retraction is not a retraction
+        return None
+    out = []
+    for it in r.json().get("message", {}).get("items", []):
+        for u in it.get("update-to") or []:
+            if (u.get("DOI") or "").lower() == doi.lower():
+                out.append({"type": u.get("type"), "DOI": it.get("DOI"), "date": (u.get("updated") or {}).get("date-time")})
+    return out
+
+
+def _with_updates(r: CitationResult, updated_by: list[dict[str, Any]] | None, online: bool) -> CitationResult:
+    """A found or mismatched paper that has been retracted, withdrawn or given an expression of concern is never plain
+    'found': it reads mismatch, and the note names the notice. (EC-CIT-14)"""
+    if r.status not in ("found", "mismatch") or not r.doi:
+        return r
+    if updated_by:
+        notices = [{"type": u.get("type"), "DOI": u.get("DOI"), "date": (u.get("updated") or {}).get("date-time")}
+                   for u in updated_by]
+    else:
+        notices = _notices_for(r.doi, online)
+    serious = [n for n in notices or [] if n.get("type") in _UPDATE_WORDS]
+    if not serious:
+        return r
+    n = next((x for x in serious if x["type"] != "expression_of_concern"), serious[0])
+    when = f" on {n['date'][:10]}" if n.get("date") else ""
+    note = f"{_UPDATE_WORDS[n['type']]}{when} (notice {n.get('DOI')}). A person must decide whether it can still be cited. " + r.note
+    return r.model_copy(update={"status": "mismatch", "note": note})
 
 
 def _cache_put(conn: sqlite3.Connection, key: str, res: CitationResult) -> None:
@@ -175,7 +265,9 @@ def _cache_put(conn: sqlite3.Connection, key: str, res: CitationResult) -> None:
 
 
 def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection | None = None) -> CitationResult:
-    if c.kind in ("legislation", "case"):
+    if c.kind == "legislation":   # Commonwealth Acts: the Federal Register of Legislation (fixtures, then live)
+        return frl.lookup(c, online=_online(online), conn=conn)
+    if c.kind == "case":
         return CitationResult(citation=c, status="not_checked", source="none", note=LEGISLATION_NOTE)
     if c.kind == "other":
         return CitationResult(citation=c, status="not_checked", source="none", note=GOVERNMENT_NOTE)
@@ -184,7 +276,8 @@ def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection 
     if fx:
         if fx.get("matched_title"):
             # the cache stores what the index holds; found vs mismatch depends on how *this* document cited it
-            return _judge(c, fx["matched_title"], fx.get("matched_year"), fx.get("matched_venue"), fx.get("doi"), "fixture")
+            return _with_updates(_judge(c, fx["matched_title"], fx.get("matched_year"), fx.get("matched_venue"),
+                                        fx.get("doi"), "fixture"), None, False)
         return CitationResult(citation=c, **fx)
     if conn is not None and key:
         row = conn.execute("SELECT payload FROM citation_cache WHERE key=?", (key,)).fetchone()
@@ -206,12 +299,25 @@ def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection 
             break
         if best is None or (res.score or 0) > (best.score or 0):
             best = res
+    if best is not None:
+        best = best.model_copy(update={"checked_at": datetime.now(timezone.utc)})   # a live answer, stamped
     if best is None or (errors and best.status == "not_found"):
         return CitationResult(citation=c, status="not_checked", source="none",
                               note="Lookup failed (" + ", ".join(errors) + "). Flagged for a person to confirm.")
     if conn is not None:
         _cache_put(conn, key, best)
     return best
+
+
+def provenance(r: CitationResult) -> str:
+    """Where and when a result came from, for every row: 'Crossref, live, 19 Oct 14:20' or 'offline copy'."""
+    names = {"crossref": "Crossref", "openalex": "OpenAlex", "frl": "Federal Register of Legislation",
+             "fixture": "offline copy", "none": "not looked up"}
+    where = names.get(r.source, r.source)
+    if r.checked_at is None:
+        return where if r.source in ("fixture", "none") else f"{where}, cached"
+    t = r.checked_at if r.checked_at.tzinfo else r.checked_at.replace(tzinfo=timezone.utc)
+    return f"{where}, live, {t.astimezone().strftime('%d %b %H:%M')}"
 
 
 def recheck(results: list[CitationResult], *, conn: sqlite3.Connection | None = None) -> list[CitationResult]:
@@ -236,6 +342,20 @@ _STAGE_SOURCE = {"crossref": "Crossref", "openalex": "OpenAlex"}
 def match_stage(r: CitationResult) -> tuple[str, str]:
     """(stage, strength) for display: which lookup step decided this result, and how strong it is. Presentation only."""
     sim = f", similarity {r.score:.2f}" if r.score is not None else ""
+    if r.citation.kind == "legislation" and r.source in ("fixture", "frl"):
+        where = "the Federal Register of Legislation"
+        stage = "Step 2: exact Act name on the Federal Register of Legislation" + (" (offline copy)" if r.source == "fixture" else "")
+        if r.status == "found":
+            strength = "found in force on the register"
+        elif r.status == "mismatch":
+            strength = "found, details differ (repealed or another year)"
+        elif r.note.startswith("The register lists this Act as"):
+            strength = "listed with another status; a person confirms"
+        elif r.note.startswith("No Commonwealth Act"):
+            strength = "no Commonwealth Act of this name; a person confirms"
+        else:
+            strength = "not checked; a person confirms"
+        return stage, strength
     if r.source == "fixture":
         stage, where = "Step 2: lookup in offline cache" + sim, "cached index record"
     elif r.source in _STAGE_SOURCE:
