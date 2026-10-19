@@ -61,3 +61,18 @@ def test_a_caller_cannot_switch_the_mode(client_in):
     r = client.post("/check", json={**PASTED, "mode": "demo", "use_llm": True})   # extra fields are ignored
     assert r.status_code == 200 and calls == [] and client.get("/health").json()["ai_for_pasted_text"] is False
     main.conn.close()
+
+
+def test_demo_replays_a_recorded_split_with_no_key(client_in, monkeypatch):
+    from recordcheck import db, evidence
+    client, calls, main = client_in("demo")
+    doc = db.get_document(main.conn, "DOC-2026/0587-eligibility")
+    evidence._record_split(main.conn, doc.body, evidence._regex_split(doc.body), "claude-recorded-1")
+    monkeypatch.delenv("ANTHROPIC_API_KEY")                       # the stage project has no key
+    r = client.post("/check", json={"document_id": "DOC-2026/0587-eligibility"})
+    assert r.json()["assessment"]["method"].startswith("llm:claude-recorded-1 (recorded ") and calls == []
+    h = client.get("/health").json()
+    assert h["ai_for_trial_documents"] is True and h["ai_live_calls"] is False
+    other = client.post("/check", json={"document_id": "DOC-2026/briefing-waivers"})   # not recorded, no key
+    assert other.json()["assessment"]["method"] == "sentence-split" and calls == []
+    main.conn.close()
