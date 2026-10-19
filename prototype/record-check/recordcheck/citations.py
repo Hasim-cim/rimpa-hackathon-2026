@@ -241,8 +241,16 @@ def match_stage(r: CitationResult) -> tuple[str, str]:
     if r.citation.kind == "legislation" and r.source in ("fixture", "frl"):
         where = "the Federal Register of Legislation"
         stage = "Step 2: exact Act name on the Federal Register of Legislation" + (" (offline copy)" if r.source == "fixture" else "")
-        strength = {"found": "found in force on the register", "mismatch": "found, details differ (repealed or another year)",
-                    "not_checked": "no Commonwealth Act of this name; a person confirms"}.get(r.status, "a person confirms")
+        if r.status == "found":
+            strength = "found in force on the register"
+        elif r.status == "mismatch":
+            strength = "found, details differ (repealed or another year)"
+        elif r.note.startswith("The register lists this Act as"):
+            strength = "listed with another status; a person confirms"
+        elif r.note.startswith("No Commonwealth Act"):
+            strength = "no Commonwealth Act of this name; a person confirms"
+        else:
+            strength = "not checked; a person confirms"
         return stage, strength
     if r.source == "fixture":
         stage, where = "Step 2: lookup in offline cache" + sim, "cached index record"

@@ -42,7 +42,7 @@ def test_offline_fixtures_cover_the_demo_and_never_say_fabricated():
     assert ssa.status == "found" and "C2004A04121" in ssa.note and "section is for a person to confirm" in ssa.note
     assert ps.status == "mismatch" and "repealed on 5 December 1999" in ps.note and "Public Employment" in ps.note
     assert renamed.status == "mismatch" and "Social Services Consolidation Act 1947" in renamed.note   # both names
-    assert year.status == "mismatch" and "Privacy Act 1988, not Privacy Act 1989" in year.note
+    assert year.status == "not_checked"          # no wrong-year fixture: live cannot find it either (tested 19 Oct)
     assert invented.status == "not_checked" and "No Commonwealth Act of this name" in invented.note
     assert all(r.status != "not_found" for r in got.values())
 
@@ -88,6 +88,7 @@ def test_live_in_force_is_cached_so_a_second_check_makes_no_call(conn, monkeypat
 
 
 def test_live_wrong_year_keeps_acts_only(conn, monkeypatch):
+    """The client-side filter, if the register's contains answer ever includes the Act itself (it did not, 19 Oct)."""
     calls = []
     contains = [{"id": "F2017L01234", "name": "Privacy Act 1988 - Tax File Number Guidelines", "collection": "LegislativeInstrument"},
                 {"id": "C2004A03712", "name": "Privacy Act 1988", "status": "InForce", "year": 1988, "collection": "Act"}]
@@ -125,3 +126,14 @@ def test_offline_and_not_cached_makes_no_call(monkeypatch):
     monkeypatch.setattr(frl, "_load_fixtures", lambda: {})
     r = cit.lookup(ref("Archives Act 1983 (Cth)"), online=False)
     assert r.status == "not_checked" and "online lookup is off" in r.note
+
+
+def test_stage_labels_follow_the_register_result():
+    from recordcheck.models import CitationResult
+    c = ref("Archives Act 1983 (Cth)")
+    other = CitationResult(citation=c, status="not_checked", source="frl",
+                           note="The register lists this Act as NotYetInForce (C2099A00001); a person should confirm.")
+    none = CitationResult(citation=c, status="not_checked", source="frl", note=frl.NO_MATCH)
+    assert cit.match_stage(other)[1] == "listed with another status; a person confirms"
+    assert cit.match_stage(none)[1] == "no Commonwealth Act of this name; a person confirms"
+

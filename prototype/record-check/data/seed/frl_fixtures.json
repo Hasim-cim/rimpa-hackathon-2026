@@ -1,5 +1,5 @@
 {
-  "_note": "Answers of the Federal Register of Legislation (api.prod.legislation.gov.au/v1/titles), captured 19 Oct 2026 by the pre-plan probe (research/live-api-evidence/frl/). Keyed by normalised Act name; 'exact' = name eq (also matches former names), 'similar' = same stem, another year, Acts only. Public Service Act 1922 keeps the register's statusHistory. 'Privacy Act 1989' is constructed from the captured exact answer for Privacy Act 1988, not a captured contains response. 'Records Integrity Act 2021' is invented: no match.",
+  "_note": "Answers of the Federal Register of Legislation (api.prod.legislation.gov.au/v1/titles), captured 19 Oct 2026 by the pre-plan probe (research/live-api-evidence/frl/). Keyed by normalised Act name; 'exact' = name eq (also matches former names), 'similar' = same stem, another year, Acts only. Public Service Act 1922 keeps the register's statusHistory. No wrong-year entry: live, contains(name,'Privacy Act') does not return the Act itself (tested 19 Oct), so a wrong year reads not_checked offline and live alike. 'Records Integrity Act 2021' is invented: no match.",
   "Social Security Act 1991": {
     "exact": [
       {
@@ -126,18 +126,6 @@
       }
     ],
     "similar": []
-  },
-  "Privacy Act 1989": {
-    "exact": [],
-    "similar": [
-      {
-        "id": "C2004A03712",
-        "name": "Privacy Act 1988",
-        "status": "InForce",
-        "year": 1988,
-        "collection": "Act"
-      }
-    ]
   },
   "Records Integrity Act 2021": {
     "exact": [],
