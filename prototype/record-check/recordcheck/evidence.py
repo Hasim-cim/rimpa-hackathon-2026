@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime, timezone
 from typing import Iterable
@@ -34,19 +35,48 @@ def _regex_split(body: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-def _split(doc: Document, use_llm: bool | None) -> tuple[list[Claim], str]:
+def _split_key(body: str) -> str:
+    """Cache key for a recorded AI split: the exact text and the model asked for."""
+    from .hashing import sha256
+    return f"split:{sha256(body.encode('utf-8'))}:{llm.MODEL}"
+
+
+def recorded_split(conn, body: str) -> dict | None:
+    """A split recorded earlier for this exact text and model: {claims, model_returned, at}, or None."""
+    if conn is None:
+        return None
+    row = conn.execute("SELECT payload FROM citation_cache WHERE key=?", (_split_key(body),)).fetchone()
+    return json.loads(row["payload"]) if row else None
+
+
+def _record_split(conn, body: str, claims: list[str], model_returned: str) -> None:
+    if conn is None:
+        return
+    at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    db.upsert(conn, "citation_cache", "key", dict(key=_split_key(body), fetched_at=at,
+              payload=json.dumps({"claims": claims, "model_returned": model_returned, "at": at})))
+    conn.commit()
+
+
+def _split(doc: Document, use_llm: bool | None, conn=None) -> tuple[list[Claim], str]:
     if doc.claims:
         return list(doc.claims), "seed"
     if use_llm is None:
         use_llm = llm.available()
     texts, method = _regex_split(doc.body), "sentence-split"
     if use_llm:
-        try:
-            got = _verbatim(llm.split_claims(doc.body), doc.body)
-        except Exception:  # network, quota, malformed output: the check still runs, on plain sentences
-            got = []
-        if got and _covers(got, texts):
-            texts, method = got, f"llm:{llm.LAST_MODEL_RETURNED or llm.MODEL}"
+        rec = recorded_split(conn, doc.body)
+        if rec:   # replay: the split really came from that model, when it was recorded
+            texts, method = rec["claims"], f"llm:{rec['model_returned']} (recorded {rec['at'][:16].replace('T', ' ')} UTC)"
+        else:
+            try:
+                got = _verbatim(llm.split_claims(doc.body), doc.body)
+            except Exception:  # network, quota, malformed output: the check still runs, on plain sentences
+                got = []
+            if got and _covers(got, texts):
+                returned = llm.LAST_MODEL_RETURNED or llm.MODEL
+                texts, method = got, f"llm:{returned}"
+                _record_split(conn, doc.body, got, returned)
     claims = [Claim(id=f"c{i}", text=t, author=doc.default_author, position=i, citation_refs=_refs(t))
               for i, t in enumerate(texts, 1)]
     return claims, method
@@ -347,7 +377,7 @@ def assess(doc: Document, conn, citations: Iterable[CitationResult] = (), use_ll
         records = [r if (r.system in policy.authoritative_systems or not r.authoritative)
                    else r.model_copy(update={"authoritative": False}) for r in records]
     recs = {r.id: r for r in records}
-    claims, method = _split(doc, use_llm)
+    claims, method = _split(doc, use_llm, conn)
     dtype = next((d for d in policy.document_types if d.id == document_type), None) if policy and document_type else None
     name = dtype.name if dtype else document_type
     verdicts = [weigh(c, link_claim(c, records, doc.case_id), recs, citations, document_type, name) for c in claims]

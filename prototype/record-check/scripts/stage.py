@@ -50,21 +50,62 @@ def reset(database_url: str | None = None, db_file: Path = STAGE_DB, policy_file
             f"policy v{pol.version} ({pol.sector}); chain {'ok' if chain.ok else 'BROKEN'} ({chain.checked}).")
 
 
+def record_ai(database_url: str | None = None, db_file: Path = STAGE_DB, policy_file: Path = STAGE_POLICY) -> list[str]:
+    """Pre-record the AI claim split for every trial document that has no seed claims, on the stage target only, so the
+    demo replays the same split (same numbers) every time. Needs ANTHROPIC_API_KEY. Returns one line per document."""
+    os.environ.pop("DATABASE_URL", None)
+    if database_url:
+        os.environ["DATABASE_URL"] = database_url
+    else:
+        os.environ["RECORDCHECK_DB"] = str(db_file)
+        os.environ["RECORDCHECK_POLICY"] = str(policy_file)
+    from recordcheck import db, evidence, llm, policy
+    if not llm.available():
+        raise SystemExit("ANTHROPIC_API_KEY is not set: nothing to record.")
+    db._shared = None
+    conn = db.open_db()
+    out = []
+    try:
+        pol = policy.load()
+        for d in db.get_documents(conn):
+            if d.claims:
+                out.append(f"{d.id}: seed claims, no AI split needed")
+                continue
+            a = evidence.assess(d, conn, use_llm=True, policy=pol)
+            out.append(f"{d.id}: {len(a.claims)} statements, {a.method}")
+    finally:
+        conn.close()
+        if db._shared is not None:
+            db._shared.close()
+            db._shared = None
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("reset", help="wipe and reseed the stage target")
     r.add_argument("--database-url", help="Postgres stage target; must not be the shared database")
     r.add_argument("--yes", action="store_true", help="confirm wiping a Postgres target")
+    r.add_argument("--record-ai", action="store_true", help="after the reset, pre-record the AI split of the trial documents")
+    ra = sub.add_parser("record-ai", help="pre-record the AI split of the trial documents on the stage target")
+    ra.add_argument("--database-url", help="Postgres stage target; must not be the shared database")
+    ra.add_argument("--yes", action="store_true", help="confirm writing to a Postgres target")
     sub.add_parser("env", help="print the env lines for running on the local stage DB")
     a = ap.parse_args(argv)
     if a.cmd == "env":
         print(f"RECORDCHECK_DB={STAGE_DB}\nRECORDCHECK_POLICY={STAGE_POLICY}")
         return 0
     if a.database_url and not a.yes:
-        print(f"Refusing to wipe {urlsplit(a.database_url).hostname} without --yes.", file=sys.stderr)
+        verb = "write to" if a.cmd == "record-ai" else "wipe"
+        print(f"Refusing to {verb} {urlsplit(a.database_url).hostname} without --yes.", file=sys.stderr)
         return 2
+    if a.cmd == "record-ai":
+        print("\n".join(record_ai(a.database_url)))
+        return 0
     print(reset(a.database_url))
+    if getattr(a, "record_ai", False):
+        print("\n".join(record_ai(a.database_url)))
     return 0
 
 
