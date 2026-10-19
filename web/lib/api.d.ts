@@ -92,6 +92,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/drafts/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Draft Reviews */
+        get: operations["list_draft_reviews_drafts_review_get"];
+        put?: never;
+        /**
+         * Send For Review
+         * @description Send a draft the gate does not pass to a person. The server re-runs the check and keeps its own reasons.
+         */
+        post: operations["send_for_review_drafts_review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/policy": {
         parameters: {
             query?: never;
@@ -871,6 +892,73 @@ export interface components {
             checks?: ("citations" | "evidence")[];
             quality?: components["schemas"]["QualityBar"];
         };
+        /**
+         * DraftReview
+         * @description A draft sent to a person before filing, because the gate said it needs one. Never a passport, never filed.
+         *     For a pasted (ad hoc) draft only the title and a hash of the text are kept: nothing pasted is stored.
+         */
+        DraftReview: {
+            /** Id */
+            id: string;
+            /** Document Id */
+            document_id: string | null;
+            /** Title */
+            title: string;
+            /** Body Hash */
+            body_hash?: string | null;
+            /** Document Type */
+            document_type: string;
+            /**
+             * Status
+             * @default open
+             * @enum {string}
+             */
+            status: "open" | "closed";
+            /**
+             * Gate
+             * @enum {string}
+             */
+            gate: "ready" | "attention" | "blocked";
+            /** Reasons */
+            reasons: string[];
+            /** Requested By */
+            requested_by: string;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /**
+             * Created
+             * Format: date-time
+             */
+            created: string;
+        };
+        /** DraftReviewRequest */
+        DraftReviewRequest: {
+            /** Document Id */
+            document_id?: string | null;
+            /** Document Type */
+            document_type: string;
+            /** Requested By */
+            requested_by: string;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /** Title */
+            title?: string | null;
+            /** Body */
+            body?: string | null;
+            /**
+             * References
+             * @default
+             */
+            references: string;
+            /** Case Id */
+            case_id?: string | null;
+        };
         /** FromPreset */
         FromPreset: {
             /** Preset Id */
@@ -1323,6 +1411,11 @@ export interface components {
             closed: number;
             /** Label */
             label: string;
+            /**
+             * Drafts Open
+             * @default 0
+             */
+            drafts_open: number;
         };
         /** QueueRequest */
         QueueRequest: {
@@ -1878,6 +1971,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LevelsResponse"];
+                };
+            };
+        };
+    };
+    list_draft_reviews_drafts_review_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftReview"][];
+                };
+            };
+        };
+    };
+    send_for_review_drafts_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftReview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

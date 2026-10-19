@@ -17,7 +17,6 @@ export default function Nav() {
   return (
     <nav aria-label="Main" className="tabs">
       {MAIN.map(link)}
-      <span className="divider" aria-hidden="true" />
       {MANAGER.map(link)}
       <details className="more" onClick={(e) => { if ((e.target as HTMLElement).closest("a")) e.currentTarget.open = false; }}>
         <summary aria-current={inMore ? "page" : undefined}>More</summary>

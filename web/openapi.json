@@ -126,6 +126,65 @@
         }
       }
     },
+    "/drafts/review": {
+      "get": {
+        "summary": "List Draft Reviews",
+        "operationId": "list_draft_reviews_drafts_review_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DraftReview"
+                  },
+                  "type": "array",
+                  "title": "Response List Draft Reviews Drafts Review Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Send For Review",
+        "description": "Send a draft the gate does not pass to a person. The server re-runs the check and keeps its own reasons.",
+        "operationId": "send_for_review_drafts_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftReview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/policy": {
       "get": {
         "summary": "Get Policy",
@@ -1899,6 +1958,168 @@
         ],
         "title": "DocumentType"
       },
+      "DraftReview": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Hash"
+          },
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "default": "open"
+          },
+          "gate": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "attention",
+              "blocked"
+            ],
+            "title": "Gate"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "requested_by": {
+            "type": "string",
+            "title": "Requested By"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "document_id",
+          "title",
+          "document_type",
+          "gate",
+          "reasons",
+          "requested_by",
+          "created"
+        ],
+        "title": "DraftReview",
+        "description": "A draft sent to a person before filing, because the gate said it needs one. Never a passport, never filed.\nFor a pasted (ad hoc) draft only the title and a hash of the text are kept: nothing pasted is stored."
+      },
+      "DraftReviewRequest": {
+        "properties": {
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "requested_by": {
+            "type": "string",
+            "title": "Requested By"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "references": {
+            "type": "string",
+            "title": "References",
+            "default": ""
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_type",
+          "requested_by"
+        ],
+        "title": "DraftReviewRequest"
+      },
       "FromPreset": {
         "properties": {
           "preset_id": {
@@ -3076,6 +3297,11 @@
           "label": {
             "type": "string",
             "title": "Label"
+          },
+          "drafts_open": {
+            "type": "integer",
+            "title": "Drafts Open",
+            "default": 0
           }
         },
         "type": "object",

@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { api, ATTN, CITE_COLOURS, GATE_COLOURS, GREY, OK, Pill, STATUS_COLOURS, STATUS_MARKS, WEIGHT_COLOURS, type S } from "@/lib/ui";
 import PageHead from "../page-head";
+import Waves from "../waves";
 
 const SUMMARY_ONLY = "Filed before checks were stored with the passport: summary counts only.";
 const TIER_WORDS: Record<string, string> = {
@@ -27,6 +28,14 @@ const fp = (h?: string | null) => (h ? <span className="mono">{h.slice(0, 6)}…
 type D = Record<string, unknown>;
 type Link_ = { record_id: string; rule: string; note: string };
 type Item = Record<string, string> & { counted?: boolean; links?: Link_[] };
+
+/** "Ready to file." style lead: the part of the API headline before its colon, else from the status. Counts only: no new maths. */
+const lead = (s: S["RecordSummary"]) => s.headline.includes(": ") ? s.headline.split(": ")[0] : s.status === "ok" ? "Ready to file" : "Needs a person";
+const countsLine = (cs: S["CheckSummary"][]) => {
+  const n = (st: string) => cs.filter((c) => c.status === st).length;
+  const extra = [n("not_run") && `${n("not_run")} not applicable`, n("attention") && `${n("attention")} need${n("attention") === 1 ? "s" : ""} attention`, n("problem") && `${n("problem")} with a problem`].filter(Boolean);
+  return `${n("ok")} of ${cs.length} checks passed${extra.length ? "; " + extra.join("; ") : ""}.`;
+};
 
 const KV = ({ k, children }: { k: string; children: React.ReactNode }) => (
   <div className="kv"><span className="k">{k}</span><span className="v">{children}</span></div>
@@ -136,7 +145,7 @@ function Card({ p, docName }: { p: S["Passport"]; docName: string }) {
   const prompt = pr.prompt.length <= 160 ? pr.prompt : pr.prompt.slice(0, 157) + "...";
   return (
     <div className="pass" data-tour="passport">
-      <div className="pass-head"><b>Passport</b><span>The record package kept with this output</span></div>
+      <div className="pass-head"><Waves className="waves" count={10} height={40} yellow="#f2b705" magenta="#f2b705" /><b>Passport</b><span>The record package kept with this output</span></div>
       <div className="groups">
         <div className="group"><h5>Record</h5>
           <KV2 k="Title">{r.title}</KV2><KV2 k="Created">{fmt(r.created)}</KV2>
@@ -228,7 +237,7 @@ function Records() {
                 </div>
                 <div className="s">
                   <span className="pill" style={{ background: bg, color: fg }}>{label}</span>
-                  <span>{fmtDay(p.record.created)}</span><span>{p.business.tier}</span>
+                  <span>{fmtDay(p.record.created)}</span><span className="tier">{p.business.tier}</span>
                 </div>
               </Link>
             );
@@ -261,13 +270,17 @@ function Records() {
             </div>
             {!view.at_issue && !view.disposed && <div className="older">{SUMMARY_ONLY}</div>}
             {view.disposed && <div className="older">Content destroyed under the disposal authority; hash retained.</div>}
+            <div className={`banner ${summary.status === "ok" ? "ok" : summary.status === "problem" ? "bad" : "attn"}`} data-testid="check-counts">
+              <span className="ic" aria-hidden="true" style={summary.status === "ok" ? undefined : { display: "none" }}>✓</span>
+              <span className="txt"><b>{lead(summary)}.</b> {countsLine(view.checks)}</span>
+            </div>
             <div className="panel" data-tour="checks">
               <div className="panel-head"><h2>Checks done on this record</h2><span>Open any check for the detail</span></div>
               {view.checks.map((c) => {
                 const [bg, fg] = STATUS_COLOURS[c.status] ?? GREY;
                 const isOpen = open === c.id;
                 return (
-                  <div className="chk" key={c.id}>
+                  <div className={isOpen ? "chk open" : "chk"} key={c.id}>
                     <button type="button" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : c.id)}>
                       <span className="dot" style={{ background: bg, color: fg }} aria-hidden="true">{STATUS_MARKS[c.status]}</span>
                       <span className="n">{c.name}</span><span className="sm">{c.summary}</span>
