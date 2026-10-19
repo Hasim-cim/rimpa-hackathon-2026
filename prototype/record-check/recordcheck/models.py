@@ -559,6 +559,21 @@ class BiasCounts(BaseModel):
     label: str
 
 
+class RecordIndexRow(BaseModel):
+    """One row of the Records list, for filters and search; statuses decided by the same rules as /view and /dashboard."""
+    record_id: str
+    title: str
+    case_id: str | None                      # from the filed document, else from its source records
+    tier: Tier
+    function: str
+    created: datetime
+    gate: GateStatus | None
+    status: Literal["filed", "needs_person", "changed", "disposed", "log_only"]
+    status_label: str
+    changed_since: bool                      # the passport view's live "Since filing" check is a problem
+    document_type: str | None
+
+
 class DraftReview(BaseModel):
     """A draft sent to a person before filing, because the gate said it needs one. Never a passport, never filed.
     For a pasted (ad hoc) draft only the title and a hash of the text are kept: nothing pasted is stored."""

@@ -11,12 +11,12 @@ from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from recordcheck import citations as cit
-from recordcheck import dashboard, db, disposal, drafts, evidence, gate, llm, passport, printout, recall, sources
+from recordcheck import dashboard, db, disposal, drafts, evidence, gate, index, llm, passport, printout, recall, sources
 from recordcheck import policy as policymod
 from recordcheck import view as vw
 from recordcheck.models import (
     AIEvent, Assessment, ChainReport, CitationResult, DashboardReport, DisposalEntry, DisposalItem, Document, GateResult,
-    DraftReview, ModelRegistryEntry, Passport, PassportView, RecordSummary, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
+    DraftReview, ModelRegistryEntry, RecordIndexRow, Passport, PassportView, RecordSummary, Policy, RecallResult, ReliabilityReport, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
     SourceRecord, Tier,
 )
 
@@ -371,6 +371,13 @@ class FromPreset(BaseModel):
 
 class SuggestRequest(BaseModel):
     description: str
+
+
+@app.get("/records/index", response_model=list[RecordIndexRow])
+def records_index() -> list[RecordIndexRow]:
+    """The Records list for filters and search, newest first: one row per passport with its status."""
+    with lock:
+        return index.rows(conn, policymod.load())
 
 
 @app.get("/passports", response_model=list[Passport])
