@@ -77,7 +77,7 @@ export default function Dashboard() {
               {b2.filed_by_week.map((w) => (
                 <div key={w.week_start} className="bar-row">
                   <span className="muted">{w.week_start}</span>
-                  <span className="bar" style={{ width: `${(w.filed / maxWeek) * 100}%` }} aria-hidden="true" />
+                  <span className="wbar" style={{ width: `${(w.filed / maxWeek) * 100}%` }} aria-hidden="true" />
                   <span>{w.filed} filed, {w.approved} approved</span>
                 </div>
               ))}

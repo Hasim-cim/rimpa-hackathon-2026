@@ -140,4 +140,4 @@ details.card-d > summary { cursor: pointer; font-weight: 600; }
 .live div { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #4b5563; }
 .live b { display: block; font-size: 26px; line-height: 1.2; color: #111827; }
 .bar-row { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 10px; font-size: 13px; margin: 4px 0; }
-.bar { display: block; height: 10px; border-radius: 5px; background: #1e3a8a; min-width: 2px; }
+.wbar { display: block; justify-self: start; height: 10px; border-radius: 5px; background: #1e3a8a; min-width: 2px; }

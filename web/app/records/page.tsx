@@ -73,7 +73,7 @@ function Detail({ check }: { check: S["CheckSummary"] }) {
       const src = (d.sources ?? []) as Item[];
       const systems = (d.systems ?? []) as string[];
       const stmts = (d.statements ?? []) as { claim_id: string; text: string; sources: string[]; narrow: boolean }[];
-      return <>{d.method ? <p className="muted">What this checks: {String(d.method)}.</p> : null}{note}
+      return <>{d.method ? <p className="muted">What this checks: {String(d.method).replace(/\.+$/, "")}.</p> : null}{note}
         {d.suggestion ? <p><b>Suggestion.</b> {String(d.suggestion)}</p> : null}
         {systems.length > 0 && <KV k="Systems relied on">{systems.join(", ")}</KV>}
         {stmts.map((st) => (
