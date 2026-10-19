@@ -937,6 +937,16 @@ export interface components {
             display: string;
             /** Plain */
             plain: string;
+            /**
+             * Not Counted
+             * @default 0
+             */
+            not_counted: number;
+            /**
+             * Not Counted Label
+             * @default
+             */
+            not_counted_label: string;
         };
         /** Mark */
         Mark: {

@@ -2097,6 +2097,16 @@
           "plain": {
             "type": "string",
             "title": "Plain"
+          },
+          "not_counted": {
+            "type": "integer",
+            "title": "Not Counted",
+            "default": 0
+          },
+          "not_counted_label": {
+            "type": "string",
+            "title": "Not Counted Label",
+            "default": ""
           }
         },
         "type": "object",
