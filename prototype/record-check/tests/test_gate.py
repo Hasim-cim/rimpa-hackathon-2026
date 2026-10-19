@@ -108,7 +108,11 @@ def test_passport_records_the_policy_it_was_judged_against(tmp_path, monkeypatch
     pol = policy.load()
     ev = AIEvent(id="EVT-y", app_id="agency-assistant", user="u", created=dt.datetime(2026, 10, 17, 12, 0),
                  prompt="p", output="o", model_requested="m", model_returned="m", provider="v")
-    p = passport.build(ev, tier="T1", conn=conn, document_type="case-note", gate="ready", policy=pol)
+    from recordcheck.models import Assessment, Claim, Verdict
+    ok = Assessment(document_id="D", claims=[Claim(id="c1", text="t", author="ai", position=1)],
+                    verdicts=[Verdict(claim_id="c1", weight="supported", reason="r")],
+                    assessed_at=dt.datetime(2026, 10, 17, 12, 0), method="seed")
+    p = passport.build(ev, tier="T1", conn=conn, assessment=ok, document_type="case-note", policy=pol)
     assert p.paradata.policy_version.startswith("policy v") and p.paradata.policy_hash == passport.policy_hash(pol)
     # saving an unchanged bar keeps the same content hash; the save itself is audited
     saved = policy.save(pol, by="im", conn=conn)

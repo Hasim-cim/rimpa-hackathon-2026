@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import html
 import os
-import sqlite3
 import sys
 import uuid
 from datetime import date, datetime, timezone
@@ -16,12 +15,13 @@ import pandas as pd
 import streamlit as st
 
 from recordcheck import citations as cit
-from recordcheck import db, disposal, evidence, gate as gatemod, llm, passport, recall
+from recordcheck import db, disposal, evidence, gate as gatemod, llm, passport, recall, sources
 from recordcheck import policy as policymod
 from recordcheck.hashing import short
 from recordcheck.models import AIEvent, DocumentType, Passport, Policy, QualityBar, Review
 
 DEFAULT_DOC = "DOC-2026/0412-summary"
+AUTHOR = "A. Caseworker"            # the demo user who drafted with AI; cannot also review
 FALLBACK_MODEL = "northstar-8-2026-09-15"
 FALLBACK_PROVIDER = "Northstar AI (fictional vendor)"
 
@@ -30,6 +30,10 @@ CITE_COLOURS = {"found": ("#d1f0dc", "#14532d"), "mismatch": ("#fde8b8", "#7a4a0
 WEIGHT_COLOURS = {"supported": ("#d1f0dc", "#14532d"), "weak": ("#fde8b8", "#7a4a00"),
                   "unsupported": ("#f8d0d0", "#7f1d1d"), "contradicted": ("#4b5563", "#ffffff")}
 DISPOSAL_COLOURS = {"due": ("#fde8b8", "#7a4a00"), "on hold": ("#e5e7eb", "#374151")}
+ROT_COLOURS = {"redundant": ("#d6e6fb", "#1e3a8a"), "obsolete": ("#fde8b8", "#7a4a00"),
+               "trivial": ("#e5e7eb", "#374151"), "draft": ("#f8d0d0", "#7f1d1d")}
+ROT_NAMES = {"redundant": "Redundant", "obsolete": "Obsolete", "trivial": "Trivial", "draft": "Draft"}
+DEMO_OLD, DEMO_NEW = "REC-2026/004790", "REC-2026/004912"   # debt notice and its reissue (example data)
 TIER_COLOURS = {"T0": ("#e5e7eb", "#374151"), "T1": ("#d6e6fb", "#1e3a8a"),
                 "T2": ("#fde8b8", "#7a4a00"), "T3": ("#f8d0d0", "#7f1d1d")}
 
@@ -48,14 +52,9 @@ CSS = """
 # ---------- helpers ----------
 
 @st.cache_resource
-def get_conn() -> sqlite3.Connection:
-    # db.open_db() builds and seeds the DB. Its connection is not usable across Streamlit's script threads,
-    # so we reopen the same file with check_same_thread=False.
-    db.open_db().close()
-    conn = sqlite3.connect(db.db_path(), check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys=ON")
-    return conn
+def get_conn():
+    # builds and seeds the DB; SQLite, or Postgres when DATABASE_URL is set; safe across Streamlit's script threads
+    return db.open_db()
 
 
 def get_policy() -> Policy:
@@ -218,6 +217,7 @@ def real_model() -> tuple[str, str, str]:
 
 def file_section(conn, doc, results, assessment, dtype: DocumentType) -> None:
     st.markdown("#### File as record")
+    pol = get_policy()
     c1, c2 = st.columns(2)
     reviewer = c1.text_input("Reviewer name", "B. Team Leader")
     decision = c2.selectbox("Decision", ["approved", "approved_with_edits", "rejected"])
@@ -226,10 +226,10 @@ def file_section(conn, doc, results, assessment, dtype: DocumentType) -> None:
     review = Review(reviewer=reviewer.strip(), decision=decision, reviewed_at=now) if reviewer.strip() else None
     rules = get_rules()
     # the type's default tier is the floor; the escalation rules can only raise it
-    probe = AIEvent(id="probe", app_id="agency-assistant", user="A. Caseworker", created=now, prompt="", output="",
+    probe = AIEvent(id="probe", app_id="agency-assistant", user=AUTHOR, created=now, prompt="", output="",
                     model_requested="", model_returned="", provider="", exported_to_document=doc.id, decision_flag=flag)
     tier = max(dtype.default_tier, passport.classify(probe, rules), key=lambda t: passport.TIER_ORDER[t])
-    result = gatemod.evaluate(assessment, results, review, dtype, tier)
+    result = gatemod.evaluate(assessment, results, review, dtype, tier, author=AUTHOR)
     st.markdown(f"Gate with this review (tier {tier}):")
     gate_banner(result)
     blocked = result.status == "blocked"
@@ -239,13 +239,17 @@ def file_section(conn, doc, results, assessment, dtype: DocumentType) -> None:
         linked = sorted({l.record_id for v in assessment.verdicts for l in v.links})
         requested, returned, provider = real_model()
         event = AIEvent(
-            id=f"EVT-{now:%Y%m%d%H%M%S}-{uuid.uuid4().hex[:4]}", app_id="agency-assistant", user="A. Caseworker",
+            id=f"EVT-{now:%Y%m%d%H%M%S}-{uuid.uuid4().hex[:4]}", app_id="agency-assistant", user=AUTHOR,
             created=now, prompt="Summarise the hardship policy for case 2026/0412 and cite authorities",
             output=doc.body, model_requested=requested, model_returned=returned, provider=provider,
             source_record_ids=linked, exported_to_document=doc.id, decision_flag=flag,
             function="Debt waiver assessment")
-        p = passport.build(event, tier=tier, assessment=assessment, citations=results, review=review,
-                           conn=conn, rules=rules, document_type=dtype.id, gate=result.status, policy=pol)
+        try:
+            p = passport.build(event, tier=tier, assessment=assessment, citations=results, review=review,
+                               conn=conn, rules=rules, document_type=dtype.id, policy=pol)
+        except ValueError as e:  # the engine re-runs the gate and the tier, self-review and record-id rules
+            st.error(f"Not filed: {e}")
+            return
         st.session_state["last_record"] = p.record.id
         st.session_state["issued_msg"] = f"Passport issued: {p.record.id} ({tier})"
     if st.session_state.get("issued_msg"):
@@ -479,6 +483,16 @@ def tab_passport(conn) -> None:
 
 # ---------- Recall ----------
 
+def recall_table(items) -> None:
+    rows = "".join(
+        f"<tr><td>{esc(i.record_id)}</td><td>{pill(i.tier, TIER_COLOURS, i.tier)}</td><td>{esc(i.function)}</td>"
+        f"<td>{i.created:%Y-%m-%d}</td><td>{esc(i.reviewer or 'none')}</td><td>{'yes' if i.queued else 'no'}</td></tr>"
+        for i in items)
+    st.markdown("<table style='width:100%;font-size:0.9rem'><thead><tr><th align=left>Record id</th><th align=left>Tier</th>"
+                "<th align=left>Function</th><th align=left>Created</th><th align=left>Reviewer</th><th align=left>Queued</th></tr></thead>"
+                f"<tbody>{rows}</tbody></table>", unsafe_allow_html=True)
+
+
 def tab_recall(conn) -> None:
     reg = db.get_model_registry(conn)
     st.markdown("#### Model registry")
@@ -513,13 +527,7 @@ def tab_recall(conn) -> None:
     m[2].metric("T1", n["T1"])
     m[3].metric("T3", n["T3"])
     if res.items:
-        rows = "".join(
-            f"<tr><td>{esc(i.record_id)}</td><td>{pill(i.tier, TIER_COLOURS, i.tier)}</td><td>{esc(i.function)}</td>"
-            f"<td>{i.created:%Y-%m-%d}</td><td>{esc(i.reviewer or 'none')}</td><td>{'yes' if i.queued else 'no'}</td></tr>"
-            for i in res.items)
-        st.markdown("<table style='width:100%;font-size:0.9rem'><thead><tr><th align=left>Record id</th><th align=left>Tier</th>"
-                    "<th align=left>Function</th><th align=left>Created</th><th align=left>Reviewer</th><th align=left>Queued</th></tr></thead>"
-                    f"<tbody>{rows}</tbody></table>", unsafe_allow_html=True)
+        recall_table(res.items)
     else:
         st.info("No T1 to T3 records were made with this model.")
 
@@ -536,6 +544,80 @@ def tab_recall(conn) -> None:
     with st.expander("Audit trail (last 20)"):
         rows = conn.execute("SELECT at, actor, action, subject, detail FROM audit_log ORDER BY id DESC LIMIT 20").fetchall()
         st.dataframe(pd.DataFrame([dict(r) for r in rows]), hide_index=True, width='stretch')
+
+
+# ---------- Sources ----------
+
+def tab_sources(conn) -> None:
+    h = sources.health(conn, get_policy())
+    st.markdown("The records your AI draws on, checked for ROT. Only current records from authoritative systems "
+                "count as evidence; everything flagged here makes a claim read weak at most.")
+    m = st.columns(5)
+    m[0].metric("Count as evidence", f"{h.eligible} of {h.total}")
+    for col, label in zip(m[1:], sources.LABELS):
+        col.metric(ROT_NAMES[label], h.counts[label])
+
+    st.markdown("#### Flagged records")
+    flagged = [i for i in h.items if i.labels]
+    if flagged:
+        rows = "".join(
+            f"<tr><td>{esc(i.record_id)}</td><td>{esc(i.title)}</td><td>{esc(i.system)}</td>"
+            f"<td>{' '.join(pill(ROT_NAMES[l], ROT_COLOURS, l) for l in i.labels)}</td>"
+            f"<td>{esc('; '.join(i.notes))}</td></tr>" for i in flagged)
+        st.markdown("<table style='width:100%;font-size:0.9rem'><thead><tr><th align=left>Record id</th><th align=left>Title</th>"
+                    "<th align=left>System</th><th align=left>Flags</th><th align=left>Why</th></tr></thead>"
+                    f"<tbody>{rows}</tbody></table>", unsafe_allow_html=True)
+    else:
+        st.info("No redundant, obsolete, trivial or draft records.")
+
+    records = db.get_records(conn)
+    ids = [r.id for r in records]
+    current = [r.id for r in records if r.status == "current"]
+    st.markdown("#### Mark a source superseded")
+    st.caption("A new version replaces a record (a reissued notice, a new policy). It stops counting as evidence at once, "
+               "and recall lists every AI output that relied on it.")
+    if current:
+        with st.form("mark_source"):
+            c1, c2 = st.columns(2)
+            rid = c1.selectbox("Record", current, index=current.index(DEMO_OLD) if DEMO_OLD in current else 0)
+            others = ["(none)"] + [i for i in ids if i != rid]
+            by_id = c2.selectbox("Superseded by", others, index=others.index(DEMO_NEW) if DEMO_NEW in others else 0)
+            reason = st.text_input("Reason", "Debt recalculated; notice reissued with a corrected amount")
+            if st.form_submit_button("Mark superseded"):
+                try:
+                    recall.mark_superseded(conn, rid, None if by_id == "(none)" else by_id, reason,
+                                           by="Information manager")
+                    st.session_state["recall_record"] = rid
+                    st.session_state.pop("source_queued_msg", None)
+                    st.rerun()
+                except ValueError as e:
+                    st.error(str(e))
+
+    st.markdown("#### Recall by source record")
+    default = st.session_state.get("recall_record", DEMO_OLD if DEMO_OLD in ids else ids[0])
+    rid = st.selectbox("Outputs that relied on", ids, index=ids.index(default) if default in ids else 0, key="recall_record_pick")
+    res = recall.recall_by_record(conn, rid)
+    r = res.record
+    st.caption(f"{r.title}. Status {r.status}" + (f", superseded by {r.superseded_by}" if r.superseded_by else "") + ".")
+    n = res.counts
+    m = st.columns(4)
+    m[0].metric("Outputs affected", n["T1"] + n["T2"] + n["T3"])
+    m[1].metric("T2 decision-informing", n["T2"])
+    m[2].metric("T1", n["T1"])
+    m[3].metric("T3", n["T3"])
+    if res.items:
+        recall_table(res.items)
+    else:
+        st.info("No T1 to T3 output lists this record as a source.")
+    t2 = [i.record_id for i in res.items if i.tier == "T2"]
+    if st.button(f"Queue T2 outputs for re-review ({len(t2)})", disabled=not t2, key="queue_source_t2"):
+        why = f"Source {rid} is {r.status}" + (f" (superseded by {r.superseded_by})" if r.superseded_by else "")
+        k = recall.queue_for_review(conn, t2, by="Information manager", reason=why)
+        st.session_state["source_queued_msg"] = f"Queued {k} T2 outputs for re-review ({len(t2) - k} were already queued)."
+        st.session_state["recall_record"] = rid
+        st.rerun()
+    if st.session_state.get("source_queued_msg"):
+        st.success(st.session_state["source_queued_msg"])
 
 
 # ---------- Disposal ----------
@@ -639,7 +721,7 @@ def main() -> None:
         st.caption("Example data: invented case 2026/0412. All people, records and references are fictional.")
         st.markdown(f"Live lookups: **{'on' if online_on() else 'off'}**  \nLLM: **{'on' if llm.available() else 'off'}**")
     get_policy()
-    t0, t1, t2, t3, t5, t4 = st.tabs(["Setup", "Check", "Passport", "Recall", "Disposal", "Register"])
+    t0, t1, t2, t3, t6, t5, t4 = st.tabs(["Setup", "Check", "Passport", "Recall", "Sources", "Disposal", "Register"])
     with t0:
         tab_setup(conn)
     with t1:
@@ -648,6 +730,8 @@ def main() -> None:
         tab_passport(conn)
     with t3:
         tab_recall(conn)
+    with t6:
+        tab_sources(conn)
     with t5:
         tab_disposal(conn)
     with t4:

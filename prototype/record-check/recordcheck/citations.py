@@ -15,6 +15,7 @@ from typing import Any
 
 import httpx
 
+from . import db
 from .db import SEED_DIR
 from .models import Citation, CitationResult, CitationStatus
 
@@ -158,8 +159,8 @@ def _best(c: Citation, cands: list[tuple[Any, ...]], source: str) -> CitationRes
 
 
 def _cache_put(conn: sqlite3.Connection, key: str, res: CitationResult) -> None:
-    conn.execute("INSERT OR REPLACE INTO citation_cache (key, payload, fetched_at) VALUES (?,?,?)",
-                 (key, res.model_dump_json(), datetime.now(timezone.utc).isoformat()))
+    db.upsert(conn, "citation_cache", "key",
+              dict(key=key, payload=res.model_dump_json(), fetched_at=datetime.now(timezone.utc).isoformat()))
     conn.commit()
 
 
@@ -199,6 +200,11 @@ def lookup(c: Citation, *, online: bool | None = None, conn: sqlite3.Connection 
     if conn is not None:
         _cache_put(conn, key, best)
     return best
+
+
+def recheck(results: list[CitationResult], *, conn: sqlite3.Connection | None = None) -> list[CitationResult]:
+    """Look up caller-supplied results again from their raw text; a status sent over the API is never trusted."""
+    return [lookup(_parse(r.citation.n, r.citation.raw), conn=conn) for r in results]
 
 
 def check_document(text: str, **kw: Any) -> list[CitationResult]:

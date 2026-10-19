@@ -1,0 +1,23 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "types": "cd ../prototype/record-check && uv run python -c \"import json; from api.main import app; print(json.dumps(app.openapi(), indent=2))\" > ../../web/openapi.json && cd ../../web && openapi-typescript openapi.json -o lib/api.d.ts"
+  },
+  "dependencies": {
+    "next": "16.4.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5"
+  }
+}

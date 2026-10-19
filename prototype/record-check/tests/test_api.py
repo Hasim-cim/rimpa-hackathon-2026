@@ -72,3 +72,68 @@ def test_api_refuses_blocked_passport(client):
     r = client.post("/passport", json={"event": ev, "citations": body["citations"], "assessment": body["assessment"],
                                        "document_type": "decision-letter"})
     assert r.status_code == 409 and r.json()["detail"]["gate"] == "blocked"
+
+
+def test_read_endpoints_and_check_gate(client):
+    docs = client.get("/documents").json()
+    assert "DOC-2026/0412-summary" in [d["id"] for d in docs]
+    assert client.get("/records").json()
+    types = [t["id"] for t in client.get("/policy").json()["document_types"]]
+    assert "decision-letter" in types
+    r = client.post("/check", json={"document_id": "DOC-2026/0412-summary", "document_type": "decision-letter"})
+    assert r.json()["gate"]["status"] == "blocked"     # the demo draft: fabricated reference, contradiction
+    assert client.post("/check", json={"document_id": "DOC-2026/0412-summary"}).json()["gate"] is None
+    assert client.post("/check", json={"document_id": "DOC-2026/0412-summary", "document_type": "nope"}).status_code == 422
+
+
+def test_source_health_and_source_recall(client):
+    h = client.get("/sources/health").json()
+    assert h["counts"]["draft"] == 1 and h["counts"]["redundant"] == 1
+    r = client.post("/recall/record", json={"record_id": "REC-2026/004790"})
+    assert r.status_code == 200 and r.json()["counts"]["T2"] == 4
+    assert client.post("/recall/record", json={"record_id": "NO-SUCH"}).status_code == 404
+    bad = {"record_id": "REC-2026/004790", "mark": {"superseded_by": "NO-SUCH", "reason": "r", "by": "I. Manager"}}
+    assert client.post("/recall/record", json=bad).status_code == 422
+
+
+def test_console_endpoints(client, tmp_path, monkeypatch):
+    monkeypatch.setenv("RECORDCHECK_POLICY", str(tmp_path / "policy.json"))  # never touch data/policy.json
+    ps = client.get("/passports").json()
+    assert len(ps) == 40 and ps[0]["record"]["created"] >= ps[-1]["record"]["created"]
+    assert "northstar-7-2026-03-01" in [m["model_id"] for m in client.get("/models").json()]
+    t2 = [i["record_id"] for i in client.post("/recall", json={"model_id": "northstar-7-2026-03-01"}).json()["items"]
+          if i["tier"] == "T2"]
+    assert client.post("/recall/queue", json={"record_ids": t2, "reason": "r", "by": "IM"}).json()["queued"] == 3
+    assert client.get("/audit").json()
+
+    due = [i["record_id"] for i in client.get("/disposal/due").json() if not i["on_hold"]]
+    assert due
+    bad = client.post("/disposal/approve", json={"record_ids": due, "approved_by": " ", "reason": "r"})
+    assert bad.status_code == 422
+    done = client.post("/disposal/approve", json={"record_ids": due, "approved_by": "IM", "reason": "past retention"})
+    assert len(done.json()) == len(due) and len(client.get("/disposal/register").json()) == len(due)
+    assert client.get("/chain/verify").json()["ok"] is True
+
+    pol = client.get("/policy").json()
+    pol["organisation"] = "Test Agency"
+    saved = client.put("/policy", json={"policy": pol, "by": "IM"}).json()
+    assert saved["organisation"] == "Test Agency" and int(saved["version"]) == int(pol["version"]) + 1
+    pol["document_types"][0]["quality"]["max_unsupported"] = -1
+    assert client.put("/policy", json={"policy": pol, "by": "IM"}).status_code == 422
+    preset = client.get("/presets").json()[0]["id"]
+    reset = client.post("/policy/preset", json={"preset_id": preset, "organisation": "X", "by": "IM"}).json()
+    assert reset["sector"] == preset and int(reset["version"]) == int(saved["version"]) + 1
+    assert client.post("/policy/suggest", json={"description": "a hospital"}).json() is None  # LLM off in tests
+
+
+def test_passport_tier_floor_is_document_type_default(client, tmp_path, monkeypatch):
+    monkeypatch.setenv("RECORDCHECK_POLICY", str(tmp_path / "policy.json"))
+    doc = "DOC-2026/0587-eligibility"
+    ch = client.post("/check", json={"document_id": doc, "document_type": "decision-letter"}).json()
+    ev = {"id": "EVT-API-FLOOR", "app_id": "agency-assistant", "user": "A. Caseworker", "created": "2026-10-17T09:00:00",
+          "prompt": "p", "output": "o", "model_requested": "m", "model_returned": "m", "provider": "p",
+          "exported_to_document": doc}  # the rules alone give T1; a decision letter defaults to T2
+    r = client.post("/passport", json={"event": ev, "document_type": "decision-letter", "citations": ch["citations"],
+                                       "assessment": ch["assessment"], "review": {"reviewer": "B. Team Leader",
+                                       "decision": "approved", "reviewed_at": "2026-10-17T10:00:00"}})
+    assert r.status_code == 200 and r.json()["business"]["tier"] == "T2"

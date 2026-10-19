@@ -17,8 +17,19 @@ def _refs(citations: list[CitationResult], status: str) -> str:
     return ", ".join(f"[{c.citation.n}]" for c in citations if c.status == status)
 
 
+def same_person(a: str | None, b: str | None) -> bool:
+    return bool(a and b) and " ".join(a.split()).casefold() == " ".join(b.split()).casefold()
+
+
+def baseline_type(*, evidence: bool, citations: bool) -> DocumentType:
+    """The bar used when a caller names no document type: the default (strictest) thresholds, applied to
+    whatever checks the caller supplied. Leaving out the type must never mean leaving out the gate."""
+    checks = [c for c, on in (("citations", citations), ("evidence", evidence)) if on]
+    return DocumentType(id="unspecified", name="an unspecified document type", checks=checks)
+
+
 def evaluate(assessment: Assessment | None, citations: list[CitationResult], review: Review | None,
-             dtype: DocumentType, tier: Tier) -> GateResult:
+             dtype: DocumentType, tier: Tier, author: str | None = None) -> GateResult:
     counts = {k: 0 for k in (*WEIGHTS, *CITE_STATUSES)}
     if assessment:
         for v in assessment.verdicts:
@@ -32,6 +43,10 @@ def evaluate(assessment: Assessment | None, citations: list[CitationResult], rev
         reasons.append(GateReason(status=status, text=text))
 
     if "evidence" in checks:
+        if assessment is None:
+            add("blocked", "The evidence check has not been run; run it before filing.")
+        elif not assessment.verdicts:
+            add("attention", "No claims were found to check; a person should confirm the document is complete.")
         if counts["unsupported"] > q.max_unsupported:
             add("blocked", f"{_n(counts['unsupported'], 'unsupported claim')}; this document type allows {q.max_unsupported}.")
         if counts["contradicted"] > q.max_contradicted:
@@ -49,11 +64,16 @@ def evaluate(assessment: Assessment | None, citations: list[CitationResult], rev
         if q.citations_mismatch_attention and counts["mismatch"]:
             add("attention", f"{_n(counts['mismatch'], 'citation')} with details that do not match "
                              f"({_refs(citations, 'mismatch')}); a person should check them.")
-    if q.require_reviewer and tier in ("T2", "T3"):
-        if review is not None and review.decision == "rejected":
-            add("blocked", f"The reviewer ({review.reviewer}) rejected this document.")
-        elif review is None:
-            add("attention", "Needs a named reviewer before filing.")
+        if q.citations_not_checked_attention and counts["not_checked"]:
+            add("attention", f"{_n(counts['not_checked'], 'citation')} could not be checked automatically "
+                             f"({_refs(citations, 'not_checked')}); a person must confirm them.")
+    if review is not None and review.decision == "rejected":
+        add("blocked", f"The reviewer ({review.reviewer}) rejected this document.")
+    if review is not None and same_person(review.reviewer, author):
+        add("blocked", f"The reviewer ({review.reviewer}) is the author of this AI-assisted output; "
+                       "a different person must review it.")
+    elif q.require_reviewer and tier in ("T2", "T3") and review is None:
+        add("attention", "Needs a named reviewer before filing.")
 
     reasons.sort(key=lambda r: _ORDER[r.status])
     if not reasons:

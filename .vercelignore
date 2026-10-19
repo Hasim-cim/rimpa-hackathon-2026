@@ -1,0 +1,13 @@
+# Upload only what the deployment builds. Vercel does not skip .env by default.
+/*
+!/vercel.json
+!/web
+!/prototype
+/prototype/*
+!/prototype/record-check
+**/.env
+**/.ruff_cache
+**/.pytest_cache
+prototype/record-check/data/*.sqlite*
+prototype/record-check/data/policy.json
+prototype/record-check/tests

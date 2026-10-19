@@ -1,0 +1,26 @@
+-- Record Check schema, SQLite (local runs and tests). JSON columns hold the pydantic payloads.
+-- Keep in step with schema.postgres.sql: same tables, same columns; only the id columns differ.
+CREATE TABLE IF NOT EXISTS records (
+  id TEXT PRIMARY KEY, status TEXT NOT NULL, authoritative INTEGER NOT NULL, created TEXT NOT NULL, payload TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS documents (
+  id TEXT PRIMARY KEY, case_id TEXT, payload TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS ai_events (
+  id TEXT PRIMARY KEY, app_id TEXT NOT NULL, created TEXT NOT NULL, model_returned TEXT NOT NULL, payload TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS passports (
+  record_id TEXT PRIMARY KEY, event_id TEXT NOT NULL, tier TEXT NOT NULL, model_returned TEXT NOT NULL,
+  created TEXT NOT NULL, hash TEXT NOT NULL, prev_hash TEXT, seq INTEGER NOT NULL, payload TEXT NOT NULL,
+  disposed_at TEXT);
+CREATE TABLE IF NOT EXISTS model_registry (
+  model_id TEXT PRIMARY KEY, provider TEXT NOT NULL, status TEXT NOT NULL, effective_from TEXT, reason TEXT, marked_by TEXT);
+CREATE TABLE IF NOT EXISTS review_queue (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, record_id TEXT NOT NULL, reason TEXT NOT NULL, queued_by TEXT NOT NULL,
+  queued_at TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open');
+CREATE TABLE IF NOT EXISTS citation_cache (
+  key TEXT PRIMARY KEY, payload TEXT NOT NULL, fetched_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS disposal_register (
+  record_id TEXT PRIMARY KEY, tier TEXT NOT NULL, created TEXT NOT NULL, disposed_at TEXT NOT NULL,
+  approved_by TEXT NOT NULL, authority TEXT NOT NULL, reason TEXT NOT NULL, hash_retained TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS audit_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, subject TEXT, detail TEXT);
+CREATE TABLE IF NOT EXISTS policy (
+  id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL, updated_at TEXT NOT NULL);

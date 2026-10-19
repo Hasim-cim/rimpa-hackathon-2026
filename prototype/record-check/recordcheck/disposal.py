@@ -63,6 +63,8 @@ def _stub(p: Passport) -> Passport:
 
 def approve_disposal(conn: sqlite3.Connection, record_ids: list[str], *, approved_by: str, reason: str,
                      rules: TierRules | None = None, as_of: date | None = None) -> list[DisposalEntry]:
+    if not approved_by.strip():
+        raise ValueError("Disposal needs the name of the person approving it.")
     rules = _rules(rules)
     eligible = {i.record_id: i for i in due_for_disposal(conn, as_of=as_of, rules=rules) if not i.on_hold}
     now = datetime.now(timezone.utc)

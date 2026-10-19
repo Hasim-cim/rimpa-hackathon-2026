@@ -1,0 +1,2944 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Record Check API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/check": {
+      "post": {
+        "summary": "Check",
+        "operationId": "check_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents": {
+      "get": {
+        "summary": "Documents",
+        "operationId": "documents_documents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Document"
+                  },
+                  "type": "array",
+                  "title": "Response Documents Documents Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records": {
+      "get": {
+        "summary": "Records",
+        "operationId": "records_records_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SourceRecord"
+                  },
+                  "type": "array",
+                  "title": "Response Records Records Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policy": {
+      "get": {
+        "summary": "Get Policy",
+        "operationId": "get_policy_policy_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Save Policy",
+        "operationId": "save_policy_policy_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicySave"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/passport": {
+      "post": {
+        "summary": "Issue Passport",
+        "operationId": "issue_passport_passport_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PassportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Passport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/passport/{record_id}": {
+      "get": {
+        "summary": "Get Passport",
+        "operationId": "get_passport_passport__record_id__get",
+        "parameters": [
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Passport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recall": {
+      "post": {
+        "summary": "Do Recall",
+        "operationId": "do_recall_recall_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recall/record": {
+      "post": {
+        "summary": "Do Source Recall",
+        "operationId": "do_source_recall_recall_record_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceRecallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRecallResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sources/health": {
+      "get": {
+        "summary": "Source Health",
+        "operationId": "source_health_sources_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceHealthReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chain/verify": {
+      "get": {
+        "summary": "Chain Verify",
+        "operationId": "chain_verify_chain_verify_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/passports": {
+      "get": {
+        "summary": "Passports",
+        "operationId": "passports_passports_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Passport"
+                  },
+                  "type": "array",
+                  "title": "Response Passports Passports Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/models": {
+      "get": {
+        "summary": "Models",
+        "operationId": "models_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelRegistryEntry"
+                  },
+                  "type": "array",
+                  "title": "Response Models Models Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recall/queue": {
+      "post": {
+        "summary": "Queue",
+        "operationId": "queue_recall_queue_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Queue Recall Queue Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit": {
+      "get": {
+        "summary": "Audit",
+        "operationId": "audit_audit_get",
+        "parameters": [
+          {
+            "name": "action_prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Action Prefix"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Audit Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disposal/due": {
+      "get": {
+        "summary": "Disposal Due",
+        "operationId": "disposal_due_disposal_due_get",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DisposalItem"
+                  },
+                  "title": "Response Disposal Due Disposal Due Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disposal/approve": {
+      "post": {
+        "summary": "Disposal Approve",
+        "operationId": "disposal_approve_disposal_approve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisposalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DisposalEntry"
+                  },
+                  "type": "array",
+                  "title": "Response Disposal Approve Disposal Approve Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disposal/register": {
+      "get": {
+        "summary": "Disposal Register",
+        "operationId": "disposal_register_disposal_register_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DisposalEntry"
+                  },
+                  "type": "array",
+                  "title": "Response Disposal Register Disposal Register Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/presets": {
+      "get": {
+        "summary": "Presets",
+        "operationId": "presets_presets_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SectorPreset"
+                  },
+                  "type": "array",
+                  "title": "Response Presets Presets Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policy/preset": {
+      "post": {
+        "summary": "Policy From Preset",
+        "description": "Start from a preset, or reset to the current sector's defaults. Replaces the active policy.",
+        "operationId": "policy_from_preset_policy_preset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FromPreset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policy/suggest": {
+      "post": {
+        "summary": "Suggest Policy",
+        "operationId": "suggest_policy_policy_suggest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Suggestion"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Suggest Policy Policy Suggest Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIEvent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "app_id": {
+            "type": "string",
+            "title": "App Id"
+          },
+          "user": {
+            "type": "string",
+            "title": "User"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt"
+          },
+          "output": {
+            "type": "string",
+            "title": "Output"
+          },
+          "model_requested": {
+            "type": "string",
+            "title": "Model Requested"
+          },
+          "model_returned": {
+            "type": "string",
+            "title": "Model Returned"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "source_record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Record Ids"
+          },
+          "tool_calls": {
+            "items": {
+              "$ref": "#/components/schemas/ToolCall"
+            },
+            "type": "array",
+            "title": "Tool Calls"
+          },
+          "exported_to_document": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exported To Document"
+          },
+          "decision_flag": {
+            "type": "boolean",
+            "title": "Decision Flag",
+            "default": false
+          },
+          "function": {
+            "type": "string",
+            "title": "Function",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "app_id",
+          "user",
+          "created",
+          "prompt",
+          "output",
+          "model_requested",
+          "model_returned",
+          "provider"
+        ],
+        "title": "AIEvent"
+      },
+      "Assessment": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            },
+            "type": "array",
+            "title": "Claims"
+          },
+          "verdicts": {
+            "items": {
+              "$ref": "#/components/schemas/Verdict"
+            },
+            "type": "array",
+            "title": "Verdicts"
+          },
+          "assessed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Assessed At"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "claims",
+          "verdicts",
+          "assessed_at",
+          "method"
+        ],
+        "title": "Assessment"
+      },
+      "ChainReport": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "checked": {
+            "type": "integer",
+            "title": "Checked"
+          },
+          "first_break": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Break"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "checked"
+        ],
+        "title": "ChainReport"
+      },
+      "CheckRequest": {
+        "properties": {
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "references": {
+            "type": "string",
+            "title": "References",
+            "default": ""
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          }
+        },
+        "type": "object",
+        "title": "CheckRequest"
+      },
+      "CheckResponse": {
+        "properties": {
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationResult"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "assessment": {
+            "$ref": "#/components/schemas/Assessment"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GateResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "citations",
+          "assessment"
+        ],
+        "title": "CheckResponse"
+      },
+      "Citation": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "raw": {
+            "type": "string",
+            "title": "Raw"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "authors": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authors"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          },
+          "venue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Venue"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "article",
+              "legislation",
+              "case",
+              "other"
+            ],
+            "title": "Kind",
+            "default": "article"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "raw"
+        ],
+        "title": "Citation"
+      },
+      "CitationResult": {
+        "properties": {
+          "citation": {
+            "$ref": "#/components/schemas/Citation"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "found",
+              "mismatch",
+              "not_found",
+              "not_checked"
+            ],
+            "title": "Status"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "crossref",
+              "openalex",
+              "none"
+            ],
+            "title": "Source",
+            "default": "none"
+          },
+          "doi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doi"
+          },
+          "matched_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Title"
+          },
+          "matched_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Year"
+          },
+          "matched_venue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Venue"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "citation",
+          "status"
+        ],
+        "title": "CitationResult"
+      },
+      "Claim": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "author": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "human"
+            ],
+            "title": "Author"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "citation_refs": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Citation Refs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "author",
+          "position"
+        ],
+        "title": "Claim"
+      },
+      "ClaimLink": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim_id",
+          "record_id",
+          "rule"
+        ],
+        "title": "ClaimLink"
+      },
+      "DisposalEntry": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "disposed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Disposed At"
+          },
+          "approved_by": {
+            "type": "string",
+            "title": "Approved By"
+          },
+          "authority": {
+            "type": "string",
+            "title": "Authority"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "hash_retained": {
+            "type": "string",
+            "title": "Hash Retained"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "tier",
+          "created",
+          "disposed_at",
+          "approved_by",
+          "authority",
+          "reason",
+          "hash_retained"
+        ],
+        "title": "DisposalEntry"
+      },
+      "DisposalItem": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "app_id": {
+            "type": "string",
+            "title": "App Id"
+          },
+          "model_returned": {
+            "type": "string",
+            "title": "Model Returned"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "due": {
+            "type": "string",
+            "format": "date",
+            "title": "Due"
+          },
+          "on_hold": {
+            "type": "boolean",
+            "title": "On Hold",
+            "default": false
+          },
+          "hold_reason": {
+            "type": "string",
+            "title": "Hold Reason",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "tier",
+          "app_id",
+          "model_returned",
+          "created",
+          "due"
+        ],
+        "title": "DisposalItem"
+      },
+      "DisposalRequest": {
+        "properties": {
+          "record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Record Ids"
+          },
+          "approved_by": {
+            "type": "string",
+            "title": "Approved By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_ids",
+          "approved_by",
+          "reason"
+        ],
+        "title": "DisposalRequest"
+      },
+      "Document": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "references": {
+            "type": "string",
+            "title": "References",
+            "default": ""
+          },
+          "default_author": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "human"
+            ],
+            "title": "Default Author",
+            "default": "ai"
+          },
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            },
+            "type": "array",
+            "title": "Claims"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "body"
+        ],
+        "title": "Document"
+      },
+      "DocumentType": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "default_tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Default Tier",
+            "default": "T1"
+          },
+          "checks": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "citations",
+                "evidence"
+              ]
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualityBar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "DocumentType"
+      },
+      "FromPreset": {
+        "properties": {
+          "preset_id": {
+            "type": "string",
+            "title": "Preset Id"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preset_id",
+          "organisation",
+          "by"
+        ],
+        "title": "FromPreset"
+      },
+      "GateReason": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "attention",
+              "blocked"
+            ],
+            "title": "Status"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "text"
+        ],
+        "title": "GateReason"
+      },
+      "GateResult": {
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "attention",
+              "blocked"
+            ],
+            "title": "Status"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/GateReason"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_type",
+          "status",
+          "reasons",
+          "counts"
+        ],
+        "title": "GateResult"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Mark": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "withdrawn",
+              "faulty"
+            ],
+            "title": "Status"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective From"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "effective_from",
+          "reason",
+          "by"
+        ],
+        "title": "Mark"
+      },
+      "ModelRegistryEntry": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "withdrawn",
+              "faulty"
+            ],
+            "title": "Status",
+            "default": "active"
+          },
+          "effective_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective From"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": ""
+          },
+          "marked_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marked By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "provider"
+        ],
+        "title": "ModelRegistryEntry"
+      },
+      "Passport": {
+        "properties": {
+          "record": {
+            "$ref": "#/components/schemas/PassportRecord"
+          },
+          "agent": {
+            "$ref": "#/components/schemas/PassportAgent"
+          },
+          "business": {
+            "$ref": "#/components/schemas/PassportBusiness"
+          },
+          "process": {
+            "$ref": "#/components/schemas/PassportProcess"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Review"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "integrity": {
+            "$ref": "#/components/schemas/PassportIntegrity"
+          },
+          "paradata": {
+            "$ref": "#/components/schemas/PassportParadata"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record",
+          "agent",
+          "business",
+          "process",
+          "review",
+          "integrity",
+          "paradata",
+          "event_id"
+        ],
+        "title": "Passport"
+      },
+      "PassportAgent": {
+        "properties": {
+          "person": {
+            "type": "string",
+            "title": "Person"
+          },
+          "ai_system": {
+            "type": "string",
+            "title": "Ai System"
+          },
+          "model_requested": {
+            "type": "string",
+            "title": "Model Requested"
+          },
+          "model_returned": {
+            "type": "string",
+            "title": "Model Returned"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person",
+          "ai_system",
+          "model_requested",
+          "model_returned",
+          "provider"
+        ],
+        "title": "PassportAgent"
+      },
+      "PassportBusiness": {
+        "properties": {
+          "function": {
+            "type": "string",
+            "title": "Function"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "tier_reason": {
+            "type": "string",
+            "title": "Tier Reason"
+          },
+          "disposal": {
+            "type": "string",
+            "title": "Disposal"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "attention",
+                  "blocked"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "function",
+          "tier",
+          "tier_reason",
+          "disposal"
+        ],
+        "title": "PassportBusiness"
+      },
+      "PassportIntegrity": {
+        "properties": {
+          "hash": {
+            "type": "string",
+            "title": "Hash"
+          },
+          "prev_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prev Hash"
+          },
+          "algorithm": {
+            "type": "string",
+            "title": "Algorithm",
+            "default": "sha256"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "default": 1
+          },
+          "corrects": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hash",
+          "prev_hash"
+        ],
+        "title": "PassportIntegrity"
+      },
+      "PassportParadata": {
+        "properties": {
+          "use_register_id": {
+            "type": "string",
+            "title": "Use Register Id"
+          },
+          "impact_assessment_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact Assessment Ref"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          },
+          "policy_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "use_register_id",
+          "policy_version"
+        ],
+        "title": "PassportParadata"
+      },
+      "PassportProcess": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt"
+          },
+          "source_record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Record Ids"
+          },
+          "citation_summary": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Citation Summary"
+          },
+          "evidence_summary": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Evidence Summary"
+          },
+          "tool_calls": {
+            "items": {
+              "$ref": "#/components/schemas/ToolCall"
+            },
+            "type": "array",
+            "title": "Tool Calls"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt",
+          "system_prompt",
+          "source_record_ids",
+          "citation_summary",
+          "evidence_summary",
+          "tool_calls"
+        ],
+        "title": "PassportProcess"
+      },
+      "PassportRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "ai_generated": {
+            "type": "boolean",
+            "title": "Ai Generated",
+            "default": true
+          },
+          "final_document": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Document"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "created",
+          "content_hash"
+        ],
+        "title": "PassportRecord"
+      },
+      "PassportRequest": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/AIEvent"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Review"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "T0",
+                  "T1",
+                  "T2",
+                  "T3"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationResult"
+            },
+            "type": "array",
+            "title": "Citations",
+            "default": []
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Assessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event"
+        ],
+        "title": "PassportRequest"
+      },
+      "Policy": {
+        "properties": {
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "sector": {
+            "type": "string",
+            "title": "Sector"
+          },
+          "sector_name": {
+            "type": "string",
+            "title": "Sector Name"
+          },
+          "guidance": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Guidance"
+          },
+          "document_types": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentType"
+            },
+            "type": "array",
+            "title": "Document Types"
+          },
+          "authoritative_systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Authoritative Systems"
+          },
+          "tier_rules": {
+            "$ref": "#/components/schemas/TierRules"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "default": "1"
+          },
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By",
+            "default": ""
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organisation",
+          "sector",
+          "sector_name",
+          "document_types",
+          "authoritative_systems",
+          "tier_rules"
+        ],
+        "title": "Policy",
+        "description": "The active configuration. Saved to data/policy.json; starts from a preset."
+      },
+      "PolicySave": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/Policy"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy",
+          "by"
+        ],
+        "title": "PolicySave"
+      },
+      "QualityBar": {
+        "properties": {
+          "max_unsupported": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Max Unsupported",
+            "default": 0
+          },
+          "max_contradicted": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Max Contradicted",
+            "default": 0
+          },
+          "max_weak": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Weak"
+          },
+          "citations_not_found_blocks": {
+            "type": "boolean",
+            "title": "Citations Not Found Blocks",
+            "default": true
+          },
+          "citations_mismatch_attention": {
+            "type": "boolean",
+            "title": "Citations Mismatch Attention",
+            "default": true
+          },
+          "citations_not_checked_attention": {
+            "type": "boolean",
+            "title": "Citations Not Checked Attention",
+            "default": true
+          },
+          "require_reviewer": {
+            "type": "boolean",
+            "title": "Require Reviewer",
+            "default": true
+          },
+          "min_supported_share": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Supported Share"
+          }
+        },
+        "type": "object",
+        "title": "QualityBar",
+        "description": "What good looks like for one document type. Thresholds over the four weights and four citation statuses."
+      },
+      "QueueRequest": {
+        "properties": {
+          "record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Record Ids"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_ids",
+          "reason",
+          "by"
+        ],
+        "title": "QueueRequest"
+      },
+      "RecallItem": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "T0",
+              "T1",
+              "T2",
+              "T3"
+            ],
+            "title": "Tier"
+          },
+          "function": {
+            "type": "string",
+            "title": "Function"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer"
+          },
+          "queued": {
+            "type": "boolean",
+            "title": "Queued",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "tier",
+          "function",
+          "created",
+          "reviewer"
+        ],
+        "title": "RecallItem"
+      },
+      "RecallRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Mark"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id"
+        ],
+        "title": "RecallRequest"
+      },
+      "RecallResult": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "entry": {
+            "$ref": "#/components/schemas/ModelRegistryEntry"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RecallItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "entry",
+          "counts",
+          "items"
+        ],
+        "title": "RecallResult"
+      },
+      "Review": {
+        "properties": {
+          "reviewer": {
+            "type": "string",
+            "title": "Reviewer"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "approved_with_edits",
+              "rejected"
+            ],
+            "title": "Decision"
+          },
+          "reviewed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Reviewed At"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "reviewer",
+          "decision",
+          "reviewed_at"
+        ],
+        "title": "Review"
+      },
+      "SectorPreset": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "guidance": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Guidance"
+          },
+          "document_types": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentType"
+            },
+            "type": "array",
+            "title": "Document Types"
+          },
+          "authoritative_systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Authoritative Systems"
+          },
+          "retention_days": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "Retention Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "guidance",
+          "document_types",
+          "authoritative_systems"
+        ],
+        "title": "SectorPreset"
+      },
+      "SourceHealth": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "system": {
+            "type": "string",
+            "title": "System"
+          },
+          "labels": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "redundant",
+                "obsolete",
+                "trivial",
+                "draft"
+              ]
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "title",
+          "system",
+          "eligible"
+        ],
+        "title": "SourceHealth"
+      },
+      "SourceHealthReport": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "eligible": {
+            "type": "integer",
+            "title": "Eligible"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "redundant",
+                "obsolete",
+                "trivial",
+                "draft"
+              ]
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SourceHealth"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "eligible",
+          "counts",
+          "items"
+        ],
+        "title": "SourceHealthReport"
+      },
+      "SourceRecallRequest": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupersedeMark"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id"
+        ],
+        "title": "SourceRecallRequest"
+      },
+      "SourceRecallResult": {
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "record": {
+            "$ref": "#/components/schemas/SourceRecord"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RecallItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record_id",
+          "record",
+          "counts",
+          "items"
+        ],
+        "title": "SourceRecallResult",
+        "description": "Recall by source record: every retained AI output that relied on a record now superseded or withdrawn."
+      },
+      "SourceRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "system": {
+            "type": "string",
+            "title": "System"
+          },
+          "authoritative": {
+            "type": "boolean",
+            "title": "Authoritative",
+            "default": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "current",
+              "draft",
+              "superseded",
+              "disposed"
+            ],
+            "title": "Status",
+            "default": "current"
+          },
+          "superseded_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superseded By"
+          },
+          "created": {
+            "type": "string",
+            "format": "date",
+            "title": "Created"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Fields"
+          },
+          "hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "system",
+          "created",
+          "created_by",
+          "content"
+        ],
+        "title": "SourceRecord"
+      },
+      "SuggestRequest": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "SuggestRequest"
+      },
+      "Suggestion": {
+        "properties": {
+          "preset": {
+            "$ref": "#/components/schemas/SectorPreset"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preset",
+          "organisation"
+        ],
+        "title": "Suggestion",
+        "description": "What suggest() returns: the preset to start from and the organisation name the model inferred.\nThe preset's `description` is replaced by the model's rationale. The IM must still confirm."
+      },
+      "SupersedeMark": {
+        "properties": {
+          "superseded_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superseded By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason",
+          "by"
+        ],
+        "title": "SupersedeMark"
+      },
+      "TierRules": {
+        "properties": {
+          "app_defaults": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "App Defaults"
+          },
+          "app_names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "App Names"
+          },
+          "escalations": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "Escalations"
+          },
+          "retention": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "Retention"
+          },
+          "retention_days": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "T0",
+                "T1",
+                "T2",
+                "T3"
+              ]
+            },
+            "type": "object",
+            "title": "Retention Days"
+          },
+          "disposal_authority": {
+            "type": "string",
+            "title": "Disposal Authority",
+            "default": "Normal administrative practice (prototype setting)"
+          },
+          "policy_version": {
+            "type": "string",
+            "title": "Policy Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "app_defaults",
+          "escalations",
+          "retention",
+          "policy_version"
+        ],
+        "title": "TierRules"
+      },
+      "ToolCall": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "side_effect": {
+            "type": "boolean",
+            "title": "Side Effect",
+            "default": false
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ToolCall"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Verdict": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "weight": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "weak",
+              "unsupported",
+              "contradicted"
+            ],
+            "title": "Weight"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimLink"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim_id",
+          "weight",
+          "reason"
+        ],
+        "title": "Verdict"
+      }
+    }
+  }
+}

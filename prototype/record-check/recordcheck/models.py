@@ -11,7 +11,8 @@ Tier = Literal["T0", "T1", "T2", "T3"]
 Weight = Literal["supported", "weak", "unsupported", "contradicted"]
 CitationStatus = Literal["found", "mismatch", "not_found", "not_checked"]
 Author = Literal["ai", "human"]
-RecordStatus = Literal["current", "superseded", "disposed"]
+RecordStatus = Literal["current", "draft", "superseded", "disposed"]   # only current records count as evidence
+RotLabel = Literal["redundant", "obsolete", "trivial", "draft"]
 ModelStatus = Literal["active", "withdrawn", "faulty"]
 
 
@@ -211,13 +212,14 @@ GateStatus = Literal["ready", "attention", "blocked"]
 
 class QualityBar(BaseModel):
     """What good looks like for one document type. Thresholds over the four weights and four citation statuses."""
-    max_unsupported: int = 0                 # more than this → blocked
-    max_contradicted: int = 0
-    max_weak: int | None = None              # None = no limit; exceeding → attention
+    max_unsupported: int = Field(0, ge=0)    # more than this → blocked
+    max_contradicted: int = Field(0, ge=0)
+    max_weak: int | None = Field(None, ge=0) # None = no limit; exceeding → attention
     citations_not_found_blocks: bool = True  # any not_found citation → blocked
     citations_mismatch_attention: bool = True
+    citations_not_checked_attention: bool = True  # a reference nobody could look up → a person confirms it
     require_reviewer: bool = True            # T2+ needs a named reviewer before "ready"
-    min_supported_share: float | None = None # e.g. 0.6 → attention if fewer than 60% of claims supported
+    min_supported_share: float | None = Field(None, ge=0, le=1)  # e.g. 0.6 → attention below 60% supported
 
 
 class DocumentType(BaseModel):
@@ -314,6 +316,32 @@ class RecallResult(BaseModel):
     entry: ModelRegistryEntry
     counts: dict[Tier, int]
     items: list[RecallItem]
+
+
+class SourceRecallResult(BaseModel):
+    """Recall by source record: every retained AI output that relied on a record now superseded or withdrawn."""
+    record_id: str
+    record: SourceRecord
+    counts: dict[Tier, int]
+    items: list[RecallItem]
+
+
+# ---------- source health (ROT) ----------
+
+class SourceHealth(BaseModel):
+    record_id: str
+    title: str
+    system: str
+    labels: list[RotLabel] = Field(default_factory=list)
+    eligible: bool                           # counts as evidence when weighing claims
+    notes: list[str] = Field(default_factory=list)   # one per label, e.g. "superseded by POL-HARDSHIP-v4"
+
+
+class SourceHealthReport(BaseModel):
+    total: int
+    eligible: int
+    counts: dict[RotLabel, int]
+    items: list[SourceHealth]                # flagged records first
 
 
 class ChainReport(BaseModel):

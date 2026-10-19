@@ -19,6 +19,8 @@ _MONEY = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)")
 _REF = re.compile(r"\[(\d+)\]")
 _HOUSEHOLD = re.compile(r"\b(lives alone|living alone|alone|household)\b", re.I)
 _ALONE = re.compile(r"\b(lives alone|living alone|alone)\b", re.I)
+# "does not live alone", "doesn't live alone", "is not living alone", "never lived alone", "no longer lives alone"
+_NOT_ALONE = re.compile(r"(?:\bnot|n't|\bnever|\bno longer)\s+(?:\w+\s+){0,2}?alone\b", re.I)
 
 
 # ---------- splitting ----------
@@ -37,14 +39,33 @@ def _split(doc: Document, use_llm: bool | None) -> tuple[list[Claim], str]:
         return list(doc.claims), "seed"
     if use_llm is None:
         use_llm = llm.available()
+    texts, method = _regex_split(doc.body), "sentence-split"
     if use_llm:
-        texts = llm.split_claims(doc.body)
-        method = f"llm:{llm.LAST_MODEL_RETURNED or llm.MODEL}"
-    else:
-        texts, method = _regex_split(doc.body), "sentence-split"
+        try:
+            got = _verbatim(llm.split_claims(doc.body), doc.body)
+        except Exception:  # network, quota, malformed output: the check still runs, on plain sentences
+            got = []
+        if got and _covers(got, texts):
+            texts, method = got, f"llm:{llm.LAST_MODEL_RETURNED or llm.MODEL}"
     claims = [Claim(id=f"c{i}", text=t, author=doc.default_author, position=i, citation_refs=_refs(t))
               for i, t in enumerate(texts, 1)]
     return claims, method
+
+
+def _squash(text: str) -> str:
+    return " ".join(text.split())
+
+
+def _verbatim(claims: list[str], body: str) -> list[str]:
+    """Keep only claims the model copied from the document; an invented sentence is never weighed."""
+    flat = _squash(body)
+    return [c for c in claims if _squash(c) in flat]
+
+
+def _covers(claims: list[str], sentences: list[str]) -> bool:
+    """Every sentence must contain at least one claim, so a model cannot drop a sentence from the check."""
+    sq = [_squash(c) for c in claims]
+    return all(any(c in _squash(s) or _squash(s) in c for c in sq) for s in sentences)
 
 
 def split_claims(doc: Document, use_llm: bool | None = None) -> list[Claim]:
@@ -90,7 +111,7 @@ def link_claim(claim: Claim, records: list[SourceRecord], case_id: str | None = 
     claim_toks = _tokens(claim.text)
     for rec in records:
         rcase = rec.fields.get("case_id")
-        if case_id is not None and rcase is not None and rcase != case_id:
+        if rcase is not None and rcase != case_id:   # no case on the document → only shared records
             continue
 
         def add(rule: str, note: str) -> None:
@@ -110,7 +131,7 @@ def link_claim(claim: Claim, records: list[SourceRecord], case_id: str | None = 
 
 # ---------- weighing ----------
 
-def _is_good(rec: SourceRecord) -> bool:
+def is_evidence(rec: SourceRecord) -> bool:
     return rec.authoritative and rec.status == "current"
 
 
@@ -118,18 +139,24 @@ def weigh(claim: Claim, links: list[ClaimLink], records, citations: Iterable[Cit
     recs = records if isinstance(records, dict) else {r.id: r for r in records}
     cits = {c.citation.n: c for c in citations}
     linked = list(dict.fromkeys(l.record_id for l in links if l.record_id in recs))
-    good = [r for r in linked if _is_good(recs[r])]
+    good = [r for r in linked if is_evidence(recs[r])]
 
     def verdict(weight: str, reason: str) -> Verdict:
         return Verdict(claim_id=claim.id, weight=weight, links=links, reason=reason)
 
     # contradiction: a current authoritative record's field disagrees with the claim
     if _ALONE.search(claim.text):
+        negated = bool(_NOT_ALONE.search(claim.text))
         for rid in good:
             occ = recs[rid].fields.get("occupants")
-            if isinstance(occ, (int, float)) and occ > 1:
+            if not isinstance(occ, (int, float)) or isinstance(occ, bool):
+                continue
+            if not negated and occ > 1:
                 return verdict("contradicted",
                                f"The claim says the applicant lives alone, but {rid} records {int(occ)} occupants.")
+            if negated and occ == 1:
+                return verdict("contradicted",
+                               f"The claim says the applicant does not live alone, but {rid} records 1 occupant.")
 
     missing = [n for n in claim.citation_refs if n in cits and cits[n].status == "not_found"]
     ns = ", ".join(f"[{n}]" for n in missing)
@@ -149,14 +176,21 @@ def weigh(claim: Claim, links: list[ClaimLink], records, citations: Iterable[Cit
     if good:
         return verdict("supported", f"Supported by current authoritative record(s) {', '.join(good)}.")
 
-    old = [r for r in linked if recs[r].status == "superseded"]
-    if old:
-        sup = ", ".join(f"{r} (superseded by {recs[r].superseded_by})" if recs[r].superseded_by
-                        else f"{r} (superseded)" for r in old)
-        return verdict("weak", f"Only supported by superseded or non-authoritative records: {sup}"
-                               + (f"; also {', '.join(r for r in linked if r not in old)}" if len(old) < len(linked) else "")
-                               + ".")
-    return verdict("weak", f"Only supported by non-authoritative record(s) {', '.join(linked)}.")
+    return verdict("weak", "Only supported by records that cannot count as evidence: "
+                           + ", ".join(f"{r} ({why_not_evidence(recs[r])})" for r in linked) + ".")
+
+
+def why_not_evidence(rec: SourceRecord) -> str:
+    """Why a record does not count as evidence, in the information manager's terms; "" if it does."""
+    if rec.status == "superseded":
+        return f"superseded by {rec.superseded_by}" if rec.superseded_by else "superseded"
+    if rec.status == "draft":
+        return "a draft, not the approved version"
+    if rec.status == "disposed":
+        return "disposed"
+    if not rec.authoritative:
+        return "not from an authoritative system"
+    return ""
 
 
 # ---------- assess ----------
@@ -181,3 +215,17 @@ def assess(doc: Document, conn, citations: Iterable[CitationResult] = (), use_ll
     verdicts = [weigh(c, link_claim(c, records, doc.case_id), recs, citations) for c in claims]
     return Assessment(document_id=doc.id, claims=claims, verdicts=verdicts,
                       assessed_at=datetime.now(timezone.utc), method=method)
+
+
+def reassess(assessment: Assessment, conn, citations: Iterable[CitationResult] = (),
+             policy: Policy | None = None) -> Assessment:
+    """Re-weigh a caller-supplied assessment on the server: keep its claims, recompute every link and weight.
+    A verdict sent over the API is never trusted as sent."""
+    ids = [c.id for c in assessment.claims]
+    if len(set(ids)) != len(ids) or sorted(ids) != sorted(v.claim_id for v in assessment.verdicts):
+        raise ValueError("assessment verdicts do not match its claims; send the claims as /check returned them")
+    known = db.get_document(conn, assessment.document_id)
+    claims = [c.model_copy(update={"citation_refs": _refs(c.text)}) for c in assessment.claims]
+    doc = Document(id=assessment.document_id, title=known.title if known else "", body="",
+                   case_id=known.case_id if known else None, claims=claims)
+    return assess(doc, conn, citations, use_llm=False, policy=policy).model_copy(update={"method": assessment.method})

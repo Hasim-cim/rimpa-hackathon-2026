@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sqlite3
 import threading
 from datetime import date, datetime, timezone
 from typing import Literal
@@ -11,20 +10,18 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from recordcheck import citations as cit
-from recordcheck import db, evidence, gate as gatemod, passport, recall
+from recordcheck import db, disposal, evidence, gate, passport, recall, sources
 from recordcheck import policy as policymod
 from recordcheck.models import (
-    AIEvent, Assessment, ChainReport, CitationResult, Document, Passport, RecallResult, Review, Tier,
+    AIEvent, Assessment, ChainReport, CitationResult, DisposalEntry, DisposalItem, Document, GateResult,
+    ModelRegistryEntry, Passport, Policy, RecallResult, Review, SectorPreset, SourceHealthReport, SourceRecallResult,
+    SourceRecord, Tier,
 )
 
 
-def _open() -> sqlite3.Connection:
-    # db.connect() does not allow cross-thread use; FastAPI runs sync endpoints in a thread pool.
-    db.open_db().close()
-    conn = sqlite3.connect(db.db_path(), check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys=ON")
-    return conn
+def _open():
+    # SQLite, or Postgres when DATABASE_URL is set; either connection is safe across FastAPI's worker threads
+    return db.open_db()
 
 
 conn = _open()
@@ -40,11 +37,13 @@ class CheckRequest(BaseModel):
     body: str | None = None
     references: str = ""
     case_id: str | None = None
+    document_type: str | None = None         # with one, the response carries the filing gate before review
 
 
 class CheckResponse(BaseModel):
     citations: list[CitationResult]
     assessment: Assessment
+    gate: GateResult | None = None
 
 
 class PassportRequest(BaseModel):
@@ -53,7 +52,7 @@ class PassportRequest(BaseModel):
     tier: Tier | None = None
     citations: list[CitationResult] = []
     assessment: Assessment | None = None
-    document_type: str | None = None         # policy document type; when given, the filing gate is enforced here
+    document_type: str | None = None         # policy document type; without one the strictest default bar applies
 
 
 class Mark(BaseModel):
@@ -66,6 +65,17 @@ class Mark(BaseModel):
 class RecallRequest(BaseModel):
     model_id: str
     mark: Mark | None = None
+
+
+class SupersedeMark(BaseModel):
+    superseded_by: str | None = None
+    reason: str
+    by: str
+
+
+class SourceRecallRequest(BaseModel):
+    record_id: str
+    mark: SupersedeMark | None = None
 
 
 @app.get("/health")
@@ -85,8 +95,31 @@ def check(req: CheckRequest) -> CheckResponse:
                            body=req.body, references=req.references)
         else:
             raise HTTPException(422, "provide document_id, or title and body")
+        pol = policymod.load()
+        dtype = policymod.doc_type(pol, req.document_type) if req.document_type else None
+        if req.document_type and dtype is None:
+            raise HTTPException(422, f"unknown document type {req.document_type!r}")
         results = cit.check_document(doc.references, conn=conn)
-        return CheckResponse(citations=results, assessment=evidence.assess(doc, conn, results))
+        assessment = evidence.assess(doc, conn, results, policy=pol)
+        result = gate.evaluate(assessment, results, None, dtype, dtype.default_tier) if dtype else None
+        return CheckResponse(citations=results, assessment=assessment, gate=result)
+
+
+@app.get("/documents", response_model=list[Document])
+def documents() -> list[Document]:
+    with lock:
+        return db.get_documents(conn)
+
+
+@app.get("/records", response_model=list[SourceRecord])
+def records() -> list[SourceRecord]:
+    with lock:
+        return db.get_records(conn)
+
+
+@app.get("/policy", response_model=Policy)
+def get_policy() -> Policy:
+    return policymod.load()
 
 
 @app.post("/passport", response_model=Passport)
@@ -94,21 +127,24 @@ def issue_passport(req: PassportRequest) -> Passport:
     with lock:
         pol = policymod.load()
         tier = req.tier or passport.classify(req.event, pol.tier_rules)
-        gate_status = None
-        if req.document_type:
-            dtype = policymod.doc_type(pol, req.document_type)
-            if dtype is None:
-                raise HTTPException(422, f"unknown document type {req.document_type!r}")
-            result = gatemod.evaluate(req.assessment, req.citations, req.review, dtype, tier)
-            gate_status = result.status
-            if result.status == "blocked":
-                raise HTTPException(409, {"gate": "blocked", "reasons": [r.text for r in result.reasons]})
+        dtype = policymod.doc_type(pol, req.document_type) if req.document_type else None
+        if req.document_type and dtype is None:
+            raise HTTPException(422, f"unknown document type {req.document_type!r}")
+        if req.tier is None and dtype:  # as the console does: the type's default tier is the floor, escalations raise it
+            tier = max(tier, dtype.default_tier, key=lambda t: passport.TIER_ORDER[t])
+        # never trust a status or weight sent by the caller: look the citations up and re-weigh the claims here
+        citations = cit.recheck(req.citations, conn=conn)
         try:
-            return passport.build(req.event, tier=tier, assessment=req.assessment, citations=req.citations,
+            assessment = evidence.reassess(req.assessment, conn, citations, policy=pol) if req.assessment else None
+            # build runs the filing gate itself, so it cannot be skipped by leaving out document_type
+            return passport.build(req.event, tier=tier, assessment=assessment, citations=citations,
                                   review=req.review, conn=conn, rules=pol.tier_rules,
-                                  document_type=req.document_type, gate=gate_status, policy=pol)
+                                  document_type=req.document_type, policy=pol)
         except passport.GateBlocked as e:
-            raise HTTPException(409, str(e))
+            reasons = [r.text for r in e.result.reasons] if e.result else [str(e)]
+            raise HTTPException(409, {"gate": "blocked", "reasons": reasons})
+        except ValueError as e:  # tier below the rules, self-review, duplicate record, inconsistent assessment
+            raise HTTPException(422, str(e))
 
 
 @app.get("/passport/{record_id:path}", response_model=Passport)
@@ -132,7 +168,138 @@ def do_recall(req: RecallRequest) -> RecallResult:
             raise HTTPException(404, str(e))
 
 
+@app.post("/recall/record", response_model=SourceRecallResult)
+def do_source_recall(req: SourceRecallRequest) -> SourceRecallResult:
+    with lock:
+        try:
+            if req.mark:
+                m = req.mark
+                recall.mark_superseded(conn, req.record_id, m.superseded_by, m.reason, m.by)
+            return recall.recall_by_record(conn, req.record_id)
+        except KeyError as e:
+            raise HTTPException(404, str(e))
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+
+@app.get("/sources/health", response_model=SourceHealthReport)
+def source_health() -> SourceHealthReport:
+    with lock:
+        return sources.health(conn, policymod.load())
+
+
 @app.get("/chain/verify", response_model=ChainReport)
 def chain_verify() -> ChainReport:
     with lock:
         return passport.verify_chain(conn)
+
+
+# ---------- console reads and IM actions (the web console's tabs) ----------
+
+class QueueRequest(BaseModel):
+    record_ids: list[str]
+    reason: str
+    by: str
+
+
+class DisposalRequest(BaseModel):
+    record_ids: list[str]
+    approved_by: str
+    reason: str
+    as_of: date | None = None
+
+
+class PolicySave(BaseModel):
+    policy: Policy
+    by: str
+
+
+class FromPreset(BaseModel):
+    preset_id: str
+    organisation: str
+    by: str
+
+
+class SuggestRequest(BaseModel):
+    description: str
+
+
+@app.get("/passports", response_model=list[Passport])
+def passports() -> list[Passport]:
+    with lock:
+        return db.get_passports(conn)[::-1]  # latest first
+
+
+@app.get("/models", response_model=list[ModelRegistryEntry])
+def models() -> list[ModelRegistryEntry]:
+    with lock:
+        return db.get_model_registry(conn)
+
+
+@app.post("/recall/queue")
+def queue(req: QueueRequest) -> dict:
+    with lock:
+        return {"queued": recall.queue_for_review(conn, req.record_ids, by=req.by, reason=req.reason)}
+
+
+@app.get("/audit")
+def audit(action_prefix: str = "", limit: int = 20) -> list[dict]:
+    with lock:
+        rows = conn.execute("SELECT at, actor, action, subject, detail FROM audit_log WHERE action LIKE ? "
+                            "ORDER BY id DESC LIMIT ?", (f"{action_prefix}%", min(limit, 200))).fetchall()
+    return [dict(r) for r in rows]
+
+
+@app.get("/disposal/due", response_model=list[DisposalItem])
+def disposal_due(as_of: date | None = None) -> list[DisposalItem]:
+    with lock:
+        return disposal.due_for_disposal(conn, as_of=as_of, rules=policymod.load().tier_rules)
+
+
+@app.post("/disposal/approve", response_model=list[DisposalEntry])
+def disposal_approve(req: DisposalRequest) -> list[DisposalEntry]:
+    with lock:
+        try:
+            return disposal.approve_disposal(conn, req.record_ids, approved_by=req.approved_by, reason=req.reason,
+                                             rules=policymod.load().tier_rules, as_of=req.as_of)
+        except ValueError as e:  # blank approver
+            raise HTTPException(422, str(e))
+
+
+@app.get("/disposal/register", response_model=list[DisposalEntry])
+def disposal_register() -> list[DisposalEntry]:
+    with lock:
+        return disposal.register(conn)
+
+
+@app.get("/presets", response_model=list[SectorPreset])
+def presets() -> list[SectorPreset]:
+    return policymod.load_presets()
+
+
+@app.put("/policy", response_model=Policy)
+def save_policy(req: PolicySave) -> Policy:
+    if not req.policy.document_types:
+        raise HTTPException(422, "a policy needs at least one document type")
+    with lock:
+        req.policy.version = policymod.load().version  # save() bumps it; versions only count up
+        return policymod.save(req.policy, by=req.by.strip() or "Information manager", conn=conn)
+
+
+@app.post("/policy/preset", response_model=Policy)
+def policy_from_preset(req: FromPreset) -> Policy:
+    """Start from a preset, or reset to the current sector's defaults. Replaces the active policy."""
+    try:
+        preset = policymod.get_preset(req.preset_id)
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    by = req.by.strip() or "Information manager"
+    with lock:
+        new = policymod.from_preset(preset, req.organisation.strip() or policymod.DEFAULT_ORG, by=by)
+        new.version = policymod.load().version
+        return policymod.save(new, by=by, conn=conn)
+
+
+@app.post("/policy/suggest", response_model=policymod.Suggestion | None)
+def suggest_policy(req: SuggestRequest) -> policymod.Suggestion | None:
+    return policymod.suggest(req.description)  # None when the LLM is off; the IM picks a preset instead

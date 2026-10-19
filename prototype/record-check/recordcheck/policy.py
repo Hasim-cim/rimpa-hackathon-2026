@@ -61,11 +61,18 @@ def save(policy: Policy, by: str, conn=None) -> Policy:
     policy.version = str(n + 1)
     policy.updated_by = by
     policy.updated_at = datetime.now(timezone.utc)
-    p = policy_path()
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(policy.model_dump_json(indent=2), encoding="utf-8")
+    from . import db
+    if db.database_url():
+        # on Postgres the policy lives in the database: a file in /tmp would vanish with the instance
+        store = conn if db.is_postgres(conn) else db.shared()
+        db.upsert(store, "policy", "id", dict(id=1, payload=policy.model_dump_json(),
+                                              updated_at=policy.updated_at.isoformat()))
+        store.commit()
+    else:
+        p = policy_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(policy.model_dump_json(indent=2), encoding="utf-8")
     if conn is not None:
-        from . import db
         from .passport import policy_hash
         bars = "; ".join(f"{d.id}: unsupported≤{d.quality.max_unsupported}, contradicted≤{d.quality.max_contradicted}, "
                          f"weak≤{'∞' if d.quality.max_weak is None else d.quality.max_weak}, reviewer={'yes' if d.quality.require_reviewer else 'no'}"
@@ -77,15 +84,27 @@ def save(policy: Policy, by: str, conn=None) -> Policy:
 
 
 def load() -> Policy:
-    p = policy_path()
-    if p.exists():
-        return Policy.model_validate_json(p.read_text(encoding="utf-8"))
+    from . import db
+    if db.database_url():
+        row = db.shared().execute("SELECT payload FROM policy WHERE id=1").fetchone()
+        if row:
+            return Policy.model_validate_json(row["payload"])
+    else:
+        p = policy_path()
+        if p.exists():
+            return Policy.model_validate_json(p.read_text(encoding="utf-8"))
     pol = from_preset(get_preset(DEFAULT_PRESET), DEFAULT_ORG, by="Prototype default")
     return save(pol, by="Prototype default")
 
 
 def reset() -> None:
-    policy_path().unlink(missing_ok=True)
+    from . import db
+    if db.database_url():
+        store = db.shared()
+        store.execute("DELETE FROM policy")
+        store.commit()
+    else:
+        policy_path().unlink(missing_ok=True)
 
 
 # ---------- lookups ----------

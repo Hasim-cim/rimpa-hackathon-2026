@@ -64,6 +64,21 @@
     }
   },
   {
+    "id": "REC-2026/004912",
+    "title": "Debt notice, reissued with corrected amount",
+    "system": "Debt management system",
+    "authoritative": true,
+    "status": "current",
+    "created": "2026-10-14",
+    "created_by": "Debt officer",
+    "content": "Case 2026/0412. Reissued notice replacing the earlier debt notice for this case. The overpayment period was recalculated as 1 February 2026 to 31 May 2026. Corrected debt amount $3,890.",
+    "fields": {
+      "case_id": "2026/0412",
+      "debt_amount": 3890,
+      "raised": "2026-10-14"
+    }
+  },
+  {
     "id": "REC-2026/004802",
     "title": "Hardship application form",
     "system": "Case management system",
@@ -151,6 +166,31 @@
     "fields": {
       "delegate_level": "Team Leader"
     }
+  },
+  {
+    "id": "POL-HARDSHIP-v5-draft",
+    "title": "Hardship policy guide, version 5 (draft for consultation)",
+    "system": "Policy library",
+    "authoritative": true,
+    "status": "draft",
+    "created": "2026-10-01",
+    "created_by": "Policy branch",
+    "content": "Draft version 5, for consultation, not approved. Applicants with a current medical certificate are treated as meeting the hardship test without a separate income assessment.",
+    "fields": {
+      "version": 5,
+      "medical_certificate_waives_income_test": true
+    }
+  },
+  {
+    "id": "SHARE-DELEG-COPY",
+    "title": "Copy of instrument of delegation (team shared drive)",
+    "system": "Team shared drive",
+    "authoritative": false,
+    "status": "current",
+    "created": "2026-02-03",
+    "created_by": "Team Leader, hardship team",
+    "content": "Delegation of the power to waive debts on hardship grounds to officers at Team Leader level and above. Delegates must record the basis of each decision.",
+    "fields": {}
   },
   {
     "id": "WEB-FORUM-2026-07",

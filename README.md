@@ -29,7 +29,7 @@ Functionality, Presentation & Team.
 | Folder | Holds |
 |---|---|
 | [`docs/`](docs/) | [Background analysis](docs/background-analysis.md) (the brief, judges, past winners, records foundations, cases, landscape) · [decisions](docs/decisions.md) · [idea book source](docs/idea-book/) |
-| [`research/`](research/) | [Deep research, 16 Oct](research/deep-research-2026-10-16.md) (verified, supersedes the background where they differ) · [open questions](research/open-questions.md) |
+| [`research/`](research/) | [Deep research, 16 Oct](research/deep-research-2026-10-16.md) (verified, supersedes the background where they differ) · [open questions](research/open-questions.md) · [session 1 outcomes, 19 Oct](research/session-1-outcomes-2026-10-19.md) |
 | [`ideas/`](ideas/) | [Scorecard and pressure-test log](ideas/scorecard.md) · [Gateway concept](ideas/concept-records-gateway.md) · [Policy studio](ideas/concept-policy-studio.md) · [Idea book (artifact)](https://claude.ai/artifact/7LMihfT937HfgTDYbCAjSB) |
 | [`team/`](team/) | Team pages (hub, brief, ideas board, game plan, pitch and Q&A), ready for Notion |
 | [`prototype/`](prototype/) | [Record Check](prototype/record-check/), the working prototype: engine, console, API, tests |

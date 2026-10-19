@@ -9,10 +9,11 @@ from collections import Counter
 from pathlib import Path
 
 from . import db
+from . import gate as gatemod
 from .hashing import sha256
 from .models import (
     Policy,
-    AIEvent, Assessment, ChainReport, CitationResult, Passport, PassportAgent, PassportBusiness,
+    AIEvent, Assessment, ChainReport, CitationResult, GateResult, Passport, PassportAgent, PassportBusiness,
     GateStatus, PassportIntegrity, PassportParadata, PassportProcess, PassportRecord, Review, Tier, TierRules,
 )
 
@@ -72,6 +73,22 @@ def next_record_id(conn: sqlite3.Connection) -> str:
 class GateBlocked(ValueError):
     """Raised when a passport is requested for a document the filing gate blocked. Enforced here, not only in the UI."""
 
+    def __init__(self, message: str, result: GateResult | None = None):
+        super().__init__(message)
+        self.result = result
+
+
+class TierBelowRules(ValueError):
+    """Raised when a caller sets a tier lower than the rules give: a T3 agent action must not be filed as transitory."""
+
+
+class SelfReview(ValueError):
+    """Raised when the reviewer is the person who produced the AI-assisted output."""
+
+
+class DuplicateRecord(ValueError):
+    """Raised when a record id is already in the chain; replacing a passport would break it."""
+
 
 def policy_hash(policy: "Policy") -> str:
     """Hash of the policy *content*: version, author and timestamp excluded, so an unchanged bar hashes the same."""
@@ -91,14 +108,34 @@ def build(event: AIEvent, *, tier: Tier, assessment: Assessment | None = None,
           conn: sqlite3.Connection, rules: TierRules | None = None, record_id: str | None = None,
           document_type: str | None = None, gate: GateStatus | None = None,
           policy: "Policy | None" = None) -> Passport:
-    if gate == "blocked":
-        raise GateBlocked(f"{document_type or 'document'} is blocked by policy; fix the document or change the bar.")
+    """With a policy, the filing gate is run here against the given document type (or, with none, the strictest
+    default bar over whatever was supplied), so no caller can skip it; `gate` is then ignored."""
     if policy is not None:
         rules = rules or policy.tier_rules
     rules = rules or load_tier_rules()
     classified, reason = classify_with_reason(event, rules)
+    if TIER_ORDER[tier] < TIER_ORDER[classified]:
+        raise TierBelowRules(f"Tier {tier} is below the {classified} the rules give ({reason}) A tier can be raised, "
+                             "never lowered.")
     if tier != classified:
         reason = f"Tier {tier} set by the information manager (rules gave {classified}). {reason}"
+    if review is not None and not review.reviewer.strip():
+        raise ValueError("A review needs the reviewer's name.")
+    if review is not None and gatemod.same_person(review.reviewer, event.user):
+        raise SelfReview(f"{review.reviewer} produced this output and cannot also review it.")
+    if policy is not None:
+        if document_type is None:
+            dtype = gatemod.baseline_type(evidence=assessment is not None, citations=bool(citations))
+        else:
+            dtype = next((d for d in policy.document_types if d.id == document_type), None)
+            if dtype is None:
+                raise ValueError(f"unknown document type {document_type!r}")
+        result = gatemod.evaluate(assessment, list(citations), review, dtype, tier, author=event.user)
+        gate = result.status
+        if gate == "blocked":
+            raise GateBlocked(gatemod.summary_line(result), result)
+    elif gate == "blocked":
+        raise GateBlocked(f"{document_type or 'document'} is blocked by policy; fix the document or change the bar.")
 
     cit = {k: 0 for k in CITATION_KEYS}
     for c in citations:
@@ -108,6 +145,20 @@ def build(event: AIEvent, *, tier: Tier, assessment: Assessment | None = None,
         for v in assessment.verdicts:
             ev[v.weight] = ev.get(v.weight, 0) + 1
 
+    # one writer at a time from here to the commit: the id, prev_hash and seq all depend on the chain's head,
+    # and on Postgres several instances may write at once
+    db.lock(conn, db.CHAIN_LOCK)
+    try:
+        p = _append(conn, event, tier, reason, rules, review, record_id, document_type, gate, policy, cit, ev)
+    except BaseException:
+        conn.rollback()
+        raise
+    return p
+
+
+def _append(conn, event, tier, reason, rules, review, record_id, document_type, gate, policy, cit, ev) -> Passport:
+    if record_id is not None and db.get_passport(conn, record_id) is not None:
+        raise DuplicateRecord(f"{record_id} is already in the chain.")
     rid = record_id or next_record_id(conn)
     p = Passport(
         record=PassportRecord(
@@ -143,10 +194,13 @@ def verify_chain(conn: sqlite3.Connection) -> ChainReport:
     prev: str | None = None
     n = 0
     disposed = 0
+    register = {r["record_id"]: r["hash_retained"] for r in conn.execute("SELECT record_id, hash_retained FROM disposal_register")}
     for row in conn.execute("SELECT record_id, hash, prev_hash, payload, disposed_at FROM passports ORDER BY seq"):
         p = Passport.model_validate_json(row["payload"])
         rid = p.record.id
         is_disposed = bool(row["disposed_at"])  # content destroyed by design: trust the stored hash, still check the links
+        if is_disposed and register.get(rid) != row["hash"]:
+            return ChainReport(ok=False, checked=n, first_break=rid, detail=f"{rid}: marked disposed but the disposal register has no matching approval.")
         if p.integrity.hash != row["hash"] or (not is_disposed and compute_hash(p) != p.integrity.hash):
             return ChainReport(ok=False, checked=n, first_break=rid, detail=f"{rid}: stored hash does not match the recomputed hash (content altered).")
         if p.integrity.prev_hash != prev:
