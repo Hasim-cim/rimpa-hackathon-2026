@@ -27,6 +27,8 @@ def test_one_row_per_passport_newest_first_with_case_ids(env):
     assert sum(r.status == "log_only" for r in rows) == sum(p.business.tier == "T0" for p in ps)
     assert all(r.case_id for r in rows if r.status != "log_only" and r.function != "Policy Q&A")
     assert {r.status for r in rows} <= {"filed", "needs_person", "changed", "disposed", "log_only"}
+    assert all(r.status_label == "Filed" for r in rows if r.status == "filed")
+    assert not any(r.status_label == "Ready to file" for r in rows)
     import re
     for p in ps:   # the case the prompt names wins over the case of the (shared, invented) source records
         m = re.search(r"case (\d{4}/\d{4})", p.process.prompt)

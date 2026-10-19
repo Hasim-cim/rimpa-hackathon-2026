@@ -52,7 +52,7 @@ def rows(conn, policy: Policy | None = None) -> list[RecordIndexRow]:
             status = "log_only"
         else:
             status = "filed"
-        label = LABELS.get(status) or ("Ready to file" if p.business.gate == "ready" else "Filed")
+        label = LABELS.get(status, "Filed")   # a filed record is never "Ready to file" (that is the Check page's word)
         out.append(RecordIndexRow(record_id=p.record.id, title=p.record.title, case_id=_case_id(p, docs, recs),
                                   tier=p.business.tier, function=p.business.function, created=p.record.created,
                                   gate=p.business.gate, status=status, status_label=label, changed_since=changed,
