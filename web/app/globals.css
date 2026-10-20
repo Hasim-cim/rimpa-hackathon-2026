@@ -237,7 +237,7 @@ details.card-d > summary { cursor: pointer; font-weight: 600; }
 .kpi.dark .mid { font-family: var(--mono), monospace; color: var(--yellow); font-weight: 700; font-size: 12.5px; }
 .kpi.quiet { background: var(--grey-bg); border-color: #cfd4d8; color: var(--grey-ink); }
 .recall-banner { margin: 16px 0; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-top: 16px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 16px; margin-top: 16px; }
 .cards .panel { padding: 16px 20px 18px; }
 .cards h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
 .cards p { margin: 6px 0; }
@@ -390,3 +390,12 @@ body.touring main { padding-bottom: 220px; }
 .fcount { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
 .fcount .muted { font-size: 12px; }
 .row .ids { font-size: 11.5px; }
+
+/* Phone width (Hasim, 20 Oct): the passport comes first; the list sits below in a short box so a scroll is never trapped. */
+@media (max-width: 760px) {
+  .records { flex-direction: column; align-items: stretch; }
+  .main { order: -1; flex-basis: auto; }
+  .list { flex-basis: auto; max-height: none; overflow: visible; }
+  .list > div:last-child { max-height: 40vh; overflow-y: auto; border-top: 1px solid var(--line, #e5e7eb); }
+  .main { scroll-margin-top: 12px; }
+}

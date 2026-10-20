@@ -169,6 +169,12 @@ function Records() {
     api<S["Policy"]>("policy").then(setPolicy).catch(() => setPolicy(null));
   }, [initial]);
 
+  // Phone width: the passport sits above the list, so after tapping a row bring its top into view.
+  useEffect(() => {
+    if (view && window.matchMedia("(max-width: 760px)").matches && !params.get("tour"))
+      document.getElementById("passport-main")?.scrollIntoView({ block: "start" });
+  }, [view, params]);
+
   useEffect(() => {
     if (!sel || !list) return;
     setSummary(null); setView(null); setMissing("");
@@ -248,7 +254,7 @@ function Records() {
         </div>
       </section>
 
-      <div className="main">
+      <div className="main" id="passport-main">
         {missing && <p className="error" role="alert">Record {missing} not found.</p>}
         {cur && !(summary && view) && <p className="muted">Loading...</p>}
         {cur && summary && view && (
