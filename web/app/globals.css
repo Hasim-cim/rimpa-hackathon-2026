@@ -399,3 +399,14 @@ body.touring main { padding-bottom: 220px; }
   .list > div:last-child { max-height: 40vh; overflow-y: auto; border-top: 1px solid var(--line, #e5e7eb); }
   .main { scroll-margin-top: 12px; }
 }
+
+/* Phone width (Hasim, 21 Oct): the menu is an even 3-column grid instead of a ragged wrap; wide tables scroll inside
+   their card instead of being clipped at the screen edge. */
+@media (max-width: 640px) {
+  nav.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 4px; width: 100%; }
+  nav.tabs a, nav.tabs .more summary { justify-content: center; text-align: center; padding: 0 6px; min-height: 40px; }
+  nav.tabs .more { position: relative; }
+  nav.tabs .more summary { width: 100%; }
+  nav.tabs .more .menu { right: 0; left: auto; }
+  main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
